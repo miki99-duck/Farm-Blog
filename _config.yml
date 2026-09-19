@@ -52,6 +52,17 @@ kramdown:
 #   assets / images / html_backup / node_modules / vendor / _layouts / _site / .git
 # 要临时排除单篇文档，用 front matter 的 listed: false。
 #
+# ---- 文档里的图片 ----
+# 用标准 markdown 写法，路径相对文档所在文件夹：
+#   ![图 1-1：Gateway 整体架构](images/01-gw-arch.svg)
+# jekyll-relative-links 会把它改写成带 baseurl 的绝对路径，不用自己处理。
+#
+# 但新画的 SVG 必须带命名空间，否则浏览器用 <img> 加载时渲染成空白
+# （内联进 HTML 时不需要，所以很容易在编辑器预览里看着正常、上线却是空白）：
+#   <svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330">
+# 自查：Select-String -Path images\*.svg -Pattern '<svg' |
+#         Where-Object { $_.Line -notmatch 'xmlns' }
+#
 # ---- date 为什么不能加引号 ----
 # YAML 里裸写的 2024-10-15 解析成 Date 对象，加了引号就变成字符串。
 # Jekyll 的 sort 用 <=> 比较，两者混在一起会抛异常，直接导致整站构建失败。
