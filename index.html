@@ -1,4 +1,4 @@
----
+﻿---
 layout: null
 ---
 <!DOCTYPE html>
@@ -196,6 +196,8 @@ svg{ shape-rendering:crispEdges; display:block; }
    文章卡片
    ============================================================ */
 .post{
+  /* 每页 10 张卡，纵向更紧凑：比通用面板内边距小一圈 */
+  padding:16px 18px;
   transition:transform .15s ease;
 }
 
@@ -208,7 +210,7 @@ svg{ shape-rendering:crispEdges; display:block; }
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  margin-bottom:12px;
+  margin-bottom:8px;
 }
 
 .post-badge{
@@ -231,17 +233,17 @@ svg{ shape-rendering:crispEdges; display:block; }
 }
 
 .post-title{
-  margin:0 0 10px;
-  font-size:18px;
+  margin:0 0 8px;
+  font-size:16px;
   line-height:1.5;
   color:var(--ink);
   text-shadow:1px 1px 0 rgba(255,255,255,.7);
 }
 
 .post-text{
-  margin:0 0 16px;
+  margin:0 0 10px;
   font-size:12px;
-  line-height:2;
+  line-height:1.8;
   color:var(--ink-soft);
 }
 
@@ -249,7 +251,7 @@ svg{ shape-rendering:crispEdges; display:block; }
   display:flex;
   flex-wrap:wrap;
   gap:6px;
-  margin-bottom:16px;
+  margin-bottom:10px;
 }
 
 .tag{
@@ -265,7 +267,7 @@ svg{ shape-rendering:crispEdges; display:block; }
 
 .divider{
   height:3px;
-  margin:14px 0;
+  margin:10px 0;
   background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
   opacity:.7;
 }
@@ -276,7 +278,7 @@ svg{ shape-rendering:crispEdges; display:block; }
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  padding-top:14px;
+  padding-top:10px;
   border-top:3px dashed rgba(180,120,74,.4);
 }
 
