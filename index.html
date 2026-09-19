@@ -744,7 +744,7 @@ a:focus-visible,
           <rect x="4" y="11" width="2" height="2" fill="#8b5a2b"/>
           <rect x="7" y="11" width="2" height="2" fill="#8b5a2b"/>
         </svg>
-        <span>秋季 12 日 · 周三</span>
+        <span id="hud-date">--月--日 · 周-</span>
       </div>
 
       <!-- 时间 -->
@@ -756,7 +756,7 @@ a:focus-visible,
           <rect x="7" y="5" width="2" height="4" fill="#4a2c17"/>
           <rect x="8" y="7" width="3" height="2" fill="#4a2c17"/>
         </svg>
-        <span>下午 3:40</span>
+        <span id="hud-time">--:--</span>
       </div>
 
       <!-- 天气 -->
@@ -1101,6 +1101,49 @@ a:focus-visible,
   'use strict';
 
   var PER_PAGE = 10;
+
+  /* ---------- 0. HUD 时间：按浏览器实时时间刷新 ----------
+     季节按真实月份推算；星期、时段、时分取当前时刻。
+     天气 chip 不挂脚本，永远显示「晴天」。 */
+  var WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  var hudDate = document.getElementById('hud-date');
+  var hudTime = document.getElementById('hud-time');
+
+  function seasonOf(m) {
+    if (m >= 3 && m <= 5) { return '春季'; }
+    if (m >= 6 && m <= 8) { return '夏季'; }
+    if (m >= 9 && m <= 11) { return '秋季'; }
+    return '冬季'; // 12 / 1 / 2
+  }
+
+  function periodOf(h) {
+    if (h < 5) { return '凌晨'; }
+    if (h < 11) { return '上午'; }
+    if (h < 13) { return '中午'; }
+    if (h < 18) { return '下午'; }
+    if (h < 23) { return '晚上'; }
+    return '深夜';
+  }
+
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+  function renderHud() {
+    var now = new Date();
+    if (hudDate) {
+      hudDate.textContent = seasonOf(now.getMonth() + 1) + ' · ' +
+        (now.getMonth() + 1) + '月' + now.getDate() + '日 · ' +
+        WEEKDAYS[now.getDay()];
+    }
+    if (hudTime) {
+      var h = now.getHours();
+      var h12 = (h % 12 === 0) ? 12 : (h % 12);
+      hudTime.textContent = periodOf(h) + ' ' + h12 + ':' + pad2(now.getMinutes());
+    }
+  }
+
+  renderHud();
+  /* 分钟级显示，每 30 秒刷新一次（最差迟到 30 秒，可忽略） */
+  setInterval(renderHud, 30000);
 
   /* ---------- 1. 返回农场 ---------- */
   var home = document.querySelector('.hud-home');
