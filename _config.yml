@@ -1,6 +1,6 @@
 # ============================================================
 #  星露谷农场日志 · Jekyll 配置
-#  GitHub Pages 会用内建 Jekyll 按这份配置自动构建站点
+#  GitHub Pages 用内建 Jekyll（jekyll 3.10.0）按这份配置构建站点
 # ============================================================
 
 title: 星露谷农场日志
@@ -13,22 +13,57 @@ markdown: kramdown
 kramdown:
   input: GFM              # 表格 / 围栏代码块 / 删除线 按 GitHub 方言解析
   syntax_highlighter: rouge
-  auto_ids: true          # 给标题生成 id，右侧目录靠它跳转
+  auto_ids: true          # 给标题生成 id，文档页左侧目录靠它跳转
   hard_wrap: false
 
-# 刻意不配置 theme，也不配置 defaults。
+# ============================================================
+#  新增一篇文档要做什么
+# ============================================================
+# 1) 把 .md 放进分类文件夹。
+#    顶层文件夹名就是分类名；放在仓库根目录的算「未分类」。
+#    也可以用 front matter 的 category 字段覆盖文件夹名。
 #
-# 为什么不用 defaults 给所有 .md 套 layout：
-#   defaults 的 scope 只能按路径前缀过滤，没法只匹配 .md，
-#   index.html 会被一起套上 layout，而它本身已经是完整 HTML 文档，
-#   再包一层 <html> 会把博客首页拆坏。
+# 2) 文件开头写 front matter：
 #
-# 所以规则是：每个文档在开头写 5 行 front matter（见 kafka.md）。
-#   GitHub Pages 默认启用了 jekyll-optional-front-matter 和 jekyll-default-layout，
-#   裸 .md 通常也能渲染，但那取决于 GitHub 那边的默认插件集，不受本仓库控制；
-#   写 front matter 才是确定能渲染的路子，而且 title / description
-#   会被 _layouts/default.html 用来生成 <title> 和 meta description。
+#      ---
+#      layout: default          # 必填，套文档阅读页布局
+#      title: "标题"
+#      date: 2024-10-15         # 必填，首页按它倒序。**不要加引号**
+#      tags: [Kafka, Java]      # 首页标签 + 侧栏「农作物」筛选都读它
+#      summary: "一句话摘要"     # 可选；不写就截取正文前 110 字
+#      ---
 #
-# 注意：文档里如果出现 {{ 或 {%（比如 Prometheus 告警模板里的 {{ $labels.instance }}），
-#   必须用 {% raw %} ... {% endraw %} 包起来，否则 Liquid 会把它当变量解析。
-#   kafka.md 里已有两处这样的包裹。
+# 3) push。首页 index.html 里的 Liquid 会遍历 site.pages 自动生成卡片，
+#    分组用的就是顶层文件夹名。不需要手写卡片。
+#
+# ---- 为什么 date 不能加引号 ----
+# YAML 里裸写的 2024-10-15 会解析成 Date 对象，加引号就变成字符串。
+# Jekyll 的 sort 用 <=> 比较，Date 和 String 混在一起会抛异常，
+# 直接导致整站构建失败。全部不写引号（或全部加引号）都行，别混。
+#
+# 漏写 date 不会让构建失败：文档会排在首页列表最后、日期显示为空
+# （依据 jekyll/lib/jekyll/filters.rb 的 sort_input，默认 nils="first"，
+#   升序后 reverse 正好把空值翻到末尾）。
+#
+# ---- 为什么不用 defaults 自动补 front matter ----
+# defaults 的 scope 只能按路径前缀过滤，没法只匹配 .md，index.html 会被一起套上。
+# 而 index.html 的 front matter 写的正是 layout: null，就是为了不被套布局：
+# 它的 url 是 "/"，会被 jekyll-default-layout 匹配到 home/default 布局，
+# 一旦套上，整个博客首页会被塞进文档布局里拆坏。
+#
+# 顺带：别在仓库根目录放 README.md。
+# jekyll-optional-front-matter 对 README/LICENSE 这类文件名有黑名单，
+# 而 jekyll-readme-index 会试图把根目录 README.md 变成 index.html，和现有首页冲突。
+#
+# ============================================================
+#  唯一需要人工注意的坑：{{ 和 {%
+# ============================================================
+# 文档里如果出现 {{ 或 {%（例如 Prometheus 告警模板里的 {{ $labels.instance }}），
+# 必须用 {% raw %} ... {% endraw %} 包起来，否则 Liquid 会把它当变量解析，
+# 轻则内容被吞，重则整站构建失败。
+#
+# GitHub Pages 用的是 jekyll 3.10.0，不支持 Jekyll 4 的 render_with_liquid: false，
+# 所以只能用 {% raw %}。技术/kafka.md 里已有两处这样的包裹。
+#
+# 推之前自查：
+#   Select-String -Path *.md -Pattern '\{\{|\{%'

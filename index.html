@@ -1,3 +1,6 @@
+---
+layout: null
+---
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -646,6 +649,33 @@ a:focus-visible,
   .post:hover,
   .btn:hover{ transform:none; }
 }
+
+/* ============================================================
+   分类分组（由 Jekyll 按顶层文件夹生成）
+   ============================================================ */
+.cat-group{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.cat-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0;
+  font-size:14px;
+  letter-spacing:1px;
+  color:var(--ink);
+}
+
+.cat-title::after{
+  content:"";
+  flex:1;
+  height:3px;
+  background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
+}
+
 </style>
 </head>
 <body>
@@ -729,117 +759,60 @@ a:focus-visible,
 
     <!-- ---------- 文章列表 ---------- -->
     <main class="main-col">
+      {%- comment -%}
+        文章列表由 Jekyll 自动生成。
+        遍历 site.pages 里所有使用 default 布局的文档，按顶层文件夹分组
+        （文件夹名 = 分类，可用 front matter 的 category 覆盖），组内按日期倒序。
+        index.html 自己用的是 layout: null，不会被列进来。
+      {%- endcomment -%}
+      {%- assign docs = site.pages | where: "layout", "default" | sort: "date" | reverse -%}
 
-      <!-- 文档：Kafka 教程（由 kafka.md 经 Jekyll 自动渲染成 kafka.html） -->
-      <article class="sv-panel post">
-        <div class="post-top">
-          <span class="post-badge">文档</span>
-          <time class="post-time" datetime="2024-10-15">秋季 15 日</time>
-        </div>
+      {%- assign cats = "" | split: "|" -%}
+      {%- for d in docs -%}
+        {%- assign folder = d.dir | remove_first: "/" | split: "/" | first -%}
+        {%- assign c = d.category | default: folder | default: "未分类" -%}
+        {%- unless cats contains c -%}{%- assign cats = cats | push: c -%}{%- endunless -%}
+      {%- endfor -%}
 
-        <h2 class="post-title">Kafka 与 ZooKeeper 完全教程</h2>
+      {%- if docs.size == 0 -%}
+      <div class="sv-panel post">
+        <p class="post-text">还没有文章。把 .md 文件放进仓库，写上 layout: default 和 date，就会自动出现在这里。</p>
+      </div>
+      {%- endif -%}
 
-        <p class="post-text">
-          从"传菜窗口"这种大白话讲起，一路讲到副本机制、事务、KRaft 与 MirrorMaker2。
-          33 章、183 段可直接复制的配置与代码，附环境搭建检查清单与性能调优速查表。
-        </p>
+      {%- for c in cats -%}
+      <section class="cat-group">
+        <h2 class="cat-title">📁 {{ c }}</h2>
 
-        <div class="post-tags">
-          <span class="tag"># Kafka</span>
-          <span class="tag"># 教程</span>
-          <span class="tag"># Java</span>
-        </div>
+        {%- for d in docs -%}
+          {%- assign folder = d.dir | remove_first: "/" | split: "/" | first -%}
+          {%- assign dc = d.category | default: folder | default: "未分类" -%}
+          {%- if dc == c -%}
+        <article class="sv-panel post">
+          <div class="post-top">
+            <span class="post-badge">{{ c }}</span>
+            <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{{ d.date | date: "%Y-%m-%d" }}</time>
+          </div>
 
-        <div class="post-foot">
-          <span class="post-meta">📄 33 章 · 183 段代码</span>
-          <a href="kafka.html" class="btn" aria-label="阅读全文：Kafka 与 ZooKeeper 完全教程">阅读全文 ▸</a>
-        </div>
-      </article>
+          <h3 class="post-title">{{ d.title | default: d.name }}</h3>
 
-      <!-- 文章 1 -->
-      <article class="sv-panel post">
-        <div class="post-top">
-          <span class="post-badge">置顶</span>
-          <time class="post-time" datetime="2024-10-12">秋季 12 日</time>
-        </div>
+          <p class="post-text">{{ d.summary | default: d.description | default: d.content | strip_html | truncate: 110 }}</p>
 
-        <h2 class="post-title">第一次收获巨型南瓜！</h2>
+          <div class="post-tags">
+            {%- for tag in d.tags %}
+            <span class="tag"># {{ tag }}</span>
+            {%- endfor %}
+          </div>
 
-        <p class="post-text">
-          今天早上给南瓜地浇水的时候，锄头差点被弹飞——一个占了三格地的巨型南瓜从土里冒了出来。
-          镇长刘易斯说这是今年农场最大的作物，还给我颁了一枚金色奖章。
-          傍晚把南瓜运到集市，卖了个好价钱，终于凑够了升级鸡舍的钱。
-        </p>
-
-        <div class="post-tags">
-          <span class="tag"># 农场日记</span>
-          <span class="tag"># 秋季</span>
-          <span class="tag"># 收获</span>
-          <span class="tag"># Java</span>
-          <span class="tag"># MySQL</span>
-        </div>
-
-        <div class="post-foot">
-          <span class="post-meta">💬 12 条评论 · ♥ 48 赞</span>
-          <a href="#" class="btn" aria-label="阅读全文：第一次收获巨型南瓜！">阅读全文 ▸</a>
-        </div>
-      </article>
-
-      <!-- 文章 2 -->
-      <article class="sv-panel post">
-        <div class="post-top">
-          <time class="post-time" datetime="2024-10-08">秋季 8 日</time>
-        </div>
-
-        <h2 class="post-title">用 CSS 复刻星露谷的对话框</h2>
-
-        <p class="post-text">
-          星露谷的 UI 有一种特别的「厚重感」：四层描边、内阴影、还有右下角那一道硬阴影。
-          这次我试着用纯 CSS 的 box-shadow 把它还原出来，意外地只需要几行代码。
-          关键在于——不要用 border-radius 做圆角，像素风要的是直角。
-        </p>
-
-        <div class="post-tags">
-          <span class="tag"># 前端</span>
-          <span class="tag"># CSS</span>
-          <span class="tag"># 像素风</span>
-          <span class="tag"># Java</span>
-          <span class="tag"># Nginx</span>
-        </div>
-
-        <div class="post-foot">
-          <span class="post-meta">💬 27 条评论 · ♥ 156 赞</span>
-          <a href="#" class="btn" aria-label="阅读全文：用 CSS 复刻星露谷的对话框">阅读全文 ▸</a>
-        </div>
-      </article>
-
-      <!-- 文章 3 -->
-      <article class="sv-panel post">
-        <div class="post-top">
-          <time class="post-time" datetime="2024-10-03">秋季 3 日</time>
-        </div>
-
-        <h2 class="post-title">矿洞第 40 层：终于见到了骷髅</h2>
-
-        <p class="post-text">
-          带了 12 个炸弹、3 组石头和一份南瓜汤下矿，在第 38 层被一群史莱姆围住，血量掉到个位数。
-          幸好背包里还剩最后一颗樱桃炸弹。第 40 层的骷髅比想象中难缠，
-          但掉落的铁矿石足够我把洒水器全部升级一遍了。
-        </p>
-
-        <div class="post-tags">
-          <span class="tag"># 游戏随笔</span>
-          <span class="tag"># 矿洞</span>
-          <span class="tag"># 冒险</span>
-          <span class="tag"># Spring</span>
-          <span class="tag"># Kafka</span>
-        </div>
-
-        <div class="post-foot">
-          <span class="post-meta">💬 8 条评论 · ♥ 33 赞</span>
-          <a href="#" class="btn" aria-label="阅读全文：矿洞第 40 层：终于见到了骷髅">阅读全文 ▸</a>
-        </div>
-      </article>
+          <div class="post-foot">
+            <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
+            <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title }}">阅读全文 ▸</a>
+          </div>
+        </article>
+          {%- endif -%}
+        {%- endfor -%}
+      </section>
+      {%- endfor -%}
 
     </main>
 

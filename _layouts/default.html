@@ -305,7 +305,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 <div class="wrap">
 
   <header class="hud">
-    <a class="hud-chip" href="./">◂ 返回农场</a>
+    <a class="hud-chip hud-home" href="./" data-url="{{ page.url }}">◂ 返回农场</a>
     <span class="hud-chip">📄 农场文档</span>
   </header>
 
@@ -333,6 +333,20 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
    ============================================================ */
 (function () {
   'use strict';
+
+  /* ---------- 「返回农场」：按文档所在层级自动定位站点根 ----------
+     文档在根目录 -> ./      文档在 docs/ 下 -> ../      再深一层 -> ../../
+     没 JS 时保留 href="./"，根目录的文档照样能用                    */
+  var home = document.querySelector('.hud-home');
+  if (home) {
+    var url = home.getAttribute('data-url') || '/';
+    var depth = url.split('/').filter(Boolean).length - 1;
+    if (depth > 0) {
+      var up = '';
+      for (var i = 0; i < depth; i++) up += '../';
+      home.setAttribute('href', up);
+    }
+  }
 
   var doc = document.getElementById('doc');
   if (!doc) return;
