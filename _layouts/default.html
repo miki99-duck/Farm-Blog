@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<meta name="description" content="{{ page.description | default: site.description }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   文档阅读页 · 星露谷主题
+   —— 与博客首页同一套配色 token，但正文换成可读性优先的字形
+   ============================================================ */
+:root{
+  --wood-900:#2e1a0c; --wood-800:#3d2413; --wood-700:#4a2c17;
+  --wood-600:#6b3f1d; --wood-500:#8b5a2b; --wood-400:#a9713f;
+  --wood-300:#c99c5e; --wood-200:#d9a86c; --wood-100:#efd7a8;
+  --paper:#f8e8c0; --paper-light:#fff6dd;
+  --ink:#4a2c17; --ink-soft:#6b4a2a;
+  --green-700:#2f5017; --gold:#ffd23f; --gold-deep:#e0a828;
+  --grass-500:#5a9e3a;
+  --pixel:'Press Start 2P','Zpix','Microsoft YaHei',monospace;
+  --read:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+  --mono:'JetBrains Mono','Cascadia Mono',Consolas,'SFMono-Regular','Courier New',monospace;
+}
+
+*{ box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+  margin:0;
+  padding:22px 16px 70px;
+  font-family:var(--read);
+  font-size:15.5px;
+  line-height:1.95;
+  color:var(--ink);
+  background-color:var(--grass-500);
+  background-image:repeating-conic-gradient(#5a9e3a 0% 25%, #4f8f31 0% 50%);
+  background-size:22px 22px;
+}
+
+a{ color:var(--wood-700); }
+a:hover{ color:var(--wood-600); }
+
+.skip{
+  position:absolute; left:-9999px;
+  padding:10px 14px;
+  background:var(--paper-light);
+  border:3px solid var(--wood-700);
+  font-family:var(--pixel); font-size:11px; color:var(--ink);
+  text-decoration:none; z-index:99;
+}
+.skip:focus{ left:12px; top:12px; }
+
+a:focus-visible,
+button:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:3px;
+  box-shadow:0 0 0 7px var(--wood-900);
+}
+
+.wrap{ max-width:1180px; margin:0 auto; }
+
+/* ---------- 顶部 HUD ---------- */
+.hud{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  padding:10px 14px; margin-bottom:16px;
+  border:4px solid var(--wood-800); border-radius:6px;
+  background:linear-gradient(#7b4a24, #57331a);
+  box-shadow:inset 0 3px 0 rgba(255,220,160,.25), inset 0 -4px 0 rgba(0,0,0,.3), 0 6px 0 rgba(0,0,0,.3);
+  color:#ffe9b8; font-family:var(--pixel); font-size:11px;
+}
+.hud-chip{
+  display:inline-flex; align-items:center; gap:7px;
+  padding:6px 11px; border:2px solid rgba(255,220,160,.28); border-radius:4px;
+  background:rgba(0,0,0,.22); color:#ffe9b8; text-decoration:none;
+}
+a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
+
+/* ---------- 木牌 ---------- */
+.blog-sign{
+  padding:15px 20px 13px; margin-bottom:20px; text-align:center;
+  border:4px solid var(--wood-700); border-radius:6px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 2px, transparent 2px 46px),
+    linear-gradient(#8f5f33, #6b3f1d);
+  box-shadow:inset 0 3px 0 rgba(255,220,160,.35), inset 0 -5px 0 rgba(0,0,0,.22), 0 6px 0 rgba(0,0,0,.3);
+}
+.blog-sign h1{
+  margin:0; font-family:var(--pixel); font-size:17px; line-height:1.5;
+  letter-spacing:2px; color:#ffe9b8;
+  text-shadow:2px 2px 0 var(--wood-700), 4px 4px 0 rgba(0,0,0,.2);
+}
+.blog-sign p{ margin:8px 0 0; font-family:var(--pixel); font-size:9px; letter-spacing:2px; color:#fff6dd; }
+
+/* ---------- 双栏：目录 + 正文 ---------- */
+.doc-layout{ display:grid; grid-template-columns:290px 1fr; gap:20px; align-items:start; }
+
+.toc{
+  position:sticky; top:18px;
+  max-height:calc(100vh - 36px);
+  display:flex; flex-direction:column;
+  border:4px solid var(--wood-300); border-radius:5px;
+  background-color:var(--paper);
+  box-shadow:0 0 0 4px var(--wood-700), inset 0 0 0 3px var(--paper-light), 6px 8px 0 rgba(0,0,0,.28);
+}
+.toc-title{
+  margin:0; padding:13px 15px 11px;
+  font-family:var(--pixel); font-size:12px; letter-spacing:1px; color:var(--ink);
+  border-bottom:3px dashed rgba(180,120,74,.45);
+}
+.toc-body{ overflow-y:auto; padding:10px 12px 14px; }
+.toc ol{ list-style:none; margin:0; padding:0; }
+.toc-sub{ margin:3px 0 7px 10px; padding-left:8px !important; border-left:2px solid rgba(180,120,74,.35); }
+.toc li{ margin:0; }
+.toc a{
+  display:block; padding:4px 7px; border-radius:3px;
+  font-size:12.5px; line-height:1.55; text-decoration:none;
+  color:var(--ink-soft); border-left:3px solid transparent;
+}
+.toc-2 > a{ font-weight:700; color:var(--ink); margin-top:4px; }
+.toc-3 > a{ font-size:12px; }
+.toc a:hover{ background:rgba(201,156,94,.25); }
+.toc a.active{
+  background:rgba(255,210,63,.28);
+  border-left-color:var(--gold-deep);
+  color:var(--wood-900);
+}
+.toc a:focus-visible{ outline:3px solid var(--wood-900); outline-offset:-3px; box-shadow:none; }
+
+/* ---------- 正文面板 ---------- */
+.prose{
+  padding:26px 30px 34px;
+  background-color:var(--paper);
+  background-image:repeating-linear-gradient(0deg, rgba(180,140,80,.07) 0 2px, transparent 2px 6px);
+  border:4px solid var(--wood-300); border-radius:5px;
+  box-shadow:
+    0 0 0 4px var(--wood-700),
+    inset 0 0 0 3px var(--paper-light),
+    inset 0 0 22px rgba(180,120,74,.22),
+    6px 8px 0 rgba(0,0,0,.28);
+  min-width:0;
+}
+
+.prose h1{
+  margin:0 0 22px; padding-bottom:14px;
+  font-family:var(--pixel); font-size:22px; line-height:1.6; letter-spacing:1px;
+  color:var(--wood-900); border-bottom:4px dashed rgba(180,120,74,.5);
+}
+.prose h2{
+  margin:44px 0 16px; padding:9px 13px;
+  font-family:var(--pixel); font-size:16px; line-height:1.7; letter-spacing:1px;
+  color:#ffe9b8; border-radius:4px;
+  background:linear-gradient(#8f5f33, #6b3f1d);
+  box-shadow:inset 0 3px 0 rgba(255,220,160,.3), inset 0 -4px 0 rgba(0,0,0,.2), 0 4px 0 rgba(0,0,0,.25);
+}
+.prose h3{
+  margin:32px 0 12px; padding-left:12px;
+  font-size:18px; font-weight:700; line-height:1.6; color:var(--wood-900);
+  border-left:6px solid var(--wood-400);
+}
+.prose h4{
+  margin:24px 0 10px; font-size:16px; color:var(--wood-700);
+}
+.prose h5,.prose h6{ margin:20px 0 8px; font-size:15px; color:var(--wood-600); }
+
+.prose h1,.prose h2,.prose h3,.prose h4{ scroll-margin-top:18px; }
+
+.prose p{ margin:0 0 15px; color:var(--wood-800); }
+
+.prose ul,.prose ol{ margin:0 0 16px; padding-left:1.5em; }
+.prose li{ margin:5px 0; }
+.prose li > ul,.prose li > ol{ margin:6px 0 6px; }
+
+/* Stardew 对话框式引用块 */
+.prose blockquote{
+  margin:18px 0; padding:14px 18px;
+  background:var(--paper-light);
+  border:3px solid var(--wood-300); border-left:7px solid var(--wood-400); border-radius:4px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.55), 4px 4px 0 rgba(0,0,0,.16);
+  color:var(--wood-700);
+}
+.prose blockquote > :last-child{ margin-bottom:0; }
+
+.prose hr{
+  height:0; margin:30px 0; border:0;
+  border-top:4px dashed rgba(180,120,74,.45);
+}
+
+/* 行内代码 */
+.prose code{
+  padding:1px 6px;
+  font-family:var(--mono); font-size:.88em;
+  color:var(--wood-800);
+  background:var(--wood-100);
+  border:2px solid var(--wood-300); border-radius:3px;
+  word-break:break-word;
+}
+
+/* 代码块：深色木底 */
+.prose pre{
+  margin:16px 0 20px; padding:15px 17px;
+  overflow-x:auto;
+  background:#2b1a0d;
+  border:3px solid var(--wood-400); border-radius:4px;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.35), 4px 5px 0 rgba(0,0,0,.26);
+  font-size:13px; line-height:1.72;
+  -webkit-overflow-scrolling:touch;
+}
+.prose pre code{
+  padding:0; background:none; border:0; border-radius:0;
+  color:#f2e6cd; font-size:13px; white-space:pre;
+}
+.highlight{ background:none; }
+.highlight pre{ margin:16px 0 20px; }
+
+/* Rouge 语法着色（配深木底） */
+.highlight .c,.highlight .c1,.highlight .cm,.highlight .cs{ color:#a18f6d; font-style:italic; }
+.highlight .k,.highlight .kd,.highlight .kn,.highlight .kc,.highlight .kr{ color:#ffd23f; }
+.highlight .s,.highlight .s1,.highlight .s2,.highlight .sb,.highlight .se,.highlight .sx{ color:#9bd14a; }
+.highlight .mi,.highlight .mf,.highlight .m,.highlight .mh{ color:#ff9d5c; }
+.highlight .nf,.highlight .fm{ color:#7ec8ff; }
+.highlight .na,.highlight .nv,.highlight .nx{ color:#ffe0a3; }
+.highlight .nt{ color:#7ec8ff; }
+.highlight .nc,.highlight .nn{ color:#ffb3e6; }
+.highlight .o,.highlight .ow,.highlight .p{ color:#e6d6b8; }
+.highlight .err{ color:#ff8b7a; }
+
+/* 表格 */
+.table-scroll{ margin:16px 0 22px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.prose table{
+  width:100%; border-collapse:collapse;
+  font-size:13.5px; line-height:1.7;
+  background:var(--paper-light);
+}
+.prose th,.prose td{
+  padding:8px 11px; text-align:left; vertical-align:top;
+  border:2px solid var(--wood-300);
+}
+.prose th{
+  background:linear-gradient(#6b3f1d, #4a2c17);
+  color:#ffe9b8; font-weight:700; white-space:nowrap;
+}
+.prose tbody tr:nth-child(even){ background:rgba(201,156,94,.16); }
+
+/* 任务清单 */
+.prose li.task{ list-style:none; margin-left:-1.3em; padding-left:1.5em; position:relative; }
+.prose li.task::before{
+  content:''; position:absolute; left:0; top:.42em;
+  width:13px; height:13px;
+  background:var(--paper-light);
+  border:2px solid var(--wood-500); border-radius:2px;
+}
+.prose li.task-done::after{
+  content:'✔'; position:absolute; left:2px; top:-1px;
+  font-size:12px; color:var(--green-700);
+}
+.prose li.task-done{ color:var(--wood-500); }
+
+.prose strong{ color:var(--wood-900); }
+.prose img{ max-width:100%; height:auto; }
+
+/* 长文档顶部进度条 */
+.progress{
+  position:fixed; left:0; top:0; height:4px; width:0;
+  background:linear-gradient(90deg, var(--gold-deep), var(--gold));
+  z-index:50;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:980px){
+  .doc-layout{ grid-template-columns:1fr; }
+  .toc{ position:static; max-height:none; }
+  .toc-body{ max-height:45vh; }
+  .prose{ padding:20px 17px 26px; }
+  .prose h1{ font-size:18px; }
+  .prose h2{ font-size:14px; }
+  .prose h3{ font-size:16px; }
+}
+
+@media (max-width:560px){
+  body{ padding:12px 9px 46px; font-size:15px; background-size:16px 16px; }
+  .prose pre{ font-size:12px; padding:12px 12px; }
+  .prose pre code{ font-size:12px; }
+  .blog-sign h1{ font-size:14px; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    transition-duration:.001ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<a class="skip" href="#doc">跳到正文</a>
+
+<div class="wrap">
+
+  <header class="hud">
+    <a class="hud-chip" href="./">◂ 返回农场</a>
+    <span class="hud-chip">📄 农场文档</span>
+  </header>
+
+  <div class="blog-sign">
+    <h1>{{ site.title }}</h1>
+    <p>STARDEW VALLEY · FARM DOCS</p>
+  </div>
+
+  <div class="doc-layout">
+
+    <nav class="toc" id="toc" aria-label="文档目录">
+      <h2 class="toc-title">目录</h2>
+      <div class="toc-body"><ol id="toc-list"></ol></div>
+    </nav>
+
+    <article class="prose" id="doc">{{ content }}</article>
+
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   文档页增强：目录生成、滚动高亮、表格横向滚动、任务清单、进度条
+   全部基于渲染后的 DOM，所以任何 .md 丢进来都会自动生效
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var doc = document.getElementById('doc');
+  if (!doc) return;
+
+  /* ---------- 表格包一层，窄屏可横向滚动 ---------- */
+  Array.prototype.forEach.call(doc.querySelectorAll('table'), function (tb) {
+    var box = document.createElement('div');
+    box.className = 'table-scroll';
+    tb.parentNode.insertBefore(box, tb);
+    box.appendChild(tb);
+  });
+
+  /* ---------- 把 markdown 的 "- [ ] / - [x]" 变成真正的勾选框 ---------- */
+  Array.prototype.forEach.call(doc.querySelectorAll('li'), function (li) {
+    var node = li.firstChild;
+    if (!node || node.nodeType !== 3) return;
+    var m = /^\s*\[([ xX])\]\s*/.exec(node.nodeValue);
+    if (!m) return;
+    var done = m[1].toLowerCase() === 'x';
+    var full = li.textContent.replace(/^\s*\[([ xX])\]\s*/, '');
+    node.nodeValue = node.nodeValue.replace(/^\s*\[([ xX])\]\s*/, '');
+    li.className += (li.className ? ' ' : '') + 'task' + (done ? ' task-done' : '');
+    li.setAttribute('aria-label', (done ? '已完成：' : '未完成：') + full);
+  });
+
+  /* ---------- 目录 ---------- */
+  var heads = doc.querySelectorAll('h2, h3');
+  var listEl = document.getElementById('toc-list');
+  var tocEl = document.getElementById('toc');
+  if (!listEl || !heads.length) {
+    if (tocEl) tocEl.hidden = true;
+  } else {
+    var sub = null;
+    Array.prototype.forEach.call(heads, function (h) {
+      if (!h.id) return;
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+
+      if (h.tagName === 'H2') {
+        li.className = 'toc-2';
+        listEl.appendChild(li);
+        sub = document.createElement('ol');
+        sub.className = 'toc-sub';
+        li.appendChild(sub);
+      } else if (sub) {
+        li.className = 'toc-3';
+        sub.appendChild(li);
+      } else {
+        li.className = 'toc-3';
+        listEl.appendChild(li);
+      }
+    });
+
+    /* ---------- 滚动高亮当前章节 ---------- */
+    if ('IntersectionObserver' in window) {
+      var map = {};
+      Array.prototype.forEach.call(listEl.querySelectorAll('a'), function (a) {
+        map[decodeURIComponent(a.getAttribute('href').slice(1))] = a;
+      });
+      var current = null;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          var a = map[e.target.id];
+          if (!a || a === current) return;
+          if (current) current.classList.remove('active');
+          a.classList.add('active');
+          current = a;
+        });
+      }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+      Array.prototype.forEach.call(heads, function (h) { if (h.id) io.observe(h); });
+    }
+  }
+
+  /* ---------- 顶部阅读进度 ---------- */
+  var bar = document.getElementById('progress');
+  if (bar) {
+    var tick = function () {
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', tick, { passive: true });
+    window.addEventListener('resize', tick);
+    tick();
+  }
+}());
+</script>
+
+</body>
+</html>

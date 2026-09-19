@@ -451,6 +451,88 @@ a:focus-visible,
 }
 
 /* ============================================================
+   侧边栏 · 农作物（点击筛选对应标签的文章）
+   ============================================================ */
+.crop{
+  display:block;
+  width:100%;
+  padding:7px 9px;
+  margin:0 0 6px;
+  font:inherit;
+  color:inherit;
+  text-align:left;
+  background:transparent;
+  border:2px solid transparent;
+  border-radius:4px;
+  cursor:pointer;
+  transition:background .12s ease, border-color .12s ease;
+}
+
+.crop:last-child{ margin-bottom:0; }
+
+.crop:hover{
+  background:rgba(201,156,94,.22);
+  border-color:var(--wood-300);
+}
+
+/* 当前选中的农作物 */
+.crop[aria-pressed="true"]{
+  background:rgba(255,210,63,.2);
+  border-color:var(--gold-deep);
+  box-shadow:inset 0 0 0 2px rgba(255,246,221,.55);
+}
+
+/* 还没有对应文章的农作物，不可点 */
+.crop:disabled{
+  cursor:default;
+  opacity:.55;
+}
+
+.crop:disabled:hover{
+  background:transparent;
+  border-color:transparent;
+}
+
+/* button 里不能放 div，所以内部用 span；这两个原本靠块级撑高度，得显式声明 */
+.crop .bar,
+.crop .bar-fill{ display:block; }
+
+.crop-status{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin:16px 0 0;
+  padding-top:12px;
+  font-size:10px;
+  color:var(--ink-soft);
+  border-top:3px dashed rgba(180,120,74,.4);
+}
+
+.crop-clear{
+  padding:4px 9px;
+  font-family:inherit;
+  font-size:10px;
+  color:var(--wood-700);
+  background:#eed9ab;
+  border:2px solid var(--wood-300);
+  border-radius:3px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+  cursor:pointer;
+}
+
+.crop-clear:hover{ background:#e6cd97; }
+
+/* 焦点环要盖过上面的选中态，所以放在最后 */
+.crop:focus-visible,
+.crop-clear:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:2px;
+  box-shadow:0 0 0 6px var(--wood-900);
+}
+
+/* ============================================================
    底部物品栏
    ============================================================ */
 .hotbar{
@@ -648,6 +730,32 @@ a:focus-visible,
     <!-- ---------- 文章列表 ---------- -->
     <main class="main-col">
 
+      <!-- 文档：Kafka 教程（由 kafka.md 经 Jekyll 自动渲染成 kafka.html） -->
+      <article class="sv-panel post">
+        <div class="post-top">
+          <span class="post-badge">文档</span>
+          <time class="post-time" datetime="2024-10-15">秋季 15 日</time>
+        </div>
+
+        <h2 class="post-title">Kafka 与 ZooKeeper 完全教程</h2>
+
+        <p class="post-text">
+          从"传菜窗口"这种大白话讲起，一路讲到副本机制、事务、KRaft 与 MirrorMaker2。
+          33 章、183 段可直接复制的配置与代码，附环境搭建检查清单与性能调优速查表。
+        </p>
+
+        <div class="post-tags">
+          <span class="tag"># Kafka</span>
+          <span class="tag"># 教程</span>
+          <span class="tag"># Java</span>
+        </div>
+
+        <div class="post-foot">
+          <span class="post-meta">📄 33 章 · 183 段代码</span>
+          <a href="kafka.html" class="btn" aria-label="阅读全文：Kafka 与 ZooKeeper 完全教程">阅读全文 ▸</a>
+        </div>
+      </article>
+
       <!-- 文章 1 -->
       <article class="sv-panel post">
         <div class="post-top">
@@ -667,6 +775,8 @@ a:focus-visible,
           <span class="tag"># 农场日记</span>
           <span class="tag"># 秋季</span>
           <span class="tag"># 收获</span>
+          <span class="tag"># Java</span>
+          <span class="tag"># MySQL</span>
         </div>
 
         <div class="post-foot">
@@ -693,6 +803,8 @@ a:focus-visible,
           <span class="tag"># 前端</span>
           <span class="tag"># CSS</span>
           <span class="tag"># 像素风</span>
+          <span class="tag"># Java</span>
+          <span class="tag"># Nginx</span>
         </div>
 
         <div class="post-foot">
@@ -719,6 +831,8 @@ a:focus-visible,
           <span class="tag"># 游戏随笔</span>
           <span class="tag"># 矿洞</span>
           <span class="tag"># 冒险</span>
+          <span class="tag"># Spring</span>
+          <span class="tag"># Kafka</span>
         </div>
 
         <div class="post-foot">
@@ -788,34 +902,43 @@ a:focus-visible,
         </p>
       </div>
 
-      <!-- 农作物面板 -->
+      <!-- 农作物面板：点击筛选对应标签的文章（成熟度 1 度 = 1 篇文章） -->
       <div class="sv-panel">
         <h3 class="panel-title">农作物</h3>
 
-        <div class="skill">
-          <div class="skill-head"><span>☕ Java</span><span class="lv">Lv.9</span></div>
-          <div class="bar"><div class="bar-fill" style="width:90%"></div></div>
+        <div class="crops">
+
+          <button type="button" class="crop" data-crop="Java" aria-pressed="false">
+            <span class="skill-head"><span>☕ Java</span><span class="lv">成熟度 <span class="maturity">2</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:100%"></span></span>
+          </button>
+
+          <button type="button" class="crop" data-crop="Spring" aria-pressed="false">
+            <span class="skill-head"><span>🍃 Spring</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+          </button>
+
+          <button type="button" class="crop" data-crop="Kafka" aria-pressed="false">
+            <span class="skill-head"><span>📨 Kafka</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+          </button>
+
+          <button type="button" class="crop" data-crop="MySQL" aria-pressed="false">
+            <span class="skill-head"><span>🐬 MySQL</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+          </button>
+
+          <button type="button" class="crop" data-crop="Nginx" aria-pressed="false">
+            <span class="skill-head"><span>🌐 Nginx</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+          </button>
+
         </div>
 
-        <div class="skill">
-          <div class="skill-head"><span>🍃 Spring</span><span class="lv">Lv.8</span></div>
-          <div class="bar"><div class="bar-fill" style="width:80%"></div></div>
-        </div>
-
-        <div class="skill">
-          <div class="skill-head"><span>📨 Kafka</span><span class="lv">Lv.7</span></div>
-          <div class="bar"><div class="bar-fill" style="width:70%"></div></div>
-        </div>
-
-        <div class="skill">
-          <div class="skill-head"><span>🐬 MySQL</span><span class="lv">Lv.7</span></div>
-          <div class="bar"><div class="bar-fill" style="width:70%"></div></div>
-        </div>
-
-        <div class="skill">
-          <div class="skill-head"><span>🌐 Nginx</span><span class="lv">Lv.6</span></div>
-          <div class="bar"><div class="bar-fill" style="width:60%"></div></div>
-        </div>
+        <p class="crop-status">
+          <span class="crop-status-text" role="status">共 3 篇文章</span>
+          <button type="button" class="crop-clear" hidden>显示全部</button>
+        </p>
       </div>
 
       <!-- 技能面板 -->
@@ -935,6 +1058,105 @@ a:focus-visible,
   </div>
 
 </div>
+
+<script>
+/* ============================================================
+   农作物筛选：点一下筛出该标签的文章，按时间降序重排，无刷新
+   成熟度不写死，直接从文章标签里数出来（1 度 = 1 篇）
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var list = document.querySelector('.main-col');
+  var cropsEl = document.querySelector('.crops');
+  if (!list || !cropsEl) return;
+
+  var posts = Array.prototype.slice.call(list.querySelectorAll('article.post')).map(function (el) {
+    var tags = Array.prototype.slice.call(el.querySelectorAll('.post-tags .tag')).map(function (t) {
+      return t.textContent.replace(/^#\s*/, '').trim().toLowerCase();
+    });
+    var time = el.querySelector('time[datetime]');
+    return { el: el, tags: tags, date: time ? time.getAttribute('datetime') : '' };
+  });
+
+  var buttons = Array.prototype.slice.call(cropsEl.querySelectorAll('.crop'));
+  var statusEl = document.querySelector('.crop-status-text');
+  var clearEl = document.querySelector('.crop-clear');
+  var active = null;
+
+  function countFor(name) {
+    var key = String(name).toLowerCase();
+    var n = 0;
+    posts.forEach(function (p) { if (p.tags.indexOf(key) !== -1) n += 1; });
+    return n;
+  }
+
+  /* 成熟度 = 对应文章数；条长按最“丰收”的那块地归一化 */
+  var counts = buttons.map(function (b) { return countFor(b.getAttribute('data-crop')); });
+  var max = Math.max.apply(null, counts.concat([1]));
+
+  buttons.forEach(function (b, i) {
+    var n = counts[i];
+    var num = b.querySelector('.maturity');
+    var fill = b.querySelector('.bar-fill');
+    if (num) num.textContent = String(n);
+    if (fill) fill.style.width = Math.round((n / max) * 100) + '%';
+    if (n === 0) {
+      b.disabled = true;
+      b.title = '还没有对应的文章';
+    }
+  });
+
+  function byDateDesc(a, b) {
+    if (a.date === b.date) return 0;
+    return a.date < b.date ? 1 : -1;
+  }
+
+  function render() {
+    var key = active ? active.toLowerCase() : null;
+    var shown = 0;
+
+    posts.sort(byDateDesc).forEach(function (p) {
+      var match = !key || p.tags.indexOf(key) !== -1;
+      p.el.hidden = !match;
+      if (match) shown += 1;
+      list.appendChild(p.el);           /* 按时间降序重排 DOM */
+    });
+
+    buttons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(!!active && b.getAttribute('data-crop') === active));
+    });
+
+    if (statusEl) {
+      statusEl.textContent = active
+        ? '已筛选「' + active + '」· ' + shown + ' 篇'
+        : '共 ' + shown + ' 篇文章';
+    }
+    if (clearEl) clearEl.hidden = !active;
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-crop');
+      active = (active === name) ? null : name;   /* 再点一次取消 */
+      render();
+    });
+  });
+
+  if (clearEl) {
+    clearEl.addEventListener('click', function () {
+      active = null;
+      render();
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && active) { active = null; render(); }
+  });
+
+  render();
+}());
+</script>
 
 </body>
 </html>
