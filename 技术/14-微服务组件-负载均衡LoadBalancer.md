@@ -1,3 +1,7 @@
+---
+tags: [微服务]
+---
+
 # 微服务组件 14 · 负载均衡 Spring Cloud LoadBalancer
 
 > 服务名解析成"具体调哪个实例"，这就是客户端负载均衡干的活。Ribbon 退役后，Spring Cloud 官方用 LoadBalancer 接棒。

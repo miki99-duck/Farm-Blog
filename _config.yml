@@ -19,7 +19,7 @@ kramdown:
 # ============================================================
 #  新增一篇文档要做什么
 # ============================================================
-# 1) 把 .md 放进分类文件夹。顶层文件夹名就是分类名，根目录的算「未分类」。
+# 1) 把 .md 放进任意文件夹（文件夹只是组织文件用，不会显示在页面上）
 # 2) push。完事。
 #
 # 不需要写任何 front matter。下面这些全是可选项：
@@ -27,15 +27,30 @@ kramdown:
 #   ---
 #   layout: default          # 不写会自动套 _layouts/default.html
 #   title: "标题"             # 不写会自动取正文第一个 # 标题
-#   date: 2024-10-15         # 不写就排在同类最后、按文件名升序。不要加引号
-#   tags: [Kafka, Java]      # 不写就没有标签，也不参与侧栏「农作物」筛选
+#   date: 2024-10-15         # 不写就排在列表最后、按文件名升序。不要加引号
+#   tags: [微服务]            # 决定它属于哪个「农作物」，见下
 #   summary: "一句话摘要"     # 不写就截取正文前 110 字
-#   category: 自定义分类      # 不写就用顶层文件夹名
 #   listed: false            # 写了就不出现在首页列表（页面本身仍可访问）
 #   ---
 #
-# 首页列表由 index.html 里的 Liquid 生成：遍历 site.pages，按顶层文件夹分组，
-# 组内有 date 的按日期倒序，没 date 的按文件名升序排在最后。
+# ---- 首页列表 ----
+# 由 index.html 里的 Liquid 生成：遍历 site.pages，按「有 date 的日期倒序，
+# 没 date 的按文件名升序排最后」。不按文件夹分组，也不显示分类名。
+# 分页是前端做的（每页 10 条，见 index.html 里的 PER_PAGE）。
+# 为什么要前端分页：GitHub Pages 的 jekyll-paginate 只支持 _posts 里的文章，
+# 对 site.pages 无效；jekyll-paginate-v2 不在 GitHub Pages 白名单里，用了会构建失败。
+#
+# ---- 侧栏「农作物」 ----
+# 每个农作物 = 一个标签。成熟度（几度）= 带该标签的文章数，由页面脚本实时统计。
+# 想加一个新农作物，就在 index.html 的 .crops 里加一个按钮：
+#   <button type="button" class="crop" data-crop="新名字" aria-pressed="false">…</button>
+# 然后在文档 front matter 里写 tags: [新名字] 即可，不用改别的地方。
+# 条宽按最大的农作物线性归一化，最少 8% 以保证只有 1 度的也看得见。
+#
+# ---- 哪些目录不参与列表 ----
+# 这些顶层目录名会被跳过（防止资源目录里的 .md 混进文档列表）：
+#   assets / images / html_backup / node_modules / vendor / _layouts / _site / .git
+# 要临时排除单篇文档，用 front matter 的 listed: false。
 #
 # ---- date 为什么不能加引号 ----
 # YAML 里裸写的 2024-10-15 解析成 Date 对象，加了引号就变成字符串。
@@ -50,7 +65,8 @@ kramdown:
 # 实测 21 篇文档用 `where: "layout","default"` 只筛出 4 篇。
 # 所以改成显式 for 循环。以后改这块模板时不要换回 where。
 #
-# ---- 分类名为什么取 page.path 而不是 page.dir ----
+# ---- 分类名为什么曾经取 page.path 而不是 page.dir ----
+# （现在已经不显示分类了，但这条以后可能还会用到）
 # Page#dir 是从（已编码的）url 派生的：
 #     def dir; url.end_with?("/") ? url : ...; end
 # 所以中文文件夹会变成 %E6%8A%80%E6%9C%AF，页面上就是乱码。

@@ -1,3 +1,7 @@
+---
+tags: [微服务]
+---
+
 # 微服务组件 01 · 服务网关 Spring Cloud Gateway
 
 > 微服务组件的"总大门"：统一收口所有流量，做路由、鉴权、限流、灰度。基于 Spring WebFlux + Netty 的非阻塞式网关。

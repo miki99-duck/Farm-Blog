@@ -530,7 +530,8 @@ a:focus-visible,
 
 /* 焦点环要盖过上面的选中态，所以放在最后 */
 .crop:focus-visible,
-.crop-clear:focus-visible{
+.crop-clear:focus-visible,
+.pager-btn:focus-visible{
   outline:3px solid var(--paper-light);
   outline-offset:2px;
   box-shadow:0 0 0 6px var(--wood-900);
@@ -648,33 +649,76 @@ a:focus-visible,
   .slot.active{ animation:none; }
 
   .post:hover,
-  .btn:hover{ transform:none; }
+  .btn:hover,
+  .pager-btn:hover:not(:disabled),
+  .pager-btn:active:not(:disabled){ transform:none; }
 }
+
+
+
 
 /* ============================================================
-   分类分组（由 Jekyll 按顶层文件夹生成）
+   分页（每页 10 条，脚本控制显示）
    ============================================================ */
-.cat-group{
+.pager{
   display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-
-.cat-title{
-  display:flex;
+  flex-wrap:wrap;
   align-items:center;
-  gap:10px;
-  margin:0;
-  font-size:14px;
-  letter-spacing:1px;
-  color:var(--ink);
+  justify-content:center;
+  gap:6px;
 }
 
-.cat-title::after{
-  content:"";
-  flex:1;
-  height:3px;
-  background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
+.pager[hidden]{ display:none; }
+
+.pager-pages{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.pager-btn{
+  padding:8px 13px;
+  font-family:inherit;
+  font-size:11px;
+  color:#fff6dd;
+  background:linear-gradient(#4f7a1e, #3a5f1a);
+  border:3px solid var(--green-700);
+  border-radius:4px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.32),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 4px 0 var(--green-700),
+    0 6px 0 rgba(0,0,0,.28);
+  text-shadow:1px 1px 0 rgba(0,0,0,.4);
+  cursor:pointer;
+  transition:transform .08s ease;
+}
+
+.pager-btn:hover:not(:disabled){ transform:translateY(-2px); }
+.pager-btn:active:not(:disabled){ transform:translateY(3px); }
+.pager-btn:disabled{ opacity:.45; cursor:default; }
+
+.pager-num{ min-width:40px; }
+
+.pager-num.is-current{
+  background:linear-gradient(#8f5f33, #6b3f1d);
+  border-color:var(--wood-700);
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.35),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 4px 0 var(--wood-700),
+    0 6px 0 rgba(0,0,0,.28);
+}
+
+.pager-info{
+  display:table;
+  margin:10px auto 0;
+  padding:5px 12px;
+  font-size:10px;
+  color:var(--ink-soft);
+  background:var(--paper);
+  border:2px solid var(--wood-300);
+  border-radius:3px;
 }
 
 </style>
@@ -759,84 +803,70 @@ a:focus-visible,
   <div class="layout">
 
     <!-- ---------- 文章列表 ---------- -->
-    <main class="main-col">
+    <main class="main-col" id="doc-list">
       {%- comment -%}
-        文章列表由 Jekyll 生成。
-        刻意不用 where 过滤器：Jekyll 3.10 的 where 按 input.hash 记忆化结果，
-        而 jekyll-optional-front-matter 会在渲染期把新页面 concat 进 site.pages，
-        两者叠加会让 where 返回不完整的结果（实测只出 4 篇，实际 21 篇）。
-        改成一个显式 for 循环，行为完全可预测。
-        分类取 page.path 的第一段——不能用 page.dir，
-        因为 Page#dir 是从（已编码的）url 派生的，中文文件夹会变成 %E6%8A%80%E6%9C%AF。
+        文档列表由 Jekyll 生成：遍历 site.pages，排除首页自身和资源目录。
+        刻意不用 where 过滤器 —— Jekyll 3.10 的 where 按 input.hash 记忆化结果，
+        而 jekyll-optional-front-matter 是在渲染期把新页面 concat 进 site.pages 的，
+        两者叠加会漏文档（实测 21 篇只筛出 4 篇）。
+        不显示分类：文件夹只用于组织文件，不在页面上出现。
+        排序：有 date 的按日期倒序；没写 date 的按文件名升序排在最后。
+        分页由页尾脚本完成，每页 10 条。
       {%- endcomment -%}
-      {%- assign docs = "" | split: "|" -%}
+      {%- assign skipdirs = "assets,images,html_backup,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
+      {%- assign dated = "" | split: "|" -%}
+      {%- assign undated = "" | split: "|" -%}
       {%- for p in site.pages -%}
-        {%- if p.url != "/" and p.name != "index.html" and p.listed != false -%}
-          {%- assign docs = docs | push: p -%}
+        {%- assign segs = p.path | split: "/" -%}
+        {%- assign top = segs | first -%}
+        {%- assign keep = true -%}
+        {%- if p.url == "/" or p.name == "index.html" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
+        {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
+        {%- if keep -%}
+          {%- if p.date -%}{%- assign dated = dated | push: p -%}{%- else -%}{%- assign undated = undated | push: p -%}{%- endif -%}
         {%- endif -%}
       {%- endfor -%}
+      {%- assign dated = dated | sort: "date" | reverse -%}
+      {%- assign undated = undated | sort: "path" -%}
+      {%- assign docs = dated | concat: undated -%}
 
-      {%- assign cats = "" | split: "|" -%}
-      {%- for d in docs -%}
-        {%- assign segs = d.path | split: "/" -%}
-        {%- if segs.size > 1 -%}{%- assign folder = segs | first -%}{%- else -%}{%- assign folder = "未分类" -%}{%- endif -%}
-        {%- assign c = d.category | default: folder -%}
-        {%- unless cats contains c -%}{%- assign cats = cats | push: c -%}{%- endunless -%}
-      {%- endfor -%}
-
-      <!-- 构建信息：site.pages={{ site.pages.size }} / 收录文档={{ docs.size }} / 分类={{ cats.size }} -->
+      <!-- 构建信息：site.pages={{ site.pages.size }} / 收录文档={{ docs.size }} / 每页 10 条 -->
 
       {%- if docs.size == 0 -%}
       <div class="sv-panel post">
-        <p class="post-text">还没有文章。把 .md 文件放进仓库（可以再套一层分类文件夹），push 后就会自动出现在这里。</p>
+        <p class="post-text">还没有文章。把 .md 文件放进仓库，push 后就会自动出现在这里。</p>
       </div>
       {%- endif -%}
 
-      {%- for c in cats -%}
-        {%- assign dated = "" | split: "|" -%}
-        {%- assign undated = "" | split: "|" -%}
-        {%- for d in docs -%}
-          {%- assign segs = d.path | split: "/" -%}
-          {%- if segs.size > 1 -%}{%- assign folder = segs | first -%}{%- else -%}{%- assign folder = "未分类" -%}{%- endif -%}
-          {%- assign dc = d.category | default: folder -%}
-          {%- if dc == c -%}
-            {%- if d.date -%}{%- assign dated = dated | push: d -%}{%- else -%}{%- assign undated = undated | push: d -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- assign dated = dated | sort: "date" | reverse -%}
-        {%- assign undated = undated | sort: "path" -%}
-        {%- assign ordered = dated | concat: undated -%}
-        {%- if ordered.size > 0 -%}
-      <section class="cat-group">
-        <h2 class="cat-title">📁 {{ c }}</h2>
+      {%- for d in docs -%}
+      <article class="sv-panel post">
+        <div class="post-top">
+          <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
+        </div>
 
-          {%- for d in ordered -%}
-        <article class="sv-panel post">
-          <div class="post-top">
-            <span class="post-badge">{{ c }}</span>
-            <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
-          </div>
+        <h3 class="post-title">{{ d.title | default: d.name }}</h3>
 
-          <h3 class="post-title">{{ d.title | default: d.name }}</h3>
+        <p class="post-text">{{ d.summary | default: d.description | default: d.content | strip_html | truncate: 110 }}</p>
 
-          <p class="post-text">{{ d.summary | default: d.description | default: d.content | strip_html | truncate: 110 }}</p>
+        <div class="post-tags">
+          {%- for tag in d.tags %}
+          <span class="tag"># {{ tag }}</span>
+          {%- endfor %}
+        </div>
 
-          <div class="post-tags">
-            {%- for tag in d.tags %}
-            <span class="tag"># {{ tag }}</span>
-            {%- endfor %}
-          </div>
-
-          <div class="post-foot">
-            <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
-            <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title | default: d.name }}">阅读全文 ▸</a>
-          </div>
-        </article>
-          {%- endfor -%}
-      </section>
-        {%- endif -%}
+        <div class="post-foot">
+          <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
+          <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title | default: d.name }}">阅读全文 ▸</a>
+        </div>
+      </article>
       {%- endfor -%}
 
+      <nav class="pager" id="pager" aria-label="分页" hidden>
+        <button type="button" class="pager-btn" data-page="prev">◂ 上一页</button>
+        <span class="pager-pages" id="pager-pages"></span>
+        <button type="button" class="pager-btn" data-page="next">下一页 ▸</button>
+      </nav>
+      <p class="pager-info" id="pager-info" role="status"></p>
     </main>
 
     <!-- ---------- 侧边栏 ---------- -->
@@ -904,35 +934,40 @@ a:focus-visible,
 
         <div class="crops">
 
-          <button type="button" class="crop" data-crop="Java" aria-pressed="false">
-            <span class="skill-head"><span>☕ Java</span><span class="lv">成熟度 <span class="maturity">2</span> 度</span></span>
+          <button type="button" class="crop" data-crop="微服务" aria-pressed="false">
+            <span class="skill-head"><span>🧩 微服务</span><span class="lv">成熟度 <span class="maturity">17</span> 度</span></span>
             <span class="bar"><span class="bar-fill" style="width:100%"></span></span>
+          </button>
+
+          <button type="button" class="crop" data-crop="Java" aria-pressed="false">
+            <span class="skill-head"><span>☕ Java</span><span class="lv">成熟度 <span class="maturity">3</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:18%"></span></span>
           </button>
 
           <button type="button" class="crop" data-crop="Spring" aria-pressed="false">
             <span class="skill-head"><span>🍃 Spring</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
           </button>
 
           <button type="button" class="crop" data-crop="Kafka" aria-pressed="false">
-            <span class="skill-head"><span>📨 Kafka</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+            <span class="skill-head"><span>📨 Kafka</span><span class="lv">成熟度 <span class="maturity">2</span> 度</span></span>
+            <span class="bar"><span class="bar-fill" style="width:12%"></span></span>
           </button>
 
           <button type="button" class="crop" data-crop="MySQL" aria-pressed="false">
             <span class="skill-head"><span>🐬 MySQL</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
           </button>
 
           <button type="button" class="crop" data-crop="Nginx" aria-pressed="false">
             <span class="skill-head"><span>🌐 Nginx</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:50%"></span></span>
+            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
           </button>
 
         </div>
 
         <p class="crop-status">
-          <span class="crop-status-text" role="status">共 3 篇文章</span>
+          <span class="crop-status-text" role="status">共 21 篇</span>
           <button type="button" class="crop-clear" hidden>显示全部</button>
         </p>
       </div>
@@ -1057,97 +1092,148 @@ a:focus-visible,
 
 <script>
 /* ============================================================
-   农作物筛选：点一下筛出该标签的文章，按时间降序重排，无刷新
-   成熟度不写死，直接从文章标签里数出来（1 度 = 1 篇）
+   首页交互
+   1) 「返回农场」按文档层级自动定位站点根
+   2) 文档列表前端分页（每页 10 条）
+   3) 农作物筛选：成熟度 = 对应文章数，筛选后同样分页
    ============================================================ */
 (function () {
   'use strict';
 
-  var list = document.querySelector('.main-col');
-  var cropsEl = document.querySelector('.crops');
-  if (!list || !cropsEl) return;
+  var PER_PAGE = 10;
 
-  var posts = Array.prototype.slice.call(list.querySelectorAll('article.post')).map(function (el) {
-    var tags = Array.prototype.slice.call(el.querySelectorAll('.post-tags .tag')).map(function (t) {
-      return t.textContent.replace(/^#\s*/, '').trim().toLowerCase();
-    });
-    var time = el.querySelector('time[datetime]');
-    return { el: el, tags: tags, date: time ? time.getAttribute('datetime') : '' };
-  });
+  /* ---------- 1. 返回农场 ---------- */
+  var home = document.querySelector('.hud-home');
+  if (home) {
+    var homeUrl = home.getAttribute('data-url') || '/';
+    var depth = homeUrl.split('/').filter(Boolean).length - 1;
+    if (depth > 0) {
+      var up = '';
+      for (var k = 0; k < depth; k++) { up += '../'; }
+      home.setAttribute('href', up);
+    }
+  }
 
-  var buttons = Array.prototype.slice.call(cropsEl.querySelectorAll('.crop'));
+  /* ---------- 2 & 3. 列表分页 + 农作物筛选 ---------- */
+  var list = document.getElementById('doc-list');
+  if (!list) { return; }
+
+  var posts = Array.prototype.slice.call(list.querySelectorAll('article.post'));
+  var pager = document.getElementById('pager');
+  var pagesEl = document.getElementById('pager-pages');
+  var infoEl = document.getElementById('pager-info');
+  var cropButtons = Array.prototype.slice.call(document.querySelectorAll('.crop'));
   var statusEl = document.querySelector('.crop-status-text');
   var clearEl = document.querySelector('.crop-clear');
   var active = null;
+  var page = 1;
 
-  function countFor(name) {
-    var key = String(name).toLowerCase();
-    var n = 0;
-    posts.forEach(function (p) { if (p.tags.indexOf(key) !== -1) n += 1; });
-    return n;
+  function tagsOf(el) {
+    return Array.prototype.slice.call(el.querySelectorAll('.post-tags .tag')).map(function (t) {
+      return t.textContent.replace(/^#\s*/, '').trim().toLowerCase();
+    });
   }
+  var tagIndex = posts.map(tagsOf);
 
-  /* 成熟度 = 对应文章数；条长按最“丰收”的那块地归一化 */
-  var counts = buttons.map(function (b) { return countFor(b.getAttribute('data-crop')); });
-  var max = Math.max.apply(null, counts.concat([1]));
-
-  buttons.forEach(function (b, i) {
-    var n = counts[i];
-    var num = b.querySelector('.maturity');
-    var fill = b.querySelector('.bar-fill');
-    if (num) num.textContent = String(n);
-    if (fill) fill.style.width = Math.round((n / max) * 100) + '%';
-    if (n === 0) {
-      b.disabled = true;
-      b.title = '还没有对应的文章';
-    }
-  });
-
-  function byDateDesc(a, b) {
-    if (a.date === b.date) return 0;
-    return a.date < b.date ? 1 : -1;
+  function matches(i) {
+    if (!active) { return true; }
+    return tagIndex[i].indexOf(active.toLowerCase()) !== -1;
   }
 
   function render() {
-    var key = active ? active.toLowerCase() : null;
-    var shown = 0;
+    var idx = [];
+    for (var i = 0; i < posts.length; i++) { if (matches(i)) { idx.push(i); } }
 
-    posts.sort(byDateDesc).forEach(function (p) {
-      var match = !key || p.tags.indexOf(key) !== -1;
-      p.el.hidden = !match;
-      if (match) shown += 1;
-      list.appendChild(p.el);           /* 按时间降序重排 DOM */
-    });
+    var pages = Math.max(1, Math.ceil(idx.length / PER_PAGE));
+    if (page > pages) { page = pages; }
+    if (page < 1) { page = 1; }
+    var from = (page - 1) * PER_PAGE;
+    var onPage = idx.slice(from, from + PER_PAGE);
 
-    buttons.forEach(function (b) {
-      b.setAttribute('aria-pressed', String(!!active && b.getAttribute('data-crop') === active));
-    });
+    posts.forEach(function (el, i) { el.hidden = onPage.indexOf(i) === -1; });
 
+    if (pager) { pager.hidden = pages <= 1; }
+    if (pagesEl) {
+      pagesEl.textContent = '';
+      for (var n = 1; n <= pages; n++) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pager-btn pager-num' + (n === page ? ' is-current' : '');
+        b.setAttribute('data-page', String(n));
+        b.textContent = String(n);
+        if (n === page) { b.setAttribute('aria-current', 'page'); }
+        pagesEl.appendChild(b);
+      }
+    }
+    if (pager) {
+      var prev = pager.querySelector('[data-page="prev"]');
+      var next = pager.querySelector('[data-page="next"]');
+      if (prev) { prev.disabled = page <= 1; }
+      if (next) { next.disabled = page >= pages; }
+    }
+
+    if (infoEl) {
+      infoEl.textContent = (active ? '已筛选「' + active + '」· ' : '') +
+        '共 ' + idx.length + ' 篇 · 第 ' + page + ' / ' + pages + ' 页';
+    }
     if (statusEl) {
       statusEl.textContent = active
-        ? '已筛选「' + active + '」· ' + shown + ' 篇'
-        : '共 ' + shown + ' 篇文章';
+        ? '已筛选「' + active + '」· ' + idx.length + ' 篇'
+        : '共 ' + idx.length + ' 篇';
     }
-    if (clearEl) clearEl.hidden = !active;
+    if (clearEl) { clearEl.hidden = !active; }
+
+    cropButtons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(!!active && b.getAttribute('data-crop') === active));
+    });
   }
 
-  buttons.forEach(function (b) {
+  /* 成熟度：一度 = 一篇 */
+  var counts = cropButtons.map(function (b) {
+    var key = String(b.getAttribute('data-crop')).toLowerCase();
+    var n = 0;
+    for (var i = 0; i < posts.length; i++) { if (tagIndex[i].indexOf(key) !== -1) { n += 1; } }
+    return n;
+  });
+  var maxCount = Math.max.apply(null, counts.concat([1]));
+  cropButtons.forEach(function (b, i) {
+    var n = counts[i];
+    var num = b.querySelector('.maturity');
+    var fill = b.querySelector('.bar-fill');
+    if (num) { num.textContent = String(n); }
+    /* 线性归一化；最少 8% 保证只有 1 度的农作物也看得见 */
+    if (fill) { fill.style.width = (n === 0 ? 0 : Math.max(8, Math.round((n / maxCount) * 100))) + '%'; }
+    if (n === 0) { b.disabled = true; b.title = '还没有对应的文章'; }
+  });
+
+  cropButtons.forEach(function (b) {
     b.addEventListener('click', function () {
       var name = b.getAttribute('data-crop');
-      active = (active === name) ? null : name;   /* 再点一次取消 */
+      active = (active === name) ? null : name;
+      page = 1;
       render();
     });
   });
 
   if (clearEl) {
-    clearEl.addEventListener('click', function () {
-      active = null;
+    clearEl.addEventListener('click', function () { active = null; page = 1; render(); });
+  }
+
+  if (pager) {
+    pager.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('button[data-page]') : null;
+      if (!btn || btn.disabled) { return; }
+      var v = btn.getAttribute('data-page');
+      if (v === 'prev') { page -= 1; }
+      else if (v === 'next') { page += 1; }
+      else { page = parseInt(v, 10) || 1; }
       render();
+      list.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && active) { active = null; render(); }
+    if (e.key === 'Escape' && active) { active = null; page = 1; render(); }
   });
 
   render();
