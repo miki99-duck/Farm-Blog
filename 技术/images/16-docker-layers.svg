@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="280" viewBox="0 0 880 280">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- Dockerfile -->
+  <rect x="30" y="30" width="200" height="150" rx="8" fill="rgba(63,185,80,.06)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="130" y="55" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">Dockerfile</text>
+  <text x="130" y="80" text-anchor="middle" fill="#e6edf3" font-size="10.5">FROM openjdk:17-jre-slim</text>
+  <text x="130" y="100" text-anchor="middle" fill="#e6edf3" font-size="10.5">COPY app.jar /app.jar</text>
+  <text x="130" y="120" text-anchor="middle" fill="#e6edf3" font-size="10.5">EXPOSE 8080</text>
+  <text x="130" y="140" text-anchor="middle" fill="#e6edf3" font-size="10.5">ENTRYPOINT java -jar</text>
+  <text x="130" y="165" text-anchor="middle" fill="#8b949e" font-size="9.5">每一行 = 一层镜像</text>
+  <!-- 分层镜像 -->
+  <rect x="330" y="30" width="220" height="150" rx="8" fill="rgba(88,166,255,.06)" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="440" y="55" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">镜像分层存储</text>
+  <rect x="355" y="68" width="170" height="22" rx="4" fill="#161b22" stroke="#3fb950"/>
+  <text x="440" y="83" text-anchor="middle" fill="#3fb950" font-size="10">应用层（app.jar）</text>
+  <rect x="355" y="95" width="170" height="22" rx="4" fill="#161b22" stroke="#58a6ff"/>
+  <text x="440" y="110" text-anchor="middle" fill="#58a6ff" font-size="10">JRE 层（openjdk）</text>
+  <rect x="355" y="122" width="170" height="22" rx="4" fill="#161b22" stroke="#8b949e"/>
+  <text x="440" y="137" text-anchor="middle" fill="#8b949e" font-size="10">OS 基础层（Linux）</text>
+  <text x="440" y="168" text-anchor="middle" fill="#8b949e" font-size="9.5">只读 + 共用：多个镜像共享基础层，磁盘省、拉取快</text>
+  <!-- 容器 -->
+  <rect x="650" y="30" width="200" height="150" rx="8" fill="rgba(216,150,34,.06)" stroke="#d29922" stroke-width="1.5"/>
+  <text x="750" y="55" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">运行 = 容器</text>
+  <rect x="675" y="68" width="150" height="22" rx="4" fill="#161b22" stroke="#d29922"/>
+  <text x="750" y="83" text-anchor="middle" fill="#d29922" font-size="10">镜像 + 可写层</text>
+  <rect x="675" y="95" width="150" height="22" rx="4" fill="#161b22" stroke="#8b949e"/>
+  <text x="750" y="110" text-anchor="middle" fill="#8b949e" font-size="10">端口映射（8080:8080）</text>
+  <rect x="675" y="122" width="150" height="22" rx="4" fill="#161b22" stroke="#8b949e"/>
+  <text x="750" y="137" text-anchor="middle" fill="#8b949e" font-size="10">数据卷（数据持久化）</text>
+  <text x="750" y="168" text-anchor="middle" fill="#8b949e" font-size="9.5">和虚拟机比：共享宿主机内核，秒级启动</text>
+  <!-- 箭头 -->
+  <line x1="230" y1="100" x2="325" y2="100" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="278" y="92" fill="#3fb950" font-size="10">build 构建</text>
+  <line x1="550" y1="100" x2="645" y2="100" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="598" y="92" fill="#d29922" font-size="10">run 运行</text>
+  <!-- 底部 -->
+  <text x="440" y="230" text-anchor="middle" fill="#8b949e" font-size="11">交付标准：开发 Write Dockerfile → CI 构建镜像 → 推仓库 → 服务器 pull 就能跑 → 环境完全一致（解决"在我机器上好好的"）</text>
+  <text x="440" y="258" text-anchor="middle" fill="#3fb950" font-size="11">多阶段构建：第一阶段 maven 编译，第二阶段只拷 jar 进 JRE 镜像 → 镜像从 500MB 瘦到 200MB</text>
+</svg>

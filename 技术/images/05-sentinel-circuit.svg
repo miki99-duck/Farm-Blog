@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="190" viewBox="0 0 880 190">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <rect x="40" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="2"/>
+      <text x="110" y="85" text-anchor="middle" fill="#3fb950" font-size="14" font-weight="bold">CLOSED 关闭</text>
+      <text x="110" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">正常放行，统计指标</text>
+      <rect x="370" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="2"/>
+      <text x="440" y="85" text-anchor="middle" fill="#f85149" font-size="14" font-weight="bold">OPEN 打开</text>
+      <text x="440" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">直接拒绝，快速失败</text>
+      <rect x="700" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="2"/>
+      <text x="770" y="85" text-anchor="middle" fill="#d29922" font-size="14" font-weight="bold">HALF-OPEN 半开</text>
+      <text x="770" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">放少量试探请求</text>
+      <line x1="180" y1="80" x2="365" y2="80" stroke="#f85149" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="510" y1="80" x2="695" y2="80" stroke="#d29922" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="770" y1="55" x2="770" y2="20" stroke="#3fb950" stroke-width="1.5"/>
+      <line x1="770" y1="20" x2="110" y2="20" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <line x1="110" y1="20" x2="110" y2="50" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="440" y="32" fill="#8b949e" font-size="10.5">指标恢复正常 → 关闭</text>
+      <text x="440" y="155" fill="#8b949e" font-size="10.5">触发条件（任一）：慢调用比例 / 异常比例 / 异常数 超过阈值</text>
+      <text x="440" y="173" fill="#8b949e" font-size="10.5">半开期间请求成功 → 恢复 CLOSED；失败 → 回到 OPEN 重新计时</text>
+    </svg>

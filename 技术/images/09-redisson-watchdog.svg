@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="360" viewBox="0 0 880 360">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <text x="150" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">业务线程</text>
+  <text x="440" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">Redisson 客户端</text>
+  <text x="730" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">Redis</text>
+  <line x1="40" y1="42" x2="840" y2="42" stroke="#30363d" stroke-width="1.5"/>
+  <!-- 加锁 -->
+  <line x1="170" y1="65" x2="420" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="290" y="58" fill="#8b949e" font-size="10.5">① lock()</text>
+  <line x1="460" y1="65" x2="710" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="580" y="58" fill="#8b949e" font-size="10.5">② Lua 脚本：SETNX + 过期时间（原子）</text>
+  <!-- 业务 -->
+  <rect x="60" y="85" width="230" height="60" rx="8" fill="#161b22" stroke="#d29922"/>
+  <text x="175" y="110" text-anchor="middle" fill="#d29922" font-size="12" font-weight="bold">执行业务（如扣库存）</text>
+  <text x="175" y="130" text-anchor="middle" fill="#8b949e" font-size="10.5">默认锁过期时间 30s</text>
+  <!-- watchdog 续期 -->
+  <line x1="175" y1="150" x2="175" y2="180" stroke="#d29922" stroke-width="1.5"/>
+  <line x1="175" y1="180" x2="420" y2="180" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="290" y="173" fill="#8b949e" font-size="10.5">③ 看门狗线程（后台守护）</text>
+  <line x1="460" y1="180" x2="710" y2="180" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="580" y="173" fill="#8b949e" font-size="10.5">④ 每 10s 自动续期到 30s（Lua 原子）</text>
+  <!-- 说明 -->
+  <rect x="60" y="200" width="760" height="95" rx="8" fill="rgba(63,185,80,.06)" stroke="#3fb950"/>
+  <text x="80" y="225" fill="#3fb950" font-size="12" font-weight="bold">看门狗解决的核心问题：业务没执行完，锁却过期了</text>
+  <text x="80" y="248" fill="#e6edf3" font-size="11">不加看门狗：锁 30s 过期 → 第二个线程拿到锁 → 两个线程并发执行 → 数据错乱</text>
+  <text x="80" y="268" fill="#e6edf3" font-size="11">加看门狗：只要业务还持有锁，就自动续期；业务结束 unlock() 时看门狗线程退出</text>
+  <text x="80" y="288" fill="#8b949e" font-size="10.5">自定义 leaseTime 时不启用看门狗（自己负责释放）；看门狗默认续期到业务完成，防死锁</text>
+  <!-- 释放 -->
+  <line x1="175" y1="300" x2="175" y2="330" stroke="#3fb950" stroke-width="1.5"/>
+  <line x1="175" y1="330" x2="420" y2="330" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="290" y="323" fill="#8b949e" font-size="10.5">⑤ unlock()（finally 里）</text>
+  <line x1="460" y1="330" x2="710" y2="330" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="580" y="323" fill="#8b949e" font-size="10.5">⑥ Lua：校验锁属于自己 → 删除（原子，防误删别人的锁）</text>
+</svg>

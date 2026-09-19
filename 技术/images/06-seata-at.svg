@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="380" viewBox="0 0 880 380">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+  <!-- 列标题 -->
+  <text x="100" y="30" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">TM（发起方）</text>
+  <text x="350" y="30" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">TC（协调器）</text>
+  <text x="620" y="30" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">RM + 业务库</text>
+  <line x1="40" y1="45" x2="840" y2="45" stroke="#30363d" stroke-width="1.5"/>
+  <!-- 一阶段 -->
+  <rect x="40" y="60" width="800" height="110" rx="6" fill="rgba(63,185,80,.05)" stroke="#3fb950" stroke-dasharray="5 3"/>
+  <text x="60" y="80" fill="#3fb950" font-size="12" font-weight="bold">一阶段：执行并"本地提交"</text>
+  <line x1="100" y1="95" x2="340" y2="95" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="210" y="88" fill="#8b949e" font-size="10.5">① 开启全局事务，拿到 XID</text>
+  <line x1="360" y1="95" x2="600" y2="95" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="470" y="88" fill="#8b949e" font-size="10.5">② XID 透传，注册分支事务</text>
+  <line x1="100" y1="120" x2="600" y2="120" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="250" y="132" fill="#d29922" font-size="10.5">③ 业务 SQL + 生成 undo_log（before/after 镜像）→ 本地事务提交，数据已改</text>
+  <text x="250" y="152" fill="#d29922" font-size="10.5">④ 持"全局锁"直到二阶段结束（写隔离，防脏读）</text>
+  <!-- 二阶段提交 -->
+  <rect x="40" y="185" width="800" height="90" rx="6" fill="rgba(88,166,255,.05)" stroke="#58a6ff" stroke-dasharray="5 3"/>
+  <text x="60" y="205" fill="#58a6ff" font-size="12" font-weight="bold">二阶段-提交（全部成功）：一阶段全成功 → TM 提交</text>
+  <line x1="100" y1="225" x2="340" y2="225" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <text x="210" y="218" fill="#8b949e" font-size="10.5">⑤ 请求全局提交</text>
+  <line x1="360" y1="225" x2="600" y2="225" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <text x="470" y="218" fill="#8b949e" font-size="10.5">⑥ 通知所有 RM 提交</text>
+  <line x1="600" y1="245" x2="100" y2="245" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="300" y="258" fill="#3fb950" font-size="10.5">⑦ RM 异步删除 undo_log → 释放全局锁 → 完成</text>
+  <!-- 二阶段回滚 -->
+  <rect x="40" y="290" width="800" height="80" rx="6" fill="rgba(248,81,73,.05)" stroke="#f85149" stroke-dasharray="5 3"/>
+  <text x="60" y="310" fill="#f85149" font-size="12" font-weight="bold">二阶段-回滚（任一分支失败）：TM 感知异常 → 回滚</text>
+  <line x1="100" y1="330" x2="340" y2="330" stroke="#f85149" stroke-width="2" marker-end="url(#arrR)"/>
+  <text x="210" y="323" fill="#8b949e" font-size="10.5">⑤ 请求全局回滚</text>
+  <line x1="360" y1="330" x2="600" y2="330" stroke="#f85149" stroke-width="2" marker-end="url(#arrR)"/>
+  <text x="470" y="323" fill="#8b949e" font-size="10.5">⑥ 通知所有 RM 回滚</text>
+  <line x1="600" y1="350" x2="100" y2="350" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="300" y="363" fill="#f85149" font-size="10.5">⑦ 用 undo_log 的 before 镜像生成反向 SQL 恢复数据 → 删 log → 释放锁</text>
+</svg>

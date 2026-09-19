@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="200" viewBox="0 0 880 200">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <!-- 时间线 -->
+      <line x1="80" y1="100" x2="830" y2="100" stroke="#30363d" stroke-width="2"/>
+      <text x="80" y="84" fill="#8b949e" font-size="11">实例启动</text>
+      <circle cx="80" cy="100" r="5" fill="#3fb950"/>
+      <circle cx="270" cy="100" r="4" fill="#3fb950"/>
+      <circle cx="460" cy="100" r="4" fill="#3fb950"/>
+      <circle cx="650" cy="100" r="4" fill="#f85149"/>
+      <circle cx="810" cy="100" r="4" fill="#f85149"/>
+      <text x="80" y="128" fill="#e6edf3" font-size="11.5">① 注册实例</text>
+      <text x="230" y="128" fill="#e6edf3" font-size="11.5">② 心跳续约 5s/次</text>
+      <text x="440" y="128" fill="#e6edf3" font-size="11.5">② 心跳续约</text>
+      <text x="590" y="128" fill="#f85149" font-size="11.5">③ 15s 未心跳 → 标记不健康</text>
+      <text x="745" y="128" fill="#f85149" font-size="11.5">④ 30s 剔除 + 推送变更</text>
+      <line x1="80" y1="118" x2="80" y2="84" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <text x="170" y="150" fill="#8b949e" font-size="10.5">临时实例（默认）AP：客户端 gRPC 长连接保活，超过阈值服务端移除，保证可用性</text>
+      <text x="170" y="170" fill="#8b949e" font-size="10.5">持久实例（ephemeral=false）CP：服务端主动 HTTP/TCP 探测，保证一致性，注册场景少用</text>
+    </svg>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- 调度中心 -->
+  <rect x="40" y="40" width="260" height="170" rx="10" fill="rgba(88,166,255,.07)" stroke="#58a6ff" stroke-width="2"/>
+  <text x="170" y="68" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">调度中心（Admin）</text>
+  <text x="170" y="92" text-anchor="middle" fill="#e6edf3" font-size="11">集中管理任务：cron、路由策略</text>
+  <text x="170" y="112" text-anchor="middle" fill="#e6edf3" font-size="11">触发调度、失败重试、告警</text>
+  <text x="170" y="132" text-anchor="middle" fill="#8b949e" font-size="10.5">多实例部署做高可用（互为主备）</text>
+  <text x="170" y="152" text-anchor="middle" fill="#8b949e" font-size="10.5">自带 Web 控制台</text>
+  <text x="170" y="172" text-anchor="middle" fill="#e6edf3" font-size="11">数据存 MySQL</text>
+  <text x="170" y="195" text-anchor="middle" fill="#8b949e" font-size="10.5">DB：xxl_job_* 表</text>
+  <!-- 执行器 -->
+  <rect x="560" y="40" width="280" height="170" rx="10" fill="rgba(63,185,80,.07)" stroke="#3fb950" stroke-width="2"/>
+  <text x="700" y="68" text-anchor="middle" fill="#3fb950" font-size="14" font-weight="bold">执行器（Executor，多个）</text>
+  <rect x="580" y="85" width="110" height="40" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="635" y="103" text-anchor="middle" fill="#e6edf3" font-size="11">order-service</text>
+  <text x="635" y="119" text-anchor="middle" fill="#8b949e" font-size="9.5">实例 1</text>
+  <rect x="710" y="85" width="110" height="40" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="765" y="103" text-anchor="middle" fill="#e6edf3" font-size="11">order-service</text>
+  <text x="765" y="119" text-anchor="middle" fill="#8b949e" font-size="9.5">实例 2</text>
+  <text x="700" y="155" text-anchor="middle" fill="#e6edf3" font-size="11">注册到调度中心（自动发现）</text>
+  <text x="700" y="175" text-anchor="middle" fill="#e6edf3" font-size="11">@XxlJob 注解标记任务方法</text>
+  <text x="700" y="195" text-anchor="middle" fill="#8b949e" font-size="10.5">执行任务 + 上报状态/日志</text>
+  <!-- 箭头 -->
+  <line x1="300" y1="100" x2="555" y2="100" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="428" y="92" fill="#8b949e" font-size="10.5">到点触发任务</text>
+  <line x1="555" y1="130" x2="300" y2="130" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="428" y="145" fill="#3fb950" font-size="10.5">执行结果 + 调度日志回传</text>
+  <!-- 底部 -->
+  <text x="440" y="265" text-anchor="middle" fill="#8b949e" font-size="11.5">多实例部署的场景关键：调度中心只会把任务发给"被选中的执行器"，避免每个实例都跑一遍（除非分片广播）</text>
+  <text x="440" y="285" text-anchor="middle" fill="#8b949e" font-size="11.5">对比 @Scheduled：每个实例各自定时 → 任务被重复执行 N 遍；XXL-Job 由调度中心统一点名</text>
+</svg>

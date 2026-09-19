@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微服务组件 05 · 熔断限流 Sentinel</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --border:#30363d;
+    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
+    --orange:#d29922; --red:#f85149; --purple:#bc8cff; --cyan:#39c5cf;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;line-height:1.75;font-size:15px;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px;}
+  header.hero{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:28px;}
+  .tag{display:inline-block;background:rgba(88,166,255,.12);color:var(--accent);border:1px solid rgba(88,166,255,.35);border-radius:4px;padding:2px 10px;font-size:12px;margin-bottom:12px;}
+  h1{font-size:28px;margin-bottom:8px;}
+  .sub{color:var(--muted);font-size:14px;}
+  nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:28px;}
+  nav.toc b{color:var(--accent);font-size:13px;}
+  nav.toc a{color:var(--muted);text-decoration:none;font-size:13px;margin-right:14px;white-space:nowrap;}
+  nav.toc a:hover{color:var(--accent);}
+  section{margin-bottom:40px;}
+  h2{font-size:21px;border-left:4px solid var(--accent);padding-left:12px;margin-bottom:16px;}
+  h3{font-size:16px;color:var(--accent);margin:18px 0 10px;}
+  p{margin-bottom:10px;}
+  .muted{color:var(--muted);}
+  ul,ol{margin:0 0 12px 22px;}
+  li{margin-bottom:5px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px;}
+  .warn{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.35);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .warn b{color:var(--red);}
+  .tip{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.3);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .tip b{color:var(--green);}
+  pre{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,"Courier New",monospace;font-size:13px;line-height:1.6;margin:10px 0;}
+  code{font-family:Consolas,"Courier New",monospace;}
+  pre .k{color:var(--purple);} pre .s{color:var(--green);} pre .c{color:var(--muted);}
+  pre .n{color:var(--orange);} pre .t{color:var(--cyan);} pre .a{color:var(--red);} pre .f{color:var(--accent);}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th{background:var(--panel2);color:var(--accent);text-align:left;padding:8px 12px;border:1px solid var(--border);}
+  td{padding:8px 12px;border:1px solid var(--border);}
+  .qa{background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden;}
+  .qa summary{cursor:pointer;padding:14px 18px;font-weight:600;color:var(--accent);list-style:none;position:relative;}
+  .qa summary::before{content:"▸ ";color:var(--orange);}
+  .qa details[open] summary::before{content:"▾ ";}
+  .qa .ans{padding:0 18px 16px;border-top:1px dashed var(--border);}
+  .qa .ans p{padding-top:12px;}
+  .qa .ans b{color:var(--green);}
+  .svgbox{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;margin:14px 0;text-align:center;}
+  .svgbox .cap{color:var(--muted);font-size:12.5px;margin-top:8px;}
+  svg text{font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .pill{display:inline-block;background:rgba(188,140,255,.12);color:var(--purple);border:1px solid rgba(188,140,255,.3);border-radius:20px;padding:1px 10px;font-size:12px;margin-right:6px;}
+  footer{border-top:1px solid var(--border);padding-top:16px;color:var(--muted);font-size:12.5px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">微服务组件 · 第 05 篇</span>
+  <h1>熔断限流 Sentinel</h1>
+  <p class="sub">阿里的"流量防卫兵"：限流、熔断、降级、热点参数、系统保护五合一，防雪崩的最后一层防线。</p>
+  <p style="margin-top:10px;"><span class="pill">Sentinel 1.8.6</span><span class="pill">滑动窗口</span><span class="pill">三态熔断</span><span class="pill">规则持久化</span></p>
+</header>
+
+<nav class="toc">
+  <b>目录：</b>
+  <a href="#s1">1. 是什么 / 解决什么问题</a>
+  <a href="#s2">2. 核心原理</a>
+  <a href="#s3">3. 核心概念表</a>
+  <a href="#s4">4. 代码示例</a>
+  <a href="#s5">5. 面试题与回答</a>
+  <a href="#s6">6. 小结与口诀</a>
+</nav>
+
+<!-- ==================== 1 ==================== -->
+<section id="s1">
+  <h2>1. 是什么 / 解决什么问题</h2>
+  <p><b>Sentinel</b> 是阿里开源的<b>面向分布式服务架构的高可用防护组件</b>，核心就一件事：<b>让流量进来得可控、让故障扩散得有限</b>。轻量级、无侵入（SDK 方式），控制台可视化配置规则。</p>
+
+  <h3>1.1 雪崩是怎么发生的？（痛点引入）</h3>
+  <div class="svgbox">
+    <svg width="880" height="210" viewBox="0 0 880 210">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+        </marker>
+      </defs>
+      <rect x="20" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="85" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 A</text>
+      <text x="85" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">超时（慢）</text>
+      <rect x="240" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="305" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 B</text>
+      <text x="305" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">线程被 A 占满</text>
+      <rect x="460" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="525" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 C</text>
+      <text x="525" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">被 B 拖垮</text>
+      <rect x="680" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="745" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 D</text>
+      <text x="745" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">雪崩</text>
+      <line x1="150" y1="85" x2="235" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="370" y1="85" x2="455" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="590" y1="85" x2="675" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="440" y="40" text-anchor="middle" fill="#f85149" font-size="13" font-weight="bold">一个服务慢 → 调用方线程全部阻塞等待 → 层层传递 → 整个链路崩溃</text>
+      <text x="440" y="170" text-anchor="middle" fill="#8b949e" font-size="12">防线：超时（快速失败）→ 限流（挡住过量请求）→ 熔断（停止调用故障服务）→ 降级（返回兜底数据）</text>
+    </svg>
+    <div class="cap">图 5-1：雪崩传递链与四道防线</div>
+  </div>
+
+  <h3>1.2 Sentinel 能干什么（五大能力）</h3>
+  <table>
+    <tr><th>能力</th><th>解决什么</th><th>例子</th></tr>
+    <tr><td>流量控制（限流）</td><td>把 QPS/并发线程数控制在阈值内</td><td>接口限 100 QPS，多了直接拒绝</td></tr>
+    <tr><td>熔断降级</td><td>下游不稳定时快速失败，不再调它</td><td>订单服务异常率 50%，熔断 10s</td></tr>
+    <tr><td>热点参数限流</td><td>对某个参数值单独限流</td><td>同一个商品 ID 秒杀限 10 QPS</td></tr>
+    <tr><td>系统保护</td><td>按系统负载（CPU/RT/线程）自适应保护</td><td>CPU 超 80% 自动限流</td></tr>
+    <tr><td>授权控制</td><td>黑白名单</td><td>内部接口只允许网关 IP 调用</td></tr>
+  </table>
+
+  <h3>1.3 限流 vs 熔断 vs 降级（先分清概念，面试必问）</h3>
+  <ul>
+    <li><b>限流（Flow Control）</b>：<b>进</b>的方向控流量——管住"来的请求太多"，超阈值直接拒绝。保护自己。</li>
+    <li><b>熔断（Circuit Breaking）</b>：<b>出</b>的方向停调用——下游不行了，主动切断调用，快速失败。保护下游、也保护自己不再被拖。</li>
+    <li><b>降级（Degradation）</b>：<b>降</b>服务的能力——返回兜底数据/走简化流程，保证核心功能可用。</li>
+  </ul>
+  <div class="tip"><b>一句话：</b>限流管"进来的量"，熔断管"出去的调用"，降级管"失败后怎么办"。三者配合才是完整的防雪崩体系。</div>
+</section>
+
+<!-- ==================== 2 ==================== -->
+<section id="s2">
+  <h2>2. 核心原理</h2>
+
+  <h3>2.1 核心模型：资源 + 规则</h3>
+  <div class="card">
+    <b>Sentinel 的哲学：资源定义与规则配置分离。</b><br>
+    <ul style="margin-top:8px;">
+      <li><b>资源（Resource）</b>：一切可以被保护的东西——接口、方法、一段代码。用字符串命名（如 "order:create"）。</li>
+      <li><b>规则（Rule）</b>：对资源施加的限制——限流规则、熔断规则、热点规则……可以随时动态修改。</li>
+    </ul>
+    先定义资源，再配规则；规则改了立即生效，资源不用改。<span class="muted">（对比 Hystrix：命令和规则强绑定，改规则要改代码——这是 Sentinel 的核心优势，见 Q6）</span>
+  </div>
+
+  <h3>2.2 Slot 责任链：一次请求被怎么"审判"</h3>
+  <div class="svgbox">
+    <svg width="880" height="170" viewBox="0 0 880 170">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <rect x="20" y="55" width="100" height="50" rx="8" fill="#1c2129" stroke="#58a6ff"/>
+      <text x="70" y="78" text-anchor="middle" fill="#e6edf3" font-size="11.5" font-weight="bold">进入资源</text>
+      <text x="70" y="96" text-anchor="middle" fill="#8b949e" font-size="9.5">SphU.entry()</text>
+      <rect x="150" y="55" width="110" height="50" rx="8" fill="#161b22" stroke="#8b949e"/>
+      <text x="205" y="74" text-anchor="middle" fill="#e6edf3" font-size="11">NodeSelectorSlot</text>
+      <text x="205" y="92" text-anchor="middle" fill="#8b949e" font-size="9.5">构建调用树</text>
+      <rect x="290" y="55" width="110" height="50" rx="8" fill="#161b22" stroke="#8b949e"/>
+      <text x="345" y="74" text-anchor="middle" fill="#e6edf3" font-size="11">ClusterBuilderSlot</text>
+      <text x="345" y="92" text-anchor="middle" fill="#8b949e" font-size="9.5">聚合统计节点</text>
+      <rect x="430" y="55" width="110" height="50" rx="8" fill="#161b22" stroke="#d29922"/>
+      <text x="485" y="74" text-anchor="middle" fill="#e6edf3" font-size="11">StatisticSlot</text>
+      <text x="485" y="92" text-anchor="middle" fill="#8b949e" font-size="9.5">实时指标统计</text>
+      <rect x="570" y="55" width="100" height="50" rx="8" fill="#161b22" stroke="#f85149"/>
+      <text x="620" y="74" text-anchor="middle" fill="#e6edf3" font-size="11">FlowSlot</text>
+      <text x="620" y="92" text-anchor="middle" fill="#8b949e" font-size="9.5">限流规则</text>
+      <rect x="700" y="55" width="100" height="50" rx="8" fill="#161b22" stroke="#bc8cff"/>
+      <text x="750" y="74" text-anchor="middle" fill="#e6edf3" font-size="11">DegradeSlot</text>
+      <text x="750" y="92" text-anchor="middle" fill="#8b949e" font-size="9.5">熔断规则</text>
+      <rect x="830" y="55" width="40" height="50" rx="8" fill="#161b22" stroke="#8b949e"/>
+      <text x="850" y="84" text-anchor="middle" fill="#e6edf3" font-size="10">…</text>
+      <line x1="120" y1="80" x2="145" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="260" y1="80" x2="285" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="400" y1="80" x2="425" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="540" y1="80" x2="565" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="670" y1="80" x2="695" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="800" y1="80" x2="825" y2="80" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="440" y="140" text-anchor="middle" fill="#8b949e" font-size="11.5">任何一个 Slot 判定"违规"（限流/熔断）→ 抛 BlockException → 走 blockHandler 兜底逻辑，不进入业务</text>
+    </svg>
+    <div class="cap">图 5-2：Sentinel 责任链（ProcessorSlotChain）—— 统计在前、规则判断在后</div>
+  </div>
+
+  <h3>2.3 限流算法：固定窗口 / 滑动窗口 / 漏桶 / 令牌桶（高频面试题）</h3>
+  <table>
+    <tr><th>算法</th><th>原理</th><th>优点</th><th>缺点</th><th>Sentinel 对应</th></tr>
+    <tr><td>固定窗口（计数器）</td><td>1 秒一个窗口，计数超阈值就拒绝，窗口结束清零</td><td>实现简单</td><td>临界问题：窗口边界处可突破 2 倍（0.9s 和 1.1s 各来 100 个都通过）</td><td>—（基础）</td></tr>
+    <tr><td>滑动窗口</td><td>把时间切细粒小格子，窗口随时间滑动，统计当前窗口内请求</td><td>解决临界问题，统计平滑</td><td>比固定窗口多一点内存</td><td><b>Sentinel 默认</b>（1s 分 2 格）</td></tr>
+    <tr><td>漏桶</td><td>请求进桶，底部匀速流出；桶满拒绝。流出速率恒定</td><td>流量绝对匀速（削峰填谷）</td><td>无法应对突发流量（突发也排队）</td><td>排队等待模式</td></tr>
+    <tr><td>令牌桶</td><td>桶里按速率放令牌，请求拿到令牌才放行；桶可积攒令牌</td><td>允许一定突发（积攒的令牌），平滑 + 弹性</td><td>实现略复杂</td><td>预热 WarmUp、网关限流（基于令牌桶）</td></tr>
+  </table>
+  <div class="warn"><b>必背结论：</b>Sentinel 默认用<b>滑动窗口</b>统计 QPS/线程数；<b>预热（WarmUp）</b>是令牌桶思想的变种（冷启动时缓慢放量，防止刚启动的服务被秒杀流量冲垮）；<b>排队等待</b>是漏桶思想的变种（恒定速率放行）。面试把这张表讲清楚就稳了。</div>
+
+  <h3>2.4 熔断降级的三种策略 + 三态转换（官方文档核实）</h3>
+  <div class="svgbox">
+    <svg width="880" height="190" viewBox="0 0 880 190">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <rect x="40" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="2"/>
+      <text x="110" y="85" text-anchor="middle" fill="#3fb950" font-size="14" font-weight="bold">CLOSED 关闭</text>
+      <text x="110" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">正常放行，统计指标</text>
+      <rect x="370" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="2"/>
+      <text x="440" y="85" text-anchor="middle" fill="#f85149" font-size="14" font-weight="bold">OPEN 打开</text>
+      <text x="440" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">直接拒绝，快速失败</text>
+      <rect x="700" y="55" width="140" height="70" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="2"/>
+      <text x="770" y="85" text-anchor="middle" fill="#d29922" font-size="14" font-weight="bold">HALF-OPEN 半开</text>
+      <text x="770" y="107" text-anchor="middle" fill="#8b949e" font-size="10.5">放少量试探请求</text>
+      <line x1="180" y1="80" x2="365" y2="80" stroke="#f85149" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="510" y1="80" x2="695" y2="80" stroke="#d29922" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="770" y1="55" x2="770" y2="20" stroke="#3fb950" stroke-width="1.5"/>
+      <line x1="770" y1="20" x2="110" y2="20" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <line x1="110" y1="20" x2="110" y2="50" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="440" y="32" fill="#8b949e" font-size="10.5">指标恢复正常 → 关闭</text>
+      <text x="440" y="155" fill="#8b949e" font-size="10.5">触发条件（任一）：慢调用比例 / 异常比例 / 异常数 超过阈值</text>
+      <text x="440" y="173" fill="#8b949e" font-size="10.5">半开期间请求成功 → 恢复 CLOSED；失败 → 回到 OPEN 重新计时</text>
+    </svg>
+    <div class="cap">图 5-3：熔断器三态：CLOSED（关）→ OPEN（开）→ HALF-OPEN（半开试探）→ 恢复/再熔断</div>
+  </div>
+  <table>
+    <tr><th>熔断策略</th><th>触发条件</th><th>适用场景</th></tr>
+    <tr><td><b>慢调用比例</b> SLOW_REQUEST_RATIO</td><td>统计时长内请求数 ≥ 最小请求数，且 RT &gt; 阈值的慢调用占比 ≥ 比例阈值</td><td>下游变慢（不报错但很慢）</td></tr>
+    <tr><td><b>异常比例</b> ERROR_RATIO</td><td>统计时长内请求数 ≥ 最小请求数，且异常占比 ≥ 比例阈值</td><td>下游频繁报错</td></tr>
+    <tr><td><b>异常数</b> ERROR_COUNT</td><td>统计时长内异常数量 ≥ 阈值（注意：是"近一分钟"累计，不要求最小请求数）</td><td>错误虽占比不高但绝对数量大</td></tr>
+  </table>
+  <p class="muted">熔断时长结束后进入 HALF-OPEN：放几个试探请求，成功则恢复 CLOSED，失败则重新 OPEN 并重新计时。核心目的：<b>给下游恢复的窗口</b>，避免一恢复就被打爆。</p>
+</section>
+
+<!-- ==================== 3 ==================== -->
+<section id="s3">
+  <h2>3. 核心概念表</h2>
+  <table>
+    <tr><th>概念</th><th>说明</th></tr>
+    <tr><td>资源 Resource</td><td>被保护对象，字符串命名（方法/接口/代码块）</td></tr>
+    <tr><td>规则 Rule</td><td>对资源的限制：FlowRule 限流 / DegradeRule 熔断 / SystemRule 系统 / AuthorityRule 授权 / ParamFlowRule 热点</td></tr>
+    <tr><td>BlockException</td><td>规则拦截异常（限流/熔断触发），用 blockHandler 处理</td></tr>
+    <tr><td>@SentinelResource</td><td>注解定义资源：value=资源名、blockHandler=规则拦截处理、fallback=业务异常处理</td></tr>
+    <tr><td>滑动窗口</td><td>默认统计模型，1s 分为 2 个 500ms 小格滑动统计</td></tr>
+    <tr><td>WarmUp 预热</td><td>冷启动缓慢放量（令牌桶思想），防止冲垮刚启动的服务</td></tr>
+    <tr><td>排队等待</td><td>恒定速率放行（漏桶思想），超过队列长度拒绝</td></tr>
+    <tr><td>熔断三态</td><td>CLOSED → OPEN → HALF-OPEN → CLOSED</td></tr>
+    <tr><td>规则持久化</td><td>拉模式（客户端定时拉）/ 推模式（控制台→Nacos→客户端监听）</td></tr>
+    <tr><td>控制台 Dashboard</td><td>可视化监控 + 在线配置规则（默认 8080）</td></tr>
+  </table>
+</section>
+
+<!-- ==================== 4 ==================== -->
+<section id="s4">
+  <h2>4. 代码示例</h2>
+  <p class="muted">技术栈：Spring Boot 2.7 + Spring Cloud Alibaba 2021.0.4.0 + Sentinel 1.8.6。</p>
+
+  <h3>4.1 pom.xml 依赖</h3>
+  <pre><code><span class="t">&lt;dependencies&gt;</span>
+    <span class="c">&lt;!-- Sentinel 核心（AOP 支持 @SentinelResource） --&gt;</span>
+    <span class="t">&lt;dependency&gt;</span>
+        <span class="t">&lt;groupId&gt;</span><span class="s">com.alibaba.cloud</span><span class="t">&lt;/groupId&gt;</span>
+        <span class="t">&lt;artifactId&gt;</span><span class="s">spring-cloud-starter-alibaba-sentinel</span><span class="t">&lt;/artifactId&gt;</span>
+    <span class="t">&lt;/dependency&gt;</span>
+    <span class="c">&lt;!-- 规则持久化到 Nacos（可选，推荐） --&gt;</span>
+    <span class="t">&lt;dependency&gt;</span>
+        <span class="t">&lt;groupId&gt;</span><span class="s">com.alibaba.csp</span><span class="t">&lt;/groupId&gt;</span>
+        <span class="t">&lt;artifactId&gt;</span><span class="s">sentinel-datasource-nacos</span><span class="t">&lt;/artifactId&gt;</span>
+    <span class="t">&lt;/dependency&gt;</span>
+<span class="t">&lt;/dependencies&gt;</span></code></pre>
+
+  <h3>4.2 application.yml：接入控制台 + Nacos 持久化规则</h3>
+  <pre><code><span class="k">spring</span>:
+  <span class="k">application</span>:
+    <span class="k">name</span>: <span class="s">order-service</span>
+  <span class="k">cloud</span>:
+    <span class="k">sentinel</span>:
+      <span class="k">transport</span>:
+        <span class="k">dashboard</span>: <span class="s">127.0.0.1:8080</span>   <span class="c"># Sentinel 控制台地址（可视化监控/配规则）</span>
+        <span class="k">port</span>: <span class="n">8719</span>               <span class="c"># 客户端与控制台通信端口（默认 8719）</span>
+      <span class="k">datasource</span>:                    <span class="c"># 规则持久化：从 Nacos 拉流控规则</span>
+        <span class="k">flow</span>:
+          <span class="k">nacos</span>:
+            <span class="k">server-addr</span>: <span class="s">127.0.0.1:8848</span>
+            <span class="k">dataId</span>: <span class="s">order-service-flow-rules</span>
+            <span class="k">groupId</span>: <span class="s">SENTINEL_GROUP</span>
+            <span class="k">rule-type</span>: <span class="s">flow</span>      <span class="c"># flow=限流规则；degrade=熔断规则</span>
+  <span class="k">main</span>:
+    <span class="k">allow-circular-references</span>: <span class="k">true</span>   <span class="c"># RuoYi 等老项目需要，避免循环依赖报错</span></code></pre>
+
+  <h3>4.3 用 @SentinelResource 定义资源 + 兜底处理（核心示例）</h3>
+  <pre><code><span class="a">@RestController</span>
+<span class="a">@RequestMapping</span>(<span class="s">"/api/order"</span>)
+<span class="k">public class</span> <span class="f">OrderController</span> {
+
+    <span class="c">// value: 资源名（控制台看到的名字）</span>
+    <span class="c">// blockHandler: 被限流/熔断时调用的方法（处理 BlockException，参数必须含 BlockException）</span>
+    <span class="c">// fallback: 业务异常时调用的方法（处理 Exception，参数必须含 Throwable）</span>
+    <span class="a">@SentinelResource</span>(value = <span class="s">"order:create"</span>,
+            blockHandler = <span class="s">"createOrderBlock"</span>,
+            fallback = <span class="s">"createOrderFallback"</span>)
+    <span class="a">@PostMapping</span>
+    <span class="k">public</span> Result&lt;OrderVO&gt; <span class="f">createOrder</span>(<span class="a">@RequestBody</span> CreateOrderReq req) {
+        <span class="c">// 模拟业务：可能抛异常（库存不足等）</span>
+        <span class="k">if</span> (req.getAmount() &gt; <span class="n">10000</span>) {
+            <span class="k">throw new</span> BusinessException(<span class="s">"单笔金额超限"</span>);
+        }
+        <span class="k">return</span> Result.success(orderService.create(req));
+    }
+
+    <span class="c">// 1. 限流/熔断兜底：返回提示"系统繁忙"</span>
+    <span class="k">public</span> Result&lt;OrderVO&gt; <span class="f">createOrderBlock</span>(CreateOrderReq req, BlockException e) {
+        <span class="k">return</span> Result.error(<span class="s">"系统繁忙，请稍后重试"</span>);
+    }
+
+    <span class="c">// 2. 业务异常兜底：返回业务错误信息</span>
+    <span class="k">public</span> Result&lt;OrderVO&gt; <span class="f">createOrderFallback</span>(CreateOrderReq req, Throwable t) {
+        <span class="k">return</span> Result.error(<span class="s">"下单失败："</span> + t.getMessage());
+    }
+}</code></pre>
+  <div class="warn"><b>三个易错点：</b>① blockHandler 和 fallback 的<b>方法签名必须和原方法一致</b>（参数一一对应），再分别追加 BlockException / Throwable；② blockHandler 处理的是<b>规则拦截</b>（限流熔断），fallback 处理的是<b>业务异常</b>，两者职责不同；③ 如果两者都触发，blockHandler 优先。方法必须写在<b>同类或指定类</b>（blockHandlerClass），且要求 static 或同类内。</div>
+
+  <h3>4.4 在 Nacos 里配一条限流规则（order-service-flow-rules）</h3>
+  <pre><code><span class="c"># Nacos 配置 dataId=order-service-flow-rules，group=SENTINEL_GROUP，格式 JSON</span>
+[
+  {
+    <span class="s">"resource"</span>: <span class="s">"order:create"</span>,        <span class="c"># 资源名（与 @SentinelResource value 一致）</span>
+    <span class="s">"limitApp"</span>: <span class="s">"default"</span>,             <span class="c"># 默认对所有来源生效</span>
+    <span class="s">"grade"</span>: <span class="n">1</span>,                        <span class="c"># 0=线程数，1=QPS</span>
+    <span class="s">"count"</span>: <span class="n">100</span>,                      <span class="c"># 阈值：100 QPS</span>
+    <span class="s">"strategy"</span>: <span class="n">0</span>,                     <span class="c"># 0=直接拒绝，1=预热，2=排队等待</span>
+    <span class="s">"controlBehavior"</span>: <span class="n">0</span>,
+    <span class="s">"clusterMode"</span>: <span class="k">false</span>
+  },
+  {
+    <span class="s">"resource"</span>: <span class="s">"order:create"</span>,
+    <span class="s">"grade"</span>: <span class="n">0</span>,                        <span class="c"># 熔断规则（degrade）里：0=慢调用比例</span>
+    <span class="s">"count"</span>: <span class="n">500</span>,                      <span class="c"># RT 阈值 500ms</span>
+    <span class="s">"timeWindow"</span>: <span class="n">10</span>,                   <span class="c"># 熔断时长 10s</span>
+    <span class="s">"minRequestAmount"</span>: <span class="n">5</span>,             <span class="c"># 最小请求数：5 个才开始统计</span>
+    <span class="s">"statIntervalMs"</span>: <span class="n">1000</span>,
+    <span class="s">"slowRatioThreshold"</span>: <span class="n">0.5</span>          <span class="c"># 慢调用比例阈值 50%</span>
+  }
+]</code></pre>
+
+  <h3>4.5 与 OpenFeign 集成：调用方熔断（防雪崩关键配置）</h3>
+  <pre><code><span class="c"># application.yml：开启 Feign 的 Sentinel 支持</span>
+<span class="k">feign</span>:
+  <span class="k">sentinel</span>:
+    <span class="k">enabled</span>: <span class="k">true</span>    <span class="c"># Feign 调用接入 Sentinel 熔断（替代 feign.circuitbreaker）</span></code></pre>
+  <pre><code><span class="c">// Feign 接口加降级工厂（用法同 04 篇，但底层由 Sentinel 兜底）</span>
+<span class="a">@FeignClient</span>(value = <span class="s">"stock-service"</span>, fallbackFactory = StockClientFallbackFactory.class)
+<span class="k">public interface</span> <span class="f">StockClient</span> {
+    <span class="a">@GetMapping</span>(<span class="s">"/stock/deduct"</span>)
+    Result&lt;Boolean&gt; <span class="f">deduct</span>(<span class="a">@RequestParam</span>(<span class="s">"skuId"</span>) Long skuId, <span class="a">@RequestParam</span>(<span class="s">"num"</span>) Integer num);
+}</code></pre>
+  <p class="muted">效果：stock-service 异常率触发熔断后，所有 Feign 调用快速返回降级结果，不阻塞线程、不拖垮自己。</p>
+</section>
+
+<!-- ==================== 5 ==================== -->
+<section id="s5">
+  <h2>5. 面试题与回答</h2>
+
+  <details class="qa" open>
+    <summary>Q1：Sentinel 的限流算法有哪些？为什么默认用滑动窗口？</summary>
+    <div class="ans">
+      <p><b>答：</b>四种：固定窗口（计数器）、滑动窗口、漏桶、令牌桶。<b>固定窗口</b>实现简单但有"临界问题"——比如限 100 QPS，0.9s 来 100 个、1.1s 再来 100 个，两个窗口各自都没超，但 0.2 秒内实际放过了 200 个。<b>滑动窗口</b>把时间切成细粒度小格子（Sentinel 默认 1s 分 2 格），窗口随时间滑动统计，避免了窗口边界的瞬时突破，且开销可控，所以 Sentinel 默认用它统计 QPS/线程数。<b>漏桶</b>匀速流出（削峰填谷），对应 Sentinel 的排队等待模式；<b>令牌桶</b>可积攒令牌允许突发，对应预热 WarmUp 和网关限流。面试能画出固定窗口的临界问题 + 说出各自对应关系就高分。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q2：Sentinel 熔断降级有哪几种策略？熔断后怎么恢复？</summary>
+    <div class="ans">
+      <p><b>答：</b>三种策略：<b>慢调用比例</b>（RT 超阈值的请求占比 ≥ 阈值，且请求数 ≥ 最小请求数）、<b>异常比例</b>（异常占比 ≥ 阈值，同样有最小请求数要求）、<b>异常数</b>（近一分钟累计异常数 ≥ 阈值，无最小请求数要求）。状态机三态：<b>CLOSED</b>（正常，统计指标）→ 触发条件 → <b>OPEN</b>（熔断，直接快速失败）→ 熔断时长结束后 → <b>HALF-OPEN</b>（半开：放少量试探请求）→ 试探成功回 CLOSED，失败回 OPEN 重新计时。半开的目的：给下游留恢复窗口，避免服务刚好转就被打爆。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q3：@SentinelResource 的 blockHandler 和 fallback 有什么区别？</summary>
+    <div class="ans">
+      <p><b>答：</b><b>blockHandler</b> 处理的是 <b>BlockException</b>——被规则拦截（限流、熔断触发）时的兜底，比如返回"系统繁忙"；<b>fallback</b> 处理的是<b>业务异常</b>——方法本身抛出的异常，比如"库存不足"。两者触发时机不同、异常类型不同。细节：① 方法签名要和原方法参数一致，blockHandler 方法末尾加 BlockException 参数，fallback 方法加 Throwable 参数；② 同时触发时 blockHandler 优先；③ 可以指定 blockHandlerClass 把处理类独立出去。实际项目中我通常两个都配：blockHandler 统一提示"请求过于频繁"，fallback 返回业务错误信息。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q4：限流、熔断、降级三者的区别？怎么配合防雪崩？</summary>
+    <div class="ans">
+      <p><b>答：</b>三者管的维度不同：<b>限流</b>管"进来的请求量"——QPS/并发超阈值直接拒绝，保护自己不被压垮；<b>熔断</b>管"出去的调用"——下游异常率/慢调用超阈值就切断调用，快速失败，不再往故障服务上打流量；<b>降级</b>管"失败之后怎么办"——返回兜底数据或走简化流程，保证核心链路可用。配合关系：流量大时先限流（挡住过量）；调用失败累积后熔断（切断病源）；熔断/失败时降级（兜底返回）。加上"超时"就是完整防线：<b>超时 + 限流 + 熔断 + 降级</b>，缺一个都可能雪崩。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q5：规则放在内存里重启就没了，怎么持久化？说两种模式。</summary>
+    <div class="ans">
+      <p><b>答：</b>Sentinel 规则默认放内存，重启丢失。两种持久化模式：<b>拉模式（pull）</b>：客户端定时从外部存储（本地文件/数据库）拉取规则，改动延迟高，多个实例不好同步；<b>推模式（push）</b>：控制台改规则 → 写入 Nacos（或 Apollo）→ 客户端通过 DataSource 监听配置变更自动更新到内存——<b>推荐推模式</b>，配置中心负责下发，应用只需声明 datasource（server-addr/dataId/rule-type）。项目里我就是把限流、熔断规则放 Nacos，控制台和 Nacos 都能改，改完秒级生效、重启不丢。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q6：Sentinel 和 Hystrix 有什么区别？</summary>
+    <div class="ans">
+      <p><b>答：</b>官方对比口径：Hystrix 侧重<b>隔离和熔断</b>（线程池/信号量隔离 + 熔断 + fallback），Sentinel 侧重<b>流量控制 + 熔断降级</b>。关键差异四点：① <b>规则与资源分离</b>：Sentinel 先定义资源再动态配规则，规则改了不用改代码；Hystrix 的命令和规则强绑定，改配置要动代码。② <b>统计模型</b>：Sentinel 用滑动窗口实时统计，内存占用小；Hystrix 用响应流统计。③ <b>控制台</b>：Sentinel 有可视化控制台（监控 + 在线配规则）；Hystrix 监控能力弱。④ <b>维护状态</b>：Hystrix 已停止维护（Netflix 2018 后不再更新），Sentinel 由阿里持续维护。结论：新项目用 Sentinel。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q7：热点参数限流是什么？用在什么场景？</summary>
+    <div class="ans">
+      <p><b>答：</b>热点参数限流（ParamFlowRule）：对<b>方法某个参数的值</b>单独计数限流。普通限流是整个接口 100 QPS；热点限流可以做到"同一个商品 ID 每秒最多 10 次"，而不同商品共享剩余配额。场景：秒杀、抢购、热词搜索——单个 key 流量集中打爆下游。实现：@SentinelResource 的方法参数加 @SentinelHotParam 注解（指定参数索引），在控制台/规则里配置参数值阈值。它比普通限流更精细，是"防单点热点"的关键手段。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q8：系统保护规则（SystemRule）是什么原理？</summary>
+    <div class="ans">
+      <p><b>答：</b>系统保护是<b>自适应限流</b>：不再盯着单个接口的 QPS，而是看<b>整机负载</b>——入口 QPS、CPU 使用率、平均 RT、线程数、入口流量。当系统负载超阈值（如 CPU &gt; 80%），Sentinel 根据系统当前容量<b>自动计算一个允许的入口 QPS</b> 并限流，把系统从"过载边缘"拉回来。原理上类似 TCP 的拥塞控制（负载高则降低准入）。适用：整体流量不可预估、只想"别把机器打崩"的场景，和单接口限流互补。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q9：你项目里用 Sentinel 做过什么？说具体场景。</summary>
+    <div class="ans">
+      <p><b>答：</b>项目里三处：① <b>网关层限流</b>：对下单接口按 IP 限流（基于网关 + Sentinel 网关适配），防刷单；② <b>下单接口</b>：@SentinelResource 定义资源，配置 QPS 限流 + 慢调用熔断（RT 超 500ms 比例 50% 熔断 10s），blockHandler 返回"系统繁忙"；③ <b>Feign 调用库存服务</b>：开启 feign.sentinel.enabled，配降级工厂，库存服务异常时不阻塞下单主流程。规则通过 Nacos 持久化，控制台观察实时 QPS 和异常曲线。面试这样讲：有资源定义、有规则类型、有持久化、有降级效果，闭环完整。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q10：预热（WarmUp）是什么？为什么需要？</summary>
+    <div class="ans">
+      <p><b>答：</b>预热（WarmUp）是限流的<b>冷启动模式</b>：服务刚启动时，JIT 还没编译、缓存还没热、数据库连接池还在建立，此时如果直接放满流量，服务容易被瞬间打垮。WarmUp 的做法：限流阈值从<b>低值（如 1/3）逐步提升到设定值</b>（预热时间默认 10 秒），给服务"热身"的时间。原理基于令牌桶的变种：冷启动时桶容量小、放令牌慢，随时间逐渐恢复满速。典型场景：应用发布重启后立刻有大流量（电商大促发布、秒杀开始瞬间）。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ==================== 6 ==================== -->
+<section id="s6">
+  <h2>6. 小结与口诀</h2>
+  <div class="card">
+    <b>一句话定位：</b>Sentinel = 防雪崩的流量防卫兵：限流管"进"，熔断管"出"，降级管"败后"。<br><br>
+    <b>口诀：</b>"<b>资源规则两分离，滑动窗口来统计；慢调异常三策略，关开半开三态转；热点参数防秒杀，规则持久走 Nacos。</b>"<br><br>
+    <b>三大坑：</b>① blockHandler 只处理 BlockException，业务异常要 fallback；② 规则默认内存态，重启即失，必须接 Nacos 持久化；③ 和 Feign 叠用时注意超时/熔断优先级（Sentinel 熔断可能先于 Feign 超时触发，见 04 篇 Q10）。<br><br>
+    <b>第一批完结：</b>网关 → 注册中心 → 配置中心 → 服务调用 → 熔断限流，<b>微服务"骨架五件套"已闭环</b>。下一篇开始第二批：<b>分布式事务 Seata</b>。
+  </div>
+</section>
+
+<footer>
+  微服务组件文档系列 · 05/16 · 技术栈 Spring Boot 2.7 + Spring Cloud Alibaba 2021.0.4.0 + Sentinel 1.8.6<br>
+  知识点已核对官方文档（sentinelguard.io）与社区资料（2026-09）· 生成于 2026-09-19
+</footer>
+
+</div>
+</body>
+</html>

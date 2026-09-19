@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <text x="120" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">客户端</text>
+  <text x="440" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">网关（鉴权入口）</text>
+  <text x="730" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">认证服务 / 业务服务</text>
+  <line x1="40" y1="42" x2="840" y2="42" stroke="#30363d" stroke-width="1.5"/>
+  <!-- 登录 -->
+  <line x1="140" y1="65" x2="420" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="280" y="58" fill="#8b949e" font-size="10.5">① POST /login 用户名密码</text>
+  <line x1="460" y1="65" x2="710" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="580" y="58" fill="#8b949e" font-size="10.5">② 校验密码，生成 JWT（含过期时间）</text>
+  <line x1="710" y1="85" x2="140" y2="85" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="420" y="98" fill="#3fb950" font-size="10.5">③ 返回 token（客户端保存）</text>
+  <!-- 请求 -->
+  <line x1="140" y1="115" x2="420" y2="115" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="250" y="108" fill="#8b949e" font-size="10.5">④ 业务请求：Authorization: Bearer &lt;token&gt;</text>
+  <!-- 网关验签 -->
+  <rect x="330" y="140" width="220" height="70" rx="8" fill="rgba(216,150,34,.07)" stroke="#d29922"/>
+  <text x="440" y="163" text-anchor="middle" fill="#d29922" font-size="12.5" font-weight="bold">⑤ 网关 GlobalFilter 验签</text>
+  <text x="440" y="183" text-anchor="middle" fill="#e6edf3" font-size="10.5">用 secret 重算签名比对</text>
+  <text x="440" y="199" text-anchor="middle" fill="#e6edf3" font-size="10.5">检查 exp 是否过期 → 解析 userId</text>
+  <line x1="140" y1="135" x2="140" y2="195" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="140" y1="195" x2="325" y2="175" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="550" y1="175" x2="710" y2="175" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="630" y="168" fill="#3fb950" font-size="10.5">⑥ 透传 userId（请求头）</text>
+  <line x1="710" y1="190" x2="140" y2="220" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="420" y="213" fill="#3fb950" font-size="10.5">⑦ 业务服务执行，返回（服务不再关心鉴权，只认 userId 头）</text>
+  <!-- 失败 -->
+  <line x1="440" y1="230" x2="440" y2="262" stroke="#f85149" stroke-width="2"/>
+  <text x="445" y="255" fill="#f85149" font-size="10.5">验签失败 / 过期 → 返回 401，客户端跳登录页</text>
+  <text x="440" y="300" text-anchor="middle" fill="#8b949e" font-size="11">核心收益：服务**无状态**——不查 Session、不查库，验签通过即信任，天然支持多实例水平扩展</text>
+</svg>

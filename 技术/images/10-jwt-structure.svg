@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="280" viewBox="0 0 880 280">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- JWT 整体 -->
+  <text x="440" y="30" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">JWT = Header . Payload . Signature（Base64Url 编码，同行的点分隔）</text>
+  <!-- Header -->
+  <rect x="30" y="55" width="240" height="120" rx="8" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="150" y="80" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">Header 头部</text>
+  <text x="150" y="105" text-anchor="middle" fill="#e6edf3" font-size="11">{"alg":"HS256",</text>
+  <text x="150" y="123" text-anchor="middle" fill="#e6edf3" font-size="11">"typ":"JWT"}</text>
+  <text x="150" y="150" text-anchor="middle" fill="#8b949e" font-size="10.5">算法 + 类型</text>
+  <text x="150" y="168" text-anchor="middle" fill="#8b949e" font-size="10.5">（明文，只是 base64）</text>
+  <!-- 点 -->
+  <text x="295" y="120" text-anchor="middle" fill="#d29922" font-size="24" font-weight="bold">·</text>
+  <!-- Payload -->
+  <rect x="320" y="55" width="240" height="120" rx="8" fill="rgba(216,150,34,.08)" stroke="#d29922" stroke-width="1.5"/>
+  <text x="440" y="80" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">Payload 载荷</text>
+  <text x="440" y="100" text-anchor="middle" fill="#e6edf3" font-size="10.5">{"sub":"userId:1001",</text>
+  <text x="440" y="116" text-anchor="middle" fill="#e6edf3" font-size="10.5">"name":"张三",</text>
+  <text x="440" y="132" text-anchor="middle" fill="#e6edf3" font-size="10.5">"exp":1699999999}</text>
+  <text x="440" y="152" text-anchor="middle" fill="#8b949e" font-size="10.5">自定义 claims + 标准字段</text>
+  <text x="440" y="168" text-anchor="middle" fill="#8b949e" font-size="10.5">（exp 过期时间 iat 签发时间）</text>
+  <!-- 点 -->
+  <text x="585" y="120" text-anchor="middle" fill="#d29922" font-size="24" font-weight="bold">·</text>
+  <!-- Signature -->
+  <rect x="610" y="55" width="240" height="120" rx="8" fill="rgba(63,185,80,.08)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="730" y="80" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">Signature 签名</text>
+  <text x="730" y="103" text-anchor="middle" fill="#e6edf3" font-size="10.5">HMACSHA256(</text>
+  <text x="730" y="119" text-anchor="middle" fill="#e6edf3" font-size="10.5">base64(Header).base64(Payload),</text>
+  <text x="730" y="135" text-anchor="middle" fill="#e6edf3" font-size="10.5">secret)</text>
+  <text x="730" y="155" text-anchor="middle" fill="#3fb950" font-size="10.5">用 Header 里的算法 + 密钥生成</text>
+  <text x="730" y="170" text-anchor="middle" fill="#3fb950" font-size="10.5">防篡改的关键</text>
+  <!-- 底部 -->
+  <text x="440" y="215" text-anchor="middle" fill="#f85149" font-size="11.5">⚠️ Payload 只是 Base64 编码不是加密！敏感信息（密码）绝不能放 JWT 里</text>
+  <text x="440" y="240" text-anchor="middle" fill="#8b949e" font-size="11.5">验签：服务端用同样的 Header + Payload + secret 重新算一遍签名，和收到的 Signature 比对</text>
+  <text x="440" y="262" text-anchor="middle" fill="#3fb950" font-size="11">一致 = 内容没被改过（因为客户端没有 secret，改任何字段都算不出合法签名）</text>
+</svg>

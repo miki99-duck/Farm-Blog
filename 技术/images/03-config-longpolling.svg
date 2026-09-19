@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="230" viewBox="0 0 880 230">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <!-- 应用 -->
+      <rect x="30" y="60" width="150" height="110" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="105" y="90" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">客户端（应用）</text>
+      <text x="105" y="112" text-anchor="middle" fill="#8b949e" font-size="10.5">循环发 HTTP 请求</text>
+      <text x="105" y="128" text-anchor="middle" fill="#8b949e" font-size="10.5">间隔 ≈ 30s（可配置）</text>
+      <text x="105" y="148" text-anchor="middle" fill="#8b949e" font-size="10.5">请求里带本地 MD5</text>
+      <!-- 服务端 -->
+      <rect x="560" y="60" width="240" height="110" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="680" y="90" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">Nacos Server</text>
+      <text x="680" y="112" text-anchor="middle" fill="#8b949e" font-size="10.5">比较"请求里的 MD5"与"当前 MD5"</text>
+      <text x="680" y="128" text-anchor="middle" fill="#3fb950" font-size="10.5">不同 → 立即返回新配置</text>
+      <text x="680" y="144" text-anchor="middle" fill="#8b949e" font-size="10.5">相同 → 请求挂起（不急着响应）</text>
+      <text x="680" y="160" text-anchor="middle" fill="#8b949e" font-size="10.5">挂起期间配置变了 → 立刻唤醒返回</text>
+      <!-- 箭头 -->
+      <line x1="180" y1="90" x2="555" y2="90" stroke="#3fb950" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="555" y1="140" x2="180" y2="140" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="370" y="82" fill="#3fb950" font-size="11">请求（MD5）</text>
+      <text x="370" y="156" fill="#58a6ff" font-size="11">响应（新配置 or 空）</text>
+      <text x="370" y="180" fill="#8b949e" font-size="11">客户端收到响应后立即发起下一次请求（循环）</text>
+    </svg>

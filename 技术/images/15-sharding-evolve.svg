@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- 阶段 1 -->
+  <text x="150" y="30" text-anchor="middle" fill="#8b949e" font-size="12">① 单库单表</text>
+  <rect x="60" y="45" width="180" height="90" rx="8" fill="#161b22" stroke="#8b949e"/>
+  <text x="150" y="70" text-anchor="middle" fill="#e6edf3" font-size="11.5">MySQL 单库</text>
+  <text x="150" y="92" text-anchor="middle" fill="#e6edf3" font-size="10.5">order 表 1 亿行</text>
+  <text x="150" y="110" text-anchor="middle" fill="#8b949e" font-size="9.5">慢查询、索引失效</text>
+  <text x="150" y="126" text-anchor="middle" fill="#f85149" font-size="9.5">瓶颈：单表/单库/单机</text>
+  <!-- 箭头 -->
+  <line x1="255" y1="90" x2="340" y2="90" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- 阶段 2 -->
+  <text x="440" y="30" text-anchor="middle" fill="#8b949e" font-size="12">② 垂直拆分（按字段拆）</text>
+  <rect x="360" y="45" width="85" height="90" rx="8" fill="rgba(63,185,80,.06)" stroke="#3fb950"/>
+  <text x="402" y="70" text-anchor="middle" fill="#e6edf3" font-size="9.5">order 主表</text>
+  <text x="402" y="88" text-anchor="middle" fill="#8b949e" font-size="8.5">常用字段</text>
+  <text x="402" y="104" text-anchor="middle" fill="#8b949e" font-size="8.5">窄表</text>
+  <rect x="455" y="45" width="85" height="90" rx="8" fill="rgba(216,150,34,.06)" stroke="#d29922"/>
+  <text x="497" y="70" text-anchor="middle" fill="#e6edf3" font-size="9.5">order_ext 扩展表</text>
+  <text x="497" y="88" text-anchor="middle" fill="#8b949e" font-size="8.5">大字段/详情</text>
+  <rect x="360" y="150" width="180" height="70" rx="8" fill="rgba(88,166,255,.06)" stroke="#58a6ff"/>
+  <text x="450" y="175" text-anchor="middle" fill="#58a6ff" font-size="11">按业务拆库（库2-1）</text>
+  <text x="450" y="195" text-anchor="middle" fill="#8b949e" font-size="9.5">订单库 / 用户库 / 商品库</text>
+  <text x="450" y="212" text-anchor="middle" fill="#8b949e" font-size="9.5">业务隔离、互不影响</text>
+  <!-- 箭头 -->
+  <line x1="555" y1="90" x2="640" y2="90" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- 阶段 3 -->
+  <text x="740" y="30" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">③ 水平拆分（分片）</text>
+  <rect x="680" y="45" width="120" height="40" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="740" y="60" text-anchor="middle" fill="#e6edf3" font-size="10.5">order_0</text>
+  <text x="740" y="76" text-anchor="middle" fill="#8b949e" font-size="9">user_id % 4 = 0</text>
+  <rect x="680" y="95" width="120" height="40" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="740" y="110" text-anchor="middle" fill="#e6edf3" font-size="10.5">order_1</text>
+  <text x="740" y="126" text-anchor="middle" fill="#8b949e" font-size="9">user_id % 4 = 1</text>
+  <rect x="680" y="145" width="120" height="40" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="740" y="160" text-anchor="middle" fill="#e6edf3" font-size="10.5">order_2</text>
+  <text x="740" y="176" text-anchor="middle" fill="#8b949e" font-size="9">user_id % 4 = 2</text>
+  <rect x="680" y="195" width="120" height="40" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="740" y="210" text-anchor="middle" fill="#e6edf3" font-size="10.5">order_3</text>
+  <text x="740" y="226" text-anchor="middle" fill="#8b949e" font-size="9">user_id % 4 = 3</text>
+  <!-- 底部 -->
+  <text x="440" y="280" text-anchor="middle" fill="#8b949e" font-size="11">分库分表顺序：先垂直（按业务/字段拆）→ 数据仍大再水平（按分片键取模/范围拆成 N 片）</text>
+  <text x="440" y="305" text-anchor="middle" fill="#d29922" font-size="11">ShardingSphere 把"拆后路由 SQL"透明化：业务还是写 order 表，框架路由到 order_0~3</text>
+</svg>

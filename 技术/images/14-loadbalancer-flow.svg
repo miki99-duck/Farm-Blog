@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <text x="100" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">业务调用（Feign/RestTemplate）</text>
+  <text x="440" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">Spring Cloud LoadBalancer</text>
+  <text x="760" y="28" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">注册中心 Nacos</text>
+  <line x1="40" y1="42" x2="840" y2="42" stroke="#30363d" stroke-width="1.5"/>
+  <!-- 流程 -->
+  <line x1="120" y1="65" x2="420" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="260" y="58" fill="#8b949e" font-size="10.5">① 调 http://order-service/api/xxx（服务名）</text>
+  <line x1="460" y1="65" x2="740" y2="65" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="580" y="58" fill="#8b949e" font-size="10.5">② 拿服务名查实例列表</text>
+  <line x1="740" y1="85" x2="460" y2="85" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="600" y="98" fill="#3fb950" font-size="10.5">③ 返回实例列表（IP:端口 + 元数据/权重）</text>
+  <!-- 策略 -->
+  <rect x="300" y="115" width="280" height="110" rx="10" fill="rgba(216,150,34,.06)" stroke="#d29922"/>
+  <text x="440" y="140" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">④ 策略选一个实例</text>
+  <text x="330" y="163" fill="#e6edf3" font-size="10.5">默认：轮询 RoundRobin</text>
+  <text x="330" y="183" fill="#e6edf3" font-size="10.5">可扩展：随机 / Nacos 权重 / 响应时间</text>
+  <text x="330" y="203" fill="#e6edf3" font-size="10.5">/ 一致性哈希（灰度打标）</text>
+  <text x="330" y="218" fill="#8b949e" font-size="9.5">自定义实现 ReactorServiceInstanceLoadBalancer</text>
+  <!-- 选择结果 -->
+  <line x1="440" y1="225" x2="440" y2="245" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="440" y1="252" x2="700" y2="252" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="560" y="245" fill="#8b949e" font-size="10.5">⑤ 服务名替换为具体 IP → 发请求</text>
+  <text x="300" y="285" text-anchor="middle" fill="#8b949e" font-size="11">实例列表有缓存（默认 30s 刷新，Nacos 会推送变更）；选完直接 HTTP 调用，不经过任何中间节点</text>
+</svg>

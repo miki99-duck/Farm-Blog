@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- TC 独立部署 -->
+  <rect x="320" y="30" width="240" height="70" rx="10" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="2"/>
+  <text x="440" y="58" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">TC 事务协调器（独立部署）</text>
+  <text x="440" y="80" text-anchor="middle" fill="#8b949e" font-size="11">Transaction Coordinator：管理全局事务状态、驱动二阶段</text>
+  <!-- TM -->
+  <rect x="60" y="150" width="220" height="80" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="170" y="180" text-anchor="middle" fill="#3fb950" font-size="13.5" font-weight="bold">TM 事务管理器（发起方）</text>
+  <text x="170" y="202" text-anchor="middle" fill="#e6edf3" font-size="11">Transaction Manager</text>
+  <text x="170" y="220" text-anchor="middle" fill="#8b949e" font-size="10.5">@GlobalTransactional 开启/提交/回滚</text>
+  <!-- RM 服务A -->
+  <rect x="620" y="130" width="220" height="70" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+  <text x="730" y="158" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">RM 资源管理器（服务 A）</text>
+  <text x="730" y="178" text-anchor="middle" fill="#8b949e" font-size="10.5">Resource Manager：执行分支事务</text>
+  <text x="730" y="194" text-anchor="middle" fill="#8b949e" font-size="10.5">写业务 SQL + undo_log（AT 模式）</text>
+  <!-- RM 服务B -->
+  <rect x="620" y="220" width="220" height="70" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+  <text x="730" y="248" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">RM 资源管理器（服务 B）</text>
+  <text x="730" y="268" text-anchor="middle" fill="#8b949e" font-size="10.5">Resource Manager：执行分支事务</text>
+  <text x="730" y="284" text-anchor="middle" fill="#8b949e" font-size="10.5">写业务 SQL + undo_log（AT 模式）</text>
+  <!-- 箭头 TM-TC -->
+  <line x1="250" y1="180" x2="400" y2="105" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="290" y="150" fill="#3fb950" font-size="11">① 开启全局事务 → 拿 XID</text>
+  <!-- 箭头 TC-RM -->
+  <line x1="560" y1="80" x2="710" y2="125" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="600" y="100" fill="#58a6ff" font-size="11">② 注册分支事务</text>
+  <line x1="560" y1="95" x2="710" y2="220" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="600" y="160" fill="#58a6ff" font-size="11">③ 二阶段提交/回滚</text>
+  <line x1="730" y1="200" x2="730" y2="216" stroke="#d29922" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- 底部说明 -->
+  <text x="440" y="315" text-anchor="middle" fill="#8b949e" font-size="11.5">XID（全局事务 ID）通过调用链传递（Feign/RestTemplate 自动透传）</text>
+</svg>

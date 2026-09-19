@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微服务组件 04 · 服务调用 OpenFeign</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --border:#30363d;
+    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
+    --orange:#d29922; --red:#f85149; --purple:#bc8cff; --cyan:#39c5cf;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;line-height:1.75;font-size:15px;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px;}
+  header.hero{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:28px;}
+  .tag{display:inline-block;background:rgba(88,166,255,.12);color:var(--accent);border:1px solid rgba(88,166,255,.35);border-radius:4px;padding:2px 10px;font-size:12px;margin-bottom:12px;}
+  h1{font-size:28px;margin-bottom:8px;}
+  .sub{color:var(--muted);font-size:14px;}
+  nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:28px;}
+  nav.toc b{color:var(--accent);font-size:13px;}
+  nav.toc a{color:var(--muted);text-decoration:none;font-size:13px;margin-right:14px;white-space:nowrap;}
+  nav.toc a:hover{color:var(--accent);}
+  section{margin-bottom:40px;}
+  h2{font-size:21px;border-left:4px solid var(--accent);padding-left:12px;margin-bottom:16px;}
+  h3{font-size:16px;color:var(--accent);margin:18px 0 10px;}
+  p{margin-bottom:10px;}
+  .muted{color:var(--muted);}
+  ul,ol{margin:0 0 12px 22px;}
+  li{margin-bottom:5px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px;}
+  .warn{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.35);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .warn b{color:var(--red);}
+  .tip{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.3);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .tip b{color:var(--green);}
+  pre{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,"Courier New",monospace;font-size:13px;line-height:1.6;margin:10px 0;}
+  code{font-family:Consolas,"Courier New",monospace;}
+  pre .k{color:var(--purple);} pre .s{color:var(--green);} pre .c{color:var(--muted);}
+  pre .n{color:var(--orange);} pre .t{color:var(--cyan);} pre .a{color:var(--red);} pre .f{color:var(--accent);}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th{background:var(--panel2);color:var(--accent);text-align:left;padding:8px 12px;border:1px solid var(--border);}
+  td{padding:8px 12px;border:1px solid var(--border);}
+  .qa{background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden;}
+  .qa summary{cursor:pointer;padding:14px 18px;font-weight:600;color:var(--accent);list-style:none;position:relative;}
+  .qa summary::before{content:"▸ ";color:var(--orange);}
+  .qa details[open] summary::before{content:"▾ ";}
+  .qa .ans{padding:0 18px 16px;border-top:1px dashed var(--border);}
+  .qa .ans p{padding-top:12px;}
+  .qa .ans b{color:var(--green);}
+  .svgbox{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;margin:14px 0;text-align:center;}
+  .svgbox .cap{color:var(--muted);font-size:12.5px;margin-top:8px;}
+  svg text{font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .pill{display:inline-block;background:rgba(188,140,255,.12);color:var(--purple);border:1px solid rgba(188,140,255,.3);border-radius:20px;padding:1px 10px;font-size:12px;margin-right:6px;}
+  footer{border-top:1px solid var(--border);padding-top:16px;color:var(--muted);font-size:12.5px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">微服务组件 · 第 04 篇</span>
+  <h1>服务调用 OpenFeign</h1>
+  <p class="sub">声明式 HTTP 客户端：定义一个接口 + 注解，Spring 自动生成实现，像调本地方法一样调远程服务。底层是 JDK 动态代理。</p>
+  <p style="margin-top:10px;"><span class="pill">Spring Cloud OpenFeign 3.1</span><span class="pill">JDK 动态代理</span><span class="pill">LoadBalancer</span><span class="pill">声明式调用</span></p>
+</header>
+
+<nav class="toc">
+  <b>目录：</b>
+  <a href="#s1">1. 是什么 / 解决什么问题</a>
+  <a href="#s2">2. 核心原理</a>
+  <a href="#s3">3. 核心概念表</a>
+  <a href="#s4">4. 代码示例</a>
+  <a href="#s5">5. 面试题与回答</a>
+  <a href="#s6">6. 小结与口诀</a>
+</nav>
+
+<!-- ==================== 1 ==================== -->
+<section id="s1">
+  <h2>1. 是什么 / 解决什么问题</h2>
+  <p><b>OpenFeign</b> 是 Spring Cloud 生态的<b>声明式 HTTP 客户端</b>。你只需要写一个接口，用注解声明"要调谁、什么路径、什么参数"，Feign 在启动时自动生成实现，运行时像调用本地方法一样完成远程调用。</p>
+
+  <h3>1.1 没有 Feign 会怎样？（痛点引入）</h3>
+  <ul>
+    <li><b>RestTemplate 样板代码多</b>：URL 拼接、参数组装、异常处理、响应解析，每个调用写一遍。</li>
+    <li><b>服务地址硬编码</b>：调用方直接写 IP，服务迁移/扩容就要改代码。</li>
+    <li><b>无负载均衡</b>：多副本服务只会打第一个实例。</li>
+    <li><b>无统一拦截能力</b>：传 token、记录日志、统一降级，每个调用点各写各的。</li>
+  </ul>
+
+  <h3>1.2 Feign 解决什么</h3>
+  <div class="card">
+    ① <b>声明式调用</b>：接口 + 注解，零模板代码。<br>
+    ② <b>服务名寻址</b>：写 <code>name = "order-service"</code>，配合注册中心 + LoadBalancer 自动选实例。<br>
+    ③ <b>统一拦截</b>：RequestInterceptor 一处配置，所有 Feign 请求都带上（比如透传 JWT）。<br>
+    ④ <b>超时/日志/降级</b>：配置化控制，fallback 支持服务不可用时的兜底。<br>
+    ⑤ <b>契约与复用</b>：Feign 接口可以下沉到公共模块，多个调用方复用。
+  </div>
+
+  <h3>1.3 Feign / RestTemplate / WebClient 对比</h3>
+  <table>
+    <tr><th>对比项</th><th>RestTemplate</th><th>OpenFeign</th><th>WebClient</th></tr>
+    <tr><td>风格</td><td>命令式</td><td>声明式（接口）</td><td>响应式（Mono/Flux）</td></tr>
+    <tr><td>代码量</td><td>多（样板代码）</td><td>最少</td><td>中等</td></tr>
+    <tr><td>负载均衡</td><td>@LoadBalanced 支持</td><td>内置集成</td><td>支持</td></tr>
+    <tr><td>非阻塞</td><td>阻塞</td><td>阻塞（默认）</td><td>非阻塞</td></tr>
+    <tr><td>Spring Cloud 默认</td><td>可用</td><td>主推（服务间调用）</td><td>WebFlux 栈用</td></tr>
+  </table>
+  <div class="tip"><b>结论：</b>Spring Cloud 项目服务间调用默认用 Feign（声明式 + 生态好）；性能极致或网关/响应式场景用 WebClient。RestTemplate 在新项目中逐渐被替代。</div>
+</section>
+
+<!-- ==================== 2 ==================== -->
+<section id="s2">
+  <h2>2. 核心原理</h2>
+
+  <h3>2.1 一次 Feign 调用的完整链路</h3>
+  <div class="svgbox">
+    <svg width="880" height="330" viewBox="0 0 880 330">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <text x="440" y="24" text-anchor="middle" fill="#8b949e" font-size="12">启动时：@EnableFeignClients 扫描 → FeignClientsRegistrar 注册 → FeignClientFactoryBean 为每个 @FeignClient 接口生成 JDK 动态代理</text>
+
+      <rect x="20" y="50" width="150" height="56" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="95" y="76" text-anchor="middle" fill="#e6edf3" font-size="12.5" font-weight="bold">业务代码调用</text>
+      <text x="95" y="94" text-anchor="middle" fill="#8b949e" font-size="10.5">orderClient.getOrder(1L)</text>
+
+      <rect x="210" y="50" width="170" height="56" rx="8" fill="rgba(188,140,255,.08)" stroke="#bc8cff" stroke-width="1.5"/>
+      <text x="295" y="76" text-anchor="middle" fill="#bc8cff" font-size="12.5" font-weight="bold">JDK 动态代理</text>
+      <text x="295" y="94" text-anchor="middle" fill="#8b949e" font-size="10.5">InvocationHandler 拦截</text>
+
+      <rect x="420" y="50" width="170" height="56" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+      <text x="505" y="76" text-anchor="middle" fill="#d29922" font-size="12.5" font-weight="bold">RequestTemplate</text>
+      <text x="505" y="94" text-anchor="middle" fill="#8b949e" font-size="10.5">方法注解 → HTTP 请求模型</text>
+
+      <rect x="210" y="140" width="380" height="120" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="400" y="164" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">执行链路（SynchronousMethodHandler）</text>
+      <text x="240" y="188" fill="#e6edf3" font-size="11.5">① 拦截器 RequestInterceptor（透传 token）</text>
+      <text x="240" y="208" fill="#e6edf3" font-size="11.5">② 编码器 Encoder（对象 → 请求体 JSON）</text>
+      <text x="240" y="228" fill="#e6edf3" font-size="11.5">③ Client 发送：服务名 → LoadBalancer 选实例 → 发 HTTP</text>
+      <text x="240" y="248" fill="#e6edf3" font-size="11.5">④ 解码器 Decoder（响应 JSON → 对象）</text>
+
+      <rect x="660" y="140" width="190" height="66" rx="8" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="755" y="164" text-anchor="middle" fill="#58a6ff" font-size="12.5" font-weight="bold">Nacos + LoadBalancer</text>
+      <text x="755" y="184" text-anchor="middle" fill="#8b949e" font-size="10.5">order-service → 实例列表</text>
+      <text x="755" y="200" text-anchor="middle" fill="#8b949e" font-size="10.5">轮询/随机选一个</text>
+
+      <rect x="660" y="230" width="190" height="56" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+      <text x="755" y="256" text-anchor="middle" fill="#d29922" font-size="12.5" font-weight="bold">order-service 实例</text>
+      <text x="755" y="274" text-anchor="middle" fill="#8b949e" font-size="10.5">192.168.1.10:8081/order/1</text>
+
+      <line x1="170" y1="78" x2="205" y2="78" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="380" y1="78" x2="415" y2="78" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="505" y1="106" x2="505" y2="135" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="595" y1="170" x2="655" y2="170" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="755" y1="206" x2="755" y2="225" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="400" y1="260" x2="400" y2="290" stroke="#3fb950" stroke-width="2"/>
+      <line x1="400" y1="290" x2="755" y2="290" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <line x1="755" y1="290" x2="755" y2="286" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="560" y="284" fill="#3fb950" font-size="10.5">响应原路返回（解码器 → 代理 → 业务代码）</text>
+    </svg>
+    <div class="cap">图 4-1：Feign 调用链路（核心：接口 → JDK 动态代理 → RequestTemplate → 负载均衡 → HTTP）</div>
+  </div>
+
+  <h3>2.2 动态代理是怎么生成的？（原理拆解）</h3>
+  <ol>
+    <li><code>@EnableFeignClients</code> 导入 <code>FeignClientsRegistrar</code>，启动时扫描 @FeignClient 注解的接口。</li>
+    <li>为每个接口注册一个 <code>FeignClientFactoryBean</code>（FactoryBean：返回的不是自己，而是目标对象）。</li>
+    <li>创建时用 <code>Proxy.newProxyInstance</code> 生成 <b>JDK 动态代理</b>，处理器是 <code>FeignInvocationHandler</code>。</li>
+    <li>每次调用接口方法 → 代理拦截 → 根据方法上的 @GetMapping/@RequestBody 等注解构造 <code>RequestTemplate</code>（含路径、参数、请求体）。</li>
+    <li>交给 <code>Client</code> 真正发 HTTP：Spring Cloud 里 Client 集成 <code>LoadBalancerFeignClient</code>，先按服务名选实例，再发请求。</li>
+    <li>响应由 <code>Decoder</code> 反序列化成接口声明的返回类型。</li>
+  </ol>
+  <div class="warn"><b>面试记忆点：</b>Feign 接口<b>没有实现类</b>，调用全靠动态代理转发。"接口加注解"是骗过编译器的，运行时代理把方法调用翻译成 HTTP 请求。</div>
+
+  <h3>2.3 关键组件</h3>
+  <table>
+    <tr><th>组件</th><th>作用</th></tr>
+    <tr><td>@EnableFeignClients</td><td>开启 Feign 扫描（启动类上加）</td></tr>
+    <tr><td>@FeignClient</td><td>声明远程接口：name=服务名、url=直连地址、fallback=降级类</td></tr>
+    <tr><td>FeignClientFactoryBean</td><td>为接口生成代理的工厂 Bean</td></tr>
+    <tr><td>RequestTemplate</td><td>方法调用翻译成的 HTTP 请求模型</td></tr>
+    <tr><td>Encoder / Decoder</td><td>请求体编码 / 响应体解码（默认 JSON）</td></tr>
+    <tr><td>RequestInterceptor</td><td>拦截所有 Feign 请求，统一加头（token、traceId）</td></tr>
+    <tr><td>LoadBalancerFeignClient</td><td>集成负载均衡：服务名 → 实例 → 发请求</td></tr>
+    <tr><td>ErrorDecoder</td><td>非 2xx 响应转成业务异常</td></tr>
+  </table>
+</section>
+
+<!-- ==================== 3 ==================== -->
+<section id="s3">
+  <h2>3. 核心概念表</h2>
+  <table>
+    <tr><th>概念</th><th>说明</th></tr>
+    <tr><td>@FeignClient(name = "order-service")</td><td>声明要调用的服务名（注册中心里的名字）</td></tr>
+    <tr><td>@FeignClient(url = "http://127.0.0.1:8081")</td><td>直连固定地址（不走注册中心，联调用）</td></tr>
+    <tr><td>fallback / fallbackFactory</td><td>调用失败时的降级处理（需开启 feign.circuitbreaker.enabled）</td></tr>
+    <tr><td>connectTimeout / readTimeout</td><td>连接超时 / 读取超时（默认 10s / 60s，可全局和按客户端配置）</td></tr>
+    <tr><td>日志级别</td><td>NONE / BASIC / HEADERS / FULL（默认 NONE，需 Logger.Level Bean）</td></tr>
+    <tr><td>RequestInterceptor</td><td>全局请求拦截，常用于透传 token、加 traceId</td></tr>
+    <tr><td>契约 Contract</td><td>注解解析规则（SpringMvcContract 解析 Spring 注解）</td></tr>
+  </table>
+</section>
+
+<!-- ==================== 4 ==================== -->
+<section id="s4">
+  <h2>4. 代码示例</h2>
+  <p class="muted">技术栈：Spring Boot 2.7 + Spring Cloud 2021.0.x（OpenFeign 3.1，负载均衡用 LoadBalancer，不用已移除的 Ribbon）。</p>
+
+  <h3>4.1 pom.xml 依赖</h3>
+  <pre><code><span class="t">&lt;dependencies&gt;</span>
+    <span class="c">&lt;!-- OpenFeign --&gt;</span>
+    <span class="t">&lt;dependency&gt;</span>
+        <span class="t">&lt;groupId&gt;</span><span class="s">org.springframework.cloud</span><span class="t">&lt;/groupId&gt;</span>
+        <span class="t">&lt;artifactId&gt;</span><span class="s">spring-cloud-starter-openfeign</span><span class="t">&lt;/artifactId&gt;</span>
+    <span class="t">&lt;/dependency&gt;</span>
+    <span class="c">&lt;!-- 服务发现：让 name = "order-service" 能解析成实例列表 --&gt;</span>
+    <span class="t">&lt;dependency&gt;</span>
+        <span class="t">&lt;groupId&gt;</span><span class="s">com.alibaba.cloud</span><span class="t">&lt;/groupId&gt;</span>
+        <span class="t">&lt;artifactId&gt;</span><span class="s">spring-cloud-starter-alibaba-nacos-discovery</span><span class="t">&lt;/artifactId&gt;</span>
+    <span class="t">&lt;/dependency&gt;</span>
+<span class="t">&lt;/dependencies&gt;</span></code></pre>
+
+  <h3>4.2 启动类开启 Feign</h3>
+  <pre><code><span class="a">@SpringBootApplication</span>
+<span class="a">@EnableFeignClients</span>   <span class="c">// 扫描 @FeignClient 接口并生成代理</span>
+<span class="k">public class</span> <span class="f">UserServiceApplication</span> {
+    <span class="k">public static void</span> <span class="f">main</span>(String[] args) {
+        SpringApplication.run(UserServiceApplication.class, args);
+    }
+}</code></pre>
+
+  <h3>4.3 定义 Feign 接口（消费者 user-service 调提供者 order-service）</h3>
+  <pre><code><span class="c">// 声明式接口：无实现类，运行时动态代理</span>
+<span class="a">@FeignClient</span>(value = <span class="s">"order-service"</span>,           <span class="c">// 服务名（注册中心里的名字）</span>
+        fallbackFactory = OrderClientFallbackFactory.class)  <span class="c">// 降级工厂（可选）</span>
+<span class="k">public interface</span> <span class="f">OrderClient</span> {
+
+    <span class="c">// 对应提供者的 GET /order/{id} 接口</span>
+    <span class="a">@GetMapping</span>(<span class="s">"/order/{id}"</span>)
+    OrderVO <span class="f">getOrder</span>(<span class="a">@PathVariable</span>(<span class="s">"id"</span>) Long id);
+
+    <span class="c">// 对应提供者的 POST /order 接口（注意：对象参数默认转 JSON）</span>
+    <span class="a">@PostMapping</span>(<span class="s">"/order"</span>)
+    OrderVO <span class="f">createOrder</span>(<span class="a">@RequestBody</span> CreateOrderReq req);
+
+    <span class="c">// 查询参数：多参数必须写 @RequestParam 名字</span>
+    <span class="a">@GetMapping</span>(<span class="s">"/order/list"</span>)
+    List&lt;OrderVO&gt; <span class="f">listOrders</span>(<span class="a">@RequestParam</span>(<span class="s">"userId"</span>) Long userId,
+                               <span class="a">@RequestParam</span>(<span class="s">"status"</span>, required = <span class="k">false</span>) Integer status);
+}</code></pre>
+
+  <h3>4.4 降级工厂（服务挂了返回兜底，不抛异常）</h3>
+  <pre><code><span class="c">// 注意：降级需要配置 feign.circuitbreaker.enabled=true（见 4.6）</span>
+<span class="a">@Component</span>
+<span class="k">public class</span> <span class="f">OrderClientFallbackFactory</span> <span class="k">implements</span> FallbackFactory&lt;OrderClient&gt; {
+
+    <span class="a">@Override</span>
+    <span class="k">public</span> OrderClient <span class="f">create</span>(Throwable cause) {
+        <span class="c">// 返回一个匿名实现：调用失败时走这里</span>
+        <span class="k">return new</span> OrderClient() {
+            <span class="a">@Override</span>
+            <span class="k">public</span> OrderVO <span class="f">getOrder</span>(Long id) {
+                log.warn(<span class="s">"order-service 调用失败，降级返回 null，原因：{}"</span>, cause.getMessage());
+                <span class="k">return null</span>;   <span class="c">// 兜底值，业务侧再处理</span>
+            }
+            <span class="c">// ... 其他方法同样兜底</span>
+        };
+    }
+}</code></pre>
+
+  <h3>4.5 使用（像本地方法一样调用）</h3>
+  <pre><code><span class="a">@Service</span>
+<span class="k">public class</span> <span class="f">UserService</span> {
+
+    <span class="a">@Autowired</span>
+    <span class="k">private</span> OrderClient orderClient;
+
+    <span class="k">public</span> OrderVO <span class="f">showOrder</span>(Long id) {
+        <span class="c">// 一行调用远程服务：服务发现 + 负载均衡 + HTTP 全被封装</span>
+        <span class="k">return</span> orderClient.getOrder(id);
+    }
+}</code></pre>
+
+  <h3>4.6 application.yml：超时、日志、降级开关</h3>
+  <pre><code><span class="k">feign</span>:
+  <span class="k">circuitbreaker</span>:
+    <span class="k">enabled</span>: <span class="k">true</span>                    <span class="c"># 开启降级（fallback 生效的前提）</span>
+  <span class="k">client</span>:
+    <span class="k">config</span>:
+      <span class="k">default</span>:                        <span class="c"># 全局默认配置</span>
+        <span class="k">connectTimeout</span>: <span class="n">5000</span>       <span class="c"># 连接超时 5s（默认 10s）</span>
+        <span class="k">readTimeout</span>: <span class="n">10000</span>        <span class="c"># 读取超时 10s（默认 60s）</span>
+        <span class="k">loggerLevel</span>: <span class="s">BASIC</span>        <span class="c"># 日志级别：打印方法+耗时</span>
+      <span class="k">order-service</span>:                 <span class="c"># 按客户端单独覆盖（服务名）</span>
+        <span class="k">readTimeout</span>: <span class="n">30000</span>        <span class="c"># 订单服务慢，放宽到 30s</span>
+
+<span class="k">logging</span>:
+  <span class="k">level</span>:
+    <span class="k">com.example.feign.OrderClient</span>: <span class="s">debug</span>   <span class="c"># 配合 loggerLevel=FULL 打印完整请求响应</span></code></pre>
+
+  <h3>4.7 请求拦截器：统一透传 Token / traceId（高频需求）</h3>
+  <pre><code><span class="a">@Configuration</span>
+<span class="k">public class</span> <span class="f">FeignConfig</span> {
+
+    <span class="a">@Bean</span>
+    <span class="k">public</span> RequestInterceptor <span class="f">requestInterceptor</span>() {
+        <span class="k">return</span> template -&gt; {
+            <span class="c">// 从请求上下文拿当前登录 token，透传给下游服务</span>
+            RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+            <span class="k">if</span> (attrs != <span class="k">null</span>) {
+                HttpServletRequest request = ((ServletRequestAttributes) attrs).getRequest();
+                template.header(<span class="s">"Authorization"</span>, request.getHeader(<span class="s">"Authorization"</span>));
+            }
+            <span class="c">// 透传链路 ID（配合 SkyWalking 等追踪）</span>
+            template.header(<span class="s">"traceId"</span>, TraceContext.getTraceId());
+        };
+    }
+}</code></pre>
+  <div class="tip"><b>面试加分：</b>Feign 默认是不带 token 的！服务 A 调服务 B 时，A 的登录态要手动通过 RequestInterceptor 透传，否则 B 校验鉴权会 401。能主动说出这个细节，说明你真实跑过多服务联调。</div>
+</section>
+
+<!-- ==================== 5 ==================== -->
+<section id="s5">
+  <h2>5. 面试题与回答</h2>
+
+  <details class="qa" open>
+    <summary>Q1：Feign 的原理是什么？接口没有实现类，为什么能调用？</summary>
+    <div class="ans">
+      <p><b>答：</b>核心是 <b>JDK 动态代理</b>。启动时 @EnableFeignClients 触发扫描，为每个 @FeignClient 接口注册 FeignClientFactoryBean，用 Proxy.newProxyInstance 生成代理对象注入容器。业务代码调用接口方法时，实际是调到了代理的 InvocationHandler：它根据方法上的 Spring MVC 注解（@GetMapping/@RequestParam/@RequestBody）把方法调用翻译成 <b>RequestTemplate（HTTP 请求模型）</b>，再经过 Encoder 编码请求体、Client 发送请求（Spring Cloud 中集成 LoadBalancer 按服务名选实例）、Decoder 把响应反序列化成接口声明的返回类型，最终"看起来像本地方法调用"。所以 Feign 本质是"<b>把接口方法映射成 HTTP 请求的映射框架</b>"。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q2：Feign 怎么做到负载均衡？用的 Ribbon 还是别的？</summary>
+    <div class="ans">
+      <p><b>答：</b>Feign 本身不做负载均衡，它把服务名交给 <b>Client</b> 处理。Spring Cloud 2021 之前集成的是 Netflix Ribbon；<b>2021 之后 Ribbon 被移除，默认用 Spring Cloud LoadBalancer</b>（负载均衡逻辑内嵌在 LoadBalancerFeignClient 里）。流程：Feign 的 name="order-service" → LoadBalancer 从注册中心（Nacos）拿到该服务的实例列表 → 按策略（默认轮询，可自定义随机/权重）选一个实例 → 替换服务名为具体 IP:端口发请求。RuoYi-Cloud 2021 版就是 LoadBalancer，不是 Ribbon——能说出这个版本差异是加分项。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q3：Feign 超时怎么配置？超时了会怎样？</summary>
+    <div class="ans">
+      <p><b>答：</b>两个超时：<b>connectTimeout（连接超时）</b>——建 TCP 连接的最长时间；<b>readTimeout（读取超时）</b>——发请求后等响应数据的最大时间。配置在 feign.client.config 下，default 段是全局，也可以用<b>服务名做 key</b> 单独覆盖（如 order-service 慢就单独放宽）。Spring Cloud OpenFeign 默认 connectTimeout=10s、readTimeout=60s。注意：如果项目里还叠了 Sentinel/Hystrix，会有<b>两层超时</b>——Feign 的超时和熔断组件的超时取小的生效，配置时容易踩"为什么我改大了 Feign 超时还是 1s 就失败"的坑（其实是熔断组件先超时了）。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q4：Feign 服务降级怎么做？fallback 和 fallbackFactory 区别？</summary>
+    <div class="ans">
+      <p><b>答：</b>@FeignClient 注解的 fallback 属性指定降级类（实现 Feign 接口，返回兜底值），fallbackFactory 属性指定降级工厂（实现 FallbackFactory&lt;T&gt;）。区别：<b>fallback 拿不到失败原因</b>，只做兜底；<b>fallbackFactory 能拿到 Throwable cause</b>，可以记录失败原因、按异常类型区分处理，更灵活，推荐用 fallbackFactory。前提：<code>feign.circuitbreaker.enabled=true</code>（Spring Cloud OpenFeign 通过 CircuitBreaker 包装实现降级）。底层实现是 Hystrix 或 Resilience4j 或 Sentinel 的断路器，取决于引入哪个。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q5：Feign 日志怎么开？有几个级别？</summary>
+    <div class="ans">
+      <p><b>答：</b>两个条件都要满足：① 配置 <code>feign.client.config.xxx.loggerLevel</code> 为 FULL（或定义 Logger.Level Bean）；② 对应包/类的日志级别设为 debug（logging.level 配置）。四个级别：<b>NONE</b>（默认，不输出）、<b>BASIC</b>（方法 + URL + 响应码 + 耗时，够用）、<b>HEADERS</b>（BASIC + 请求响应头）、<b>FULL</b>（HEADERS + 请求响应体，最全，慎用于生产，可能打印敏感信息）。排查"下游到底返回了什么"时把某个 Feign 客户端调到 FULL，比瞎猜快得多。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q6：Feign 调用时 GET 请求怎么传对象？有什么坑？</summary>
+    <div class="ans">
+      <p><b>答：</b>坑：Feign 对 GET 请求体支持不好（部分版本忽略 GET 的 body，或直接报错不支持）。正确做法：<b>GET 多参数用 @RequestParam 展开</b>，或者<b>把查询改成 POST 传对象</b>，或者用 <code>@SpringQueryMap</code> 注解把对象展开成查询参数（Spring Cloud OpenFeign 2.1+ 支持）。另外还有两个高频坑：① @PathVariable 不带 value 在 Feign 里可能解析失败，要写全 <code>@PathVariable("id")</code>；② 接口方法返回复杂泛型（如 Result&lt;List&lt;OrderVO&gt;&gt;）时，反序列化容易丢泛型，要保证提供者返回的 JSON 结构一致。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q7：Feign 调用 A 服务成功、B 服务失败怎么排查？（实战题）</summary>
+    <div class="ans">
+      <p><b>答：</b>按链路四步：① 先开 <b>FULL 日志</b>，看 Feign 实际发出的 URL 和收到的响应；② 确认<b>服务名/路径</b>：提供者的 context-path 是否和 Feign 路径对得上（配了 server.servlet.context-path 的特别容易踩）；③ 确认<b>参数结构</b>：JSON 字段名大小写、日期格式、null 处理是否一致；④ 确认<b>鉴权透传</b>：下游有没有校验 token，Feign 有没有通过 RequestInterceptor 透传。绝大多数"A 通 B 不通"是服务名写错、路径带不带前缀、token 没透传这三类，别一开始就怀疑网络。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q8：Feign 和 RestTemplate 怎么选？</summary>
+    <div class="ans">
+      <p><b>答：</b>微服务内部调用选 <b>Feign</b>：声明式接口、零模板代码、内置负载均衡和拦截器，团队维护成本低。RestTemplate 适合：① 不想引入 Feign 依赖的轻量场景；② 动态 URL（调用外部不固定的地址）；③ 和老代码风格一致。如果做 WebFlux 响应式项目，用 <b>WebClient</b>（非阻塞）。面试答法：项目里服务间调用统一 Feign，RestTemplate 只在调用第三方固定地址时用。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q9：Feign 接口下沉到公共模块，有什么注意点？</summary>
+    <div class="ans">
+      <p><b>答：</b>常见做法是把 Feign 接口 + DTO 放到公共模块（如 ruoyi-common 的 api 子包），提供者和消费者共用：① 提供者的 Controller 和消费者的 Feign 接口<b>路径、参数必须一致</b>，否则调用 404；② DTO 要有无参构造和 getter/setter（JSON 反序列化需要）；③ 接口里别放复杂对象（File、流），传输对象保持简单；④ 公共模块升级要兼容（Feign 接口改了签名，所有引用方都要跟着升级发布）。面试点到"提供者消费者共用契约"即可。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q10：Feign 默认超时为什么"好像不生效"？说说你踩过的坑。</summary>
+    <div class="ans">
+      <p><b>答：</b>两类典型：① <b>配置 key 写错</b>：feign.client.config 下面按客户端名配置时，key 必须是 <code>@FeignClient 的 value（服务名）</code>，写错成别的名字配置会被忽略；② <b>被熔断组件抢先</b>：项目引入 Sentinel/Hystrix 后，熔断超时默认很小（如 1~3s），Feign 的 readTimeout 还没到，熔断先报了超时异常，看起来"Feign 超时配置无效"。排查思路：看异常栈是 SocketTimeoutException（Feign 层）还是 BlockException/TimeoutException（熔断层），对症下药。这题答出"两层超时叠加"就是高分答案。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ==================== 6 ==================== -->
+<section id="s6">
+  <h2>6. 小结与口诀</h2>
+  <div class="card">
+    <b>一句话定位：</b>Feign = 声明式 HTTP 客户端，接口即契约，动态代理把方法调用翻译成远程 HTTP 请求。<br><br>
+    <b>口诀：</b>"<b>接口注解无实现，动态代理背后站；RequestTemplate 翻译 HTTP，LoadBalancer 选实例；拦截器透传 token，fallback 兜底防雪崩。</b>"<br><br>
+    <b>三大坑：</b>① GET 传对象不支持，用 @SpringQueryMap 或改 POST；② 降级必须开 feign.circuitbreaker.enabled 才有 fallback；③ token 不会自动透传，要写 RequestInterceptor。<br><br>
+    <b>下一跳：</b>服务调用失败会雪崩，怎么防？下一篇讲 <b>Sentinel</b>——限流、熔断、降级的流量防卫兵。
+  </div>
+</section>
+
+<footer>
+  微服务组件文档系列 · 04/16 · 技术栈 Spring Boot 2.7 + Spring Cloud 2021.0.x + OpenFeign 3.1 + Nacos 2.2<br>
+  知识点已核对官方文档与社区资料（2026-09）· 生成于 2026-09-19
+</footer>
+
+</div>
+</body>
+</html>

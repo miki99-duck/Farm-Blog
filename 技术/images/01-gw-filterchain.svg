@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="190" viewBox="0 0 880 190">
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <!-- pre 阶段 -->
+      <rect x="30" y="30" width="120" height="120" rx="8" fill="rgba(88,166,255,.08)" stroke="#58a6ff"/>
+      <text x="90" y="70" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">PRE 阶段</text>
+      <text x="90" y="92" text-anchor="middle" fill="#e6edf3" font-size="11.5">鉴权 / 校验 /</text>
+      <text x="90" y="108" text-anchor="middle" fill="#e6edf3" font-size="11.5">改写请求头 /</text>
+      <text x="90" y="124" text-anchor="middle" fill="#e6edf3" font-size="11.5">限流检查</text>
+      <text x="90" y="142" text-anchor="middle" fill="#8b949e" font-size="10">order 小 → 先执行</text>
+      <!-- 中间 -->
+      <rect x="330" y="55" width="200" height="70" rx="8" fill="#1c2129" stroke="#d29922"/>
+      <text x="430" y="84" text-anchor="middle" fill="#d29922" font-size="13" font-weight="bold">Netty 异步转发</text>
+      <text x="430" y="104" text-anchor="middle" fill="#8b949e" font-size="11">向下游服务发 HTTP 请求</text>
+      <!-- post 阶段 -->
+      <rect x="720" y="30" width="130" height="120" rx="8" fill="rgba(188,140,255,.08)" stroke="#bc8cff"/>
+      <text x="785" y="70" text-anchor="middle" fill="#bc8cff" font-size="13" font-weight="bold">POST 阶段</text>
+      <text x="785" y="92" text-anchor="middle" fill="#e6edf3" font-size="11.5">响应头改写 /</text>
+      <text x="785" y="108" text-anchor="middle" fill="#e6edf3" font-size="11.5">日志记录 /</text>
+      <text x="785" y="124" text-anchor="middle" fill="#e6edf3" font-size="11.5">异常包装</text>
+      <text x="785" y="142" text-anchor="middle" fill="#8b949e" font-size="10">order 大 → 后执行</text>
+      <!-- 箭头 -->
+      <line x1="150" y1="90" x2="325" y2="90" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="530" y1="90" x2="715" y2="90" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow2)"/>
+      <!-- 底部反向箭头说明 -->
+      <line x1="785" y1="150" x2="785" y2="172" stroke="#bc8cff" stroke-width="1.5"/>
+      <line x1="785" y1="172" x2="90" y2="172" stroke="#bc8cff" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <line x1="90" y1="172" x2="90" y2="154" stroke="#bc8cff" stroke-width="1.5"/>
+      <text x="440" y="166" fill="#bc8cff" font-size="11">响应按相反顺序回传（过滤器链的"洋葱模型"）</text>
+    </svg>

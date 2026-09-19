@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微服务组件 03 · 配置中心 Nacos Config</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --border:#30363d;
+    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
+    --orange:#d29922; --red:#f85149; --purple:#bc8cff; --cyan:#39c5cf;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;line-height:1.75;font-size:15px;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px;}
+  header.hero{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:28px;}
+  .tag{display:inline-block;background:rgba(88,166,255,.12);color:var(--accent);border:1px solid rgba(88,166,255,.35);border-radius:4px;padding:2px 10px;font-size:12px;margin-bottom:12px;}
+  h1{font-size:28px;margin-bottom:8px;}
+  .sub{color:var(--muted);font-size:14px;}
+  nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:28px;}
+  nav.toc b{color:var(--accent);font-size:13px;}
+  nav.toc a{color:var(--muted);text-decoration:none;font-size:13px;margin-right:14px;white-space:nowrap;}
+  nav.toc a:hover{color:var(--accent);}
+  section{margin-bottom:40px;}
+  h2{font-size:21px;border-left:4px solid var(--accent);padding-left:12px;margin-bottom:16px;}
+  h3{font-size:16px;color:var(--accent);margin:18px 0 10px;}
+  p{margin-bottom:10px;}
+  .muted{color:var(--muted);}
+  ul,ol{margin:0 0 12px 22px;}
+  li{margin-bottom:5px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px;}
+  .warn{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.35);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .warn b{color:var(--red);}
+  .tip{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.3);border-radius:8px;padding:12px 16px;margin:12px 0;}
+  .tip b{color:var(--green);}
+  pre{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,"Courier New",monospace;font-size:13px;line-height:1.6;margin:10px 0;}
+  code{font-family:Consolas,"Courier New",monospace;}
+  pre .k{color:var(--purple);} pre .s{color:var(--green);} pre .c{color:var(--muted);}
+  pre .n{color:var(--orange);} pre .t{color:var(--cyan);} pre .a{color:var(--red);} pre .f{color:var(--accent);}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th{background:var(--panel2);color:var(--accent);text-align:left;padding:8px 12px;border:1px solid var(--border);}
+  td{padding:8px 12px;border:1px solid var(--border);}
+  .qa{background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden;}
+  .qa summary{cursor:pointer;padding:14px 18px;font-weight:600;color:var(--accent);list-style:none;position:relative;}
+  .qa summary::before{content:"▸ ";color:var(--orange);}
+  .qa details[open] summary::before{content:"▾ ";}
+  .qa .ans{padding:0 18px 16px;border-top:1px dashed var(--border);}
+  .qa .ans p{padding-top:12px;}
+  .qa .ans b{color:var(--green);}
+  .svgbox{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;margin:14px 0;text-align:center;}
+  .svgbox .cap{color:var(--muted);font-size:12.5px;margin-top:8px;}
+  svg text{font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .pill{display:inline-block;background:rgba(188,140,255,.12);color:var(--purple);border:1px solid rgba(188,140,255,.3);border-radius:20px;padding:1px 10px;font-size:12px;margin-right:6px;}
+  footer{border-top:1px solid var(--border);padding-top:16px;color:var(--muted);font-size:12.5px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">微服务组件 · 第 03 篇</span>
+  <h1>配置中心 Nacos Config</h1>
+  <p class="sub">把配置从代码里搬到中心：改一处、全部生效、不重启。核心机制是"长轮询"（long polling），不是长连接。</p>
+  <p style="margin-top:10px;"><span class="pill">Nacos Config 2.2.x</span><span class="pill">长轮询</span><span class="pill">@RefreshScope</span><span class="pill">动态刷新</span></p>
+</header>
+
+<nav class="toc">
+  <b>目录：</b>
+  <a href="#s1">1. 是什么 / 解决什么问题</a>
+  <a href="#s2">2. 核心原理</a>
+  <a href="#s3">3. 核心概念表</a>
+  <a href="#s4">4. 代码示例</a>
+  <a href="#s5">5. 面试题与回答</a>
+  <a href="#s6">6. 小结与口诀</a>
+</nav>
+
+<!-- ==================== 1 ==================== -->
+<section id="s1">
+  <h2>1. 是什么 / 解决什么问题</h2>
+  <p><b>配置中心（Config Center）</b>把应用的配置从本地文件搬到中央服务器，统一管理、动态下发、支持版本回滚。</p>
+
+  <h3>1.1 没有配置中心会怎样？（痛点引入）</h3>
+  <ul>
+    <li><b>改配置要改代码</b>：数据库地址、开关、阈值写死在 application.yml，改一下就要重新打包发布。</li>
+    <li><b>改配置要重启</b>：几十个实例挨个重启，凌晨发版、全量重启，风险高。</li>
+    <li><b>多环境配置散乱</b>：dev / test / prod 各一份文件，漏改一个环境就事故。</li>
+    <li><b>没有审计</b>：谁改的、改成什么、能不能回滚，全靠记忆。</li>
+  </ul>
+
+  <h3>1.2 配置中心的核心能力</h3>
+  <div class="card">
+    ① <b>集中管理</b>：所有服务配置在一个控制台维护。<br>
+    ② <b>动态刷新</b>：改配置即时生效，<b>无需重启</b>（这是最大的价值）。<br>
+    ③ <b>多环境隔离</b>：namespace 隔离 dev/test/prod，配置天然不串。<br>
+    ④ <b>版本回滚</b>：每次变更记录版本，出问题一键回退。<br>
+    ⑤ <b>灰度/权限</b>：支持配置加解密、发布审核（部分高级能力需企业版或结合控制台）。
+  </div>
+
+  <h3>1.3 为什么要"动态刷新"而不用重启？</h3>
+  <p>微服务几十上百个实例，重启一次是成本：停机窗口、连接风暴（重启后大量服务同时重连注册中心/数据库）、发布失败回滚。配置中心把"改配置"变成秒级操作，是微服务运维效率的核心基础设施。</p>
+</section>
+
+<!-- ==================== 2 ==================== -->
+<section id="s2">
+  <h2>2. 核心原理</h2>
+
+  <h3>2.1 配置动态刷新的整体流程</h3>
+  <div class="svgbox">
+    <svg width="880" height="300" viewBox="0 0 880 300">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <!-- 控制台/运维 -->
+      <rect x="30" y="60" width="170" height="60" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+      <text x="115" y="88" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">运维 / 控制台</text>
+      <text x="115" y="106" text-anchor="middle" fill="#8b949e" font-size="10.5">修改配置（写入）</text>
+      <!-- Nacos -->
+      <rect x="330" y="50" width="200" height="120" rx="10" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="2"/>
+      <text x="430" y="80" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">Nacos Server</text>
+      <text x="430" y="102" text-anchor="middle" fill="#e6edf3" font-size="11.5">配置存储（磁盘 + 缓存）</text>
+      <text x="430" y="120" text-anchor="middle" fill="#8b949e" font-size="10.5">变更后记录新 MD5</text>
+      <text x="430" y="138" text-anchor="middle" fill="#8b949e" font-size="10.5">版本号 +1（可回滚）</text>
+      <text x="430" y="158" text-anchor="middle" fill="#bc8cff" font-size="11">通知等待中的长轮询请求</text>
+      <!-- 应用 -->
+      <rect x="680" y="40" width="160" height="70" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="760" y="66" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">应用实例 A</text>
+      <text x="760" y="84" text-anchor="middle" fill="#8b949e" font-size="10.5">本地缓存 + MD5 比对</text>
+      <rect x="680" y="130" width="160" height="70" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="760" y="156" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">应用实例 B</text>
+      <text x="760" y="174" text-anchor="middle" fill="#8b949e" font-size="10.5">本地缓存 + MD5 比对</text>
+      <!-- 长轮询 -->
+      <line x1="200" y1="90" x2="325" y2="100" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="530" y1="90" x2="675" y2="75" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="530" y1="120" x2="675" y2="150" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="560" y="60" fill="#3fb950" font-size="11">① 发起长轮询（带本地 MD5）</text>
+      <text x="560" y="140" fill="#bc8cff" font-size="11">② 配置变了 → 立刻返回</text>
+      <text x="560" y="158" fill="#8b949e" font-size="11">没变 → 挂起最长 30s 再返回</text>
+      <text x="560" y="176" fill="#8b949e" font-size="11">③ 客户端拿新配置 → 刷新 Bean</text>
+    </svg>
+    <div class="cap">图 3-1：Nacos 配置动态刷新架构</div>
+  </div>
+
+  <h3>2.2 长轮询（Long Polling）原理 —— 面试必考</h3>
+  <div class="svgbox">
+    <svg width="880" height="230" viewBox="0 0 880 230">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+        </marker>
+      </defs>
+      <!-- 应用 -->
+      <rect x="30" y="60" width="150" height="110" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="105" y="90" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">客户端（应用）</text>
+      <text x="105" y="112" text-anchor="middle" fill="#8b949e" font-size="10.5">循环发 HTTP 请求</text>
+      <text x="105" y="128" text-anchor="middle" fill="#8b949e" font-size="10.5">间隔 ≈ 30s（可配置）</text>
+      <text x="105" y="148" text-anchor="middle" fill="#8b949e" font-size="10.5">请求里带本地 MD5</text>
+      <!-- 服务端 -->
+      <rect x="560" y="60" width="240" height="110" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="680" y="90" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">Nacos Server</text>
+      <text x="680" y="112" text-anchor="middle" fill="#8b949e" font-size="10.5">比较"请求里的 MD5"与"当前 MD5"</text>
+      <text x="680" y="128" text-anchor="middle" fill="#3fb950" font-size="10.5">不同 → 立即返回新配置</text>
+      <text x="680" y="144" text-anchor="middle" fill="#8b949e" font-size="10.5">相同 → 请求挂起（不急着响应）</text>
+      <text x="680" y="160" text-anchor="middle" fill="#8b949e" font-size="10.5">挂起期间配置变了 → 立刻唤醒返回</text>
+      <!-- 箭头 -->
+      <line x1="180" y1="90" x2="555" y2="90" stroke="#3fb950" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="555" y1="140" x2="180" y2="140" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="370" y="82" fill="#3fb950" font-size="11">请求（MD5）</text>
+      <text x="370" y="156" fill="#58a6ff" font-size="11">响应（新配置 or 空）</text>
+      <text x="370" y="180" fill="#8b949e" font-size="11">客户端收到响应后立即发起下一次请求（循环）</text>
+    </svg>
+    <div class="cap">图 3-2：长轮询 —— 客户端"问一下、等一会儿、再问"，服务端"没变化就吊着请求不回复"</div>
+  </div>
+  <ul>
+    <li><b>不是长连接</b>：客户端每次发一个普通 HTTP 请求，服务端如果发现配置没变，<b>不立刻返回，而是把请求挂起最多 30 秒</b>；30 秒内配置变了就立刻响应，没变就超时返回空。</li>
+    <li><b>MD5 比对</b>：请求携带客户端本地配置的 MD5，服务端比对当前 MD5，不同才返回新配置。这样既省流量又实现"准实时"（最坏延迟 ≈ 挂起时长，默认 30s，实际因为循环连续请求通常秒级）。</li>
+    <li><b>为什么不用长连接/推送？</b>：长连接实现简单（Nacos 2.x 的 gRPC 已经支持推送，但配置中心仍保留长轮询兜底）；长轮询的好处是 HTTP 无状态、实现简单、天然兼容负载均衡，客户端断了不影响服务端。</li>
+    <li>Nacos 2.x 的配置变更通知也走 gRPC 双向流（推送 + 客户端再拉取确认），但面试答"长轮询 + MD5 比对"永远是对的底层答案。</li>
+  </ul>
+
+  <h3>2.3 服务端收到配置变更后，应用里怎么"热更新"？</h3>
+  <ol>
+    <li>客户端拉取到新配置 → 更新 <code>Environment</code> 里的 PropertySource。</li>
+    <li>触发 <code>RefreshEvent</code> → Spring Cloud 的 <code>RefreshScope</code> 监听。</li>
+    <li>标记为 <code>@RefreshScope</code> 的 Bean 被<b>销毁重建</b>（不是改属性，是换新对象），<code>@Value</code> 字段重新注入新值。</li>
+  </ol>
+  <div class="warn"><b>关键理解：</b><code>@Value</code> 注入的值在 Bean 创建时就已经"固化"进对象了，普通 Bean 不重建永远拿不到新值。所以必须加 <code>@RefreshScope</code>，让 Spring 把这个 Bean 标记为"可刷新"，配置变更时销毁重建。<b>不加 @RefreshScope = 配置改了不生效</b>，这是最经典的踩坑点。</div>
+</section>
+
+<!-- ==================== 3 ==================== -->
+<section id="s3">
+  <h2>3. 核心概念表</h2>
+  <table>
+    <tr><th>概念</th><th>说明</th></tr>
+    <tr><td>dataId</td><td>配置的唯一标识：<code>前缀 + "." + 文件扩展名</code>，默认 <code>spring.application.name + "." + file-extension</code></td></tr>
+    <tr><td>Namespace</td><td>环境隔离：dev/test/prod 各一套配置，互不可见</td></tr>
+    <tr><td>Group</td><td>分组，默认 DEFAULT_GROUP，同环境内细分</td></tr>
+    <tr><td>长轮询</td><td>客户端循环 HTTP + 服务端挂起 30s + MD5 比对，实现准实时推送</td></tr>
+    <tr><td>MD5</td><td>配置内容指纹，比对客户端与服务端是否一致</td></tr>
+    <tr><td>@RefreshScope</td><td>标记 Bean 可动态刷新，配置变更时销毁重建</td></tr>
+    <tr><td>@Value</td><td>字段注入，配合 @RefreshScope 才能热更新</td></tr>
+    <tr><td>bootstrap.yml</td><td>引导配置（Spring Cloud 2020 前）；2020 后需 <code>spring.config.import</code></td></tr>
+    <tr><td>版本回滚</td><td>每次发布记录版本，可一键回退历史配置</td></tr>
+  </table>
+</section>
+
+<!-- ==================== 4 ==================== -->
+<section id="s4">
+  <h2>4. 代码示例</h2>
+  <p class="muted">技术栈：Spring Boot 2.7 + Spring Cloud Alibaba 2021.0.4.0。</p>
+
+  <h3>4.1 pom.xml 依赖</h3>
+  <pre><code><span class="t">&lt;dependencies&gt;</span>
+    <span class="c">&lt;!-- Nacos 配置中心 --&gt;</span>
+    <span class="t">&lt;dependency&gt;</span>
+        <span class="t">&lt;groupId&gt;</span><span class="s">com.alibaba.cloud</span><span class="t">&lt;/groupId&gt;</span>
+        <span class="t">&lt;artifactId&gt;</span><span class="s">spring-cloud-starter-alibaba-nacos-config</span><span class="t">&lt;/artifactId&gt;</span>
+    <span class="t">&lt;/dependency&gt;</span>
+<span class="t">&lt;/dependencies&gt;</span></code></pre>
+
+  <h3>4.2 关键：bootstrap 引导配置（Spring Cloud 2020+ 的处理方式）</h3>
+  <div class="warn"><b>版本坑：</b>Spring Cloud 2020 起默认<b>禁用 bootstrap</b>。两种写法：① 引入 <code>spring-cloud-starter-bootstrap</code> 恢复旧写法；② 用新写法 <code>spring.config.import</code>（推荐，下面用这种）。RuoYi-Cloud 是 2021 版本，用的就是 import 写法。</div>
+  <pre><code><span class="c"># application.yml（本地只保留最少的引导信息）</span>
+<span class="k">spring</span>:
+  <span class="k">application</span>:
+    <span class="k">name</span>: <span class="s">order-service</span>          <span class="c"># 必须：决定去 Nacos 找哪个 dataId 的配置</span>
+  <span class="k">cloud</span>:
+    <span class="k">nacos</span>:
+      <span class="k">config</span>:
+        <span class="k">server-addr</span>: <span class="s">127.0.0.1:8848</span>
+        <span class="k">file-extension</span>: <span class="s">yaml</span>       <span class="c"># 配置文件的扩展名</span>
+        <span class="k">namespace</span>: <span class="s">dev</span>
+        <span class="k">group</span>: <span class="s">DEFAULT_GROUP</span>
+    <span class="k">config</span>:
+      <span class="k">import</span>: <span class="s">optional:nacos:order-service.yaml</span>  <span class="c"># 新写法：导入 Nacos 配置</span></code></pre>
+  <p class="muted">dataId 默认规则：<code>{spring.application.name}.{file-extension}</code> → 本例为 <code>order-service.yaml</code>。在 Nacos 控制台"配置管理"里新建同名配置即可。</p>
+
+  <h3>4.3 配置写在 Nacos 上（控制台 → 配置管理 → 新建配置）</h3>
+  <pre><code><span class="k">dataId</span>: <span class="s">order-service.yaml</span>   <span class="k">group</span>: <span class="s">DEFAULT_GROUP</span>   <span class="k">配置格式</span>: <span class="s">YAML</span>
+
+<span class="k">order</span>:
+  <span class="k">timeout</span>: <span class="n">5000</span>          <span class="c"># 业务配置示例：订单超时时间</span>
+  <span class="k">switch</span>: <span class="k">true</span>            <span class="c"># 功能开关：控制是否走新逻辑</span>
+<span class="k">datasource</span>:
+  <span class="k">url</span>: <span class="s">jdbc:mysql://127.0.0.1:3306/order_db?useSSL=false</span>
+  <span class="k">username</span>: <span class="s">root</span>
+  <span class="k">password</span>: <span class="s">123456</span></code></pre>
+
+  <h3>4.4 Java 代码：读取 + 动态刷新</h3>
+  <pre><code><span class="a">@Component</span>
+<span class="a">@RefreshScope</span>   <span class="c">// 关键注解：配置变更时销毁重建这个 Bean，@Value 才会拿到新值</span>
+<span class="k">public class</span> <span class="f">OrderConfig</span> {
+
+    <span class="a">@Value</span>(<span class="s">"${order.timeout:5000}"</span>)      <span class="c">// 从 Nacos 配置读取，带默认值</span>
+    <span class="k">private int</span> timeout;
+
+    <span class="a">@Value</span>(<span class="s">"${order.switch:false}"</span>)
+    <span class="k">private boolean</span> switchOn;
+
+    <span class="k">public int</span> <span class="f">getTimeout</span>() { <span class="k">return</span> timeout; }
+    <span class="k">public boolean</span> <span class="f">isSwitchOn</span>() { <span class="k">return</span> switchOn; }
+}
+
+<span class="a">@RestController</span>
+<span class="k">public class</span> <span class="f">ConfigDemoController</span> {
+
+    <span class="a">@Autowired</span>
+    <span class="k">private</span> OrderConfig config;
+
+    <span class="c">// 控制台改配置后，不重启应用，这个接口返回值会变化</span>
+    <span class="a">@GetMapping</span>(<span class="s">"/config/demo"</span>)
+    <span class="k">public</span> String <span class="f">demo</span>() {
+        <span class="k">return</span> <span class="s">"timeout="</span> + config.getTimeout() + <span class="s">", switch="</span> + config.isSwitchOn();
+    }
+}</code></pre>
+  <div class="tip"><b>演示步骤（验证动态刷新）：</b>启动应用 → 浏览器访问 /config/demo 看初始值 → Nacos 控制台修改 order.timeout → 等 1~5 秒（长轮询周期）→ 刷新页面发现值已变，<b>全程未重启</b>。</div>
+
+  <h3>4.5 多环境与多配置源的常见用法</h3>
+  <pre><code><span class="c"># 多环境：启动参数 -Dspring.profiles.active=prod 配合 namespace 隔离</span>
+<span class="k">spring.profiles.active</span>: <span class="s">prod</span>          <span class="c"># dev/test/prod 对应不同 namespace</span>
+
+<span class="c"># 多配置源：导入多个 dataId（公共配置 + 私有配置）</span>
+<span class="k">spring.config.import</span>:
+  <span class="k">- optional:nacos:common.yaml</span>          <span class="c"># 公共配置（所有服务共享）</span>
+  <span class="k">- optional:nacos:order-service.yaml</span>   <span class="c"># 本服务私有配置</span></code></pre>
+</section>
+
+<!-- ==================== 5 ==================== -->
+<section id="s5">
+  <h2>5. 面试题与回答</h2>
+
+  <details class="qa" open>
+    <summary>Q1：Nacos 配置中心动态刷新是怎么实现的？说清楚长轮询。</summary>
+    <div class="ans">
+      <p><b>答：</b>核心是<b>长轮询 + MD5 比对</b>。客户端维护一个循环：① 发起 HTTP 请求，参数带上本地配置内容的 MD5；② 服务端比较请求里的 MD5 与当前配置 MD5——<b>不同立即返回新配置</b>；<b>相同就把请求挂起最长约 30 秒</b>，期间配置被修改会立刻唤醒并返回，30 秒没变化就超时返回；③ 客户端收到响应后<b>立即发起下一次请求</b>，如此循环。所以配置变更的感知延迟最坏 ≈ 挂起时长（30s），实际由于连续请求通常秒级。它不是长连接，是"每个请求都等一会儿"的轮询优化版。Nacos 2.x 又加了 gRPC 双向流做主动通知，但底层 MD5 比对 + 拉取兜底的模型不变。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q2：配置改了，为什么 @Value 不生效？怎么解决？</summary>
+    <div class="ans">
+      <p><b>答：</b>因为 <code>@Value</code> 在 Bean 创建时就把值"注入并固化"进对象了，配置变了对象里的值不会自动变。解决：在持有 @Value 字段的类上加 <code>@RefreshScope</code>，Spring Cloud 收到配置刷新事件后，会把该作用域下的 Bean <b>销毁并重新创建</b>，重新注入新值。注意三个细节：① 静态字段（static）不参与注入刷新；② 如果配置源没配好（import 写错），应用启动直接失败；③ @RefreshScope 的 Bean 不能是单例里被普通 Bean 直接持有并缓存引用的那种，否则拿到的是旧对象。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q3：@RefreshScope 的原理是什么？</summary>
+    <div class="ans">
+      <p><b>答：</b>RefreshScope 是 Spring Cloud 的<b>自定义作用域（Scope）</b>，类似 singleton/prototype。被它标记的 Bean 存入一个缓存 Map；Spring 收到 <code>RefreshEvent</code>（配置变更触发）后调用 <code>refresh()</code>，<b>清空缓存 Map</b>；下次任何地方 getBean 时发现缓存没了，就按配置重新创建 Bean，新创建时 @Value 自然读的是新配置。一句话：<b>不是修改旧对象，而是"作废旧对象、按新配置重建新对象"</b>。这就是为什么刷新后实例的引用会变化，也解释了为什么刷新不是完全无感（重建期间有短暂开销）。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q4：多环境配置怎么隔离？说说 namespace / group / dataId 的关系。</summary>
+    <div class="ans">
+      <p><b>答：</b>三层：① <b>Namespace 按环境隔离</b>：dev/test/prod 各建命名空间，同一 dataId 在不同 namespace 下是不同配置，互不干扰；② <b>Group 同环境内分组</b>：如按业务线分，默认 DEFAULT_GROUP；③ <b>dataId 是配置的 ID</b>：默认 <code>应用名.扩展名</code>（order-service.yaml）。加载时 namespace + group + dataId 三个坐标唯一定位一份配置。项目里我一般：环境用 namespace，公共配置放 common.yaml 用 import 导入，私有配置用应用名.yaml。切换环境只改 spring.profiles.active，namespace 跟着变。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q5：Spring Cloud 2020+ 用 bootstrap.yml 为什么配置不生效？</summary>
+    <div class="ans">
+      <p><b>答：</b>Spring Cloud 2020 起默认<b>关闭 bootstrap 机制</b>（bootstrap context 不再自动创建），所以老的 bootstrap.yml 里写 Nacos 地址不会被执行，应用启动时报"无法解析 ${spring.application.name}"或连不上配置中心。两种解决：① 引入 <code>spring-cloud-starter-bootstrap</code> 依赖恢复旧行为；② 用新写法 <code>spring.config.import: optional:nacos:xxx.yaml</code>（推荐，RuoYi-Cloud 2021 版就是这种）。面试说出"2020 起 bootstrap 被废弃、用 spring.config.import 替代"，能体现你对版本演进的了解。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q6：Nacos 配置中心挂了，应用还能启动/运行吗？</summary>
+    <div class="ans">
+      <p><b>答：</b>分情况：① <b>运行中</b>：应用本地已缓存配置，继续用本地副本运行，不受影响（Nacos 客户端有本地快照文件，同时内存中保留已加载配置）。② <b>启动时</b>：如果 import 写的是 <code>optional:nacos:...</code>，连不上会降级用本地默认值继续启动；如果写 <code>nacos:...</code>（非 optional），拉不到配置会<b>启动失败</b>。生产建议：核心配置双写本地兜底 + optional 导入，并且配置中心集群部署，避免单点。这个问题的答案也适用于注册中心：基础设施都要做高可用设计。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q7：配置中心动态刷新和 Spring Cloud Bus 有什么区别？（扩展题）</summary>
+    <div class="ans">
+      <p><b>答：</b>Spring Cloud Config + Bus 的老方案：Config Server 收到配置变更 → 通过 <b>MQ（Kafka/RabbitMQ）广播 RefreshEvent</b> → 各服务监听事件刷新。它的关键点是"<b>事件通过消息总线广播</b>"，解决了 Config Server 无法主动通知客户端的问题。Nacos 方案不需要 Bus：客户端长轮询/gRPC 直接感知变更，<b>少一个 MQ 组件</b>，链路更短。所以 Nacos Config 是"配置中心 + 推送通道"二合一，而 Spring Cloud Config 还要额外搭 Bus。这题能答出来说明你了解两代方案的差异。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q8：哪些配置适合放配置中心，哪些不适合？</summary>
+    <div class="ans">
+      <p><b>答：</b>适合：数据库连接、Redis/MQ 地址、业务开关、阈值、超时时间、灰度比例——需要<b>动态调整、多环境不同、希望可审计</b>的配置。不适合：① 频繁变化的高频数据（每秒变一次的，应该用 Redis 或数据库，不走配置中心的长轮询链路）；② 敏感凭据（密码/密钥，配置中心要开加密或用 KMS/Secrets 方案）；③ 与环境绑定的部署配置（如 JVM 参数、端口，留在部署层）。一句话：<b>放"要改的"，不放"要藏的"和"高频变的"</b>。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q9：Nacos 和 Apollo 配置中心怎么选？（扩展）</summary>
+    <div class="ans">
+      <p><b>答：</b>Apollo（携程开源）：功能更重更全——细粒度权限管理、发布审核、灰度发布、多环境一键同步，适合大型团队、配置治理要求高的场景。Nacos：轻量、注册配置二合一、与 Spring Cloud Alibaba 生态集成天然、部署简单，中小团队和 RuoYi 系项目默认选它。选型依据：<b>团队规模和配置治理复杂度</b>——配置敏感、需要严格审批流程选 Apollo；追求简单一体、注册中心本来就是 Nacos 的，别为配置单独引入 Apollo，增加一套系统要运维。</p>
+    </div>
+  </details>
+
+  <details class="qa">
+    <summary>Q10：配置中心里数据库密码这类敏感信息怎么处理？</summary>
+    <div class="ans">
+      <p><b>答：</b>三个层次：① <b>加密存储</b>：Nacos 支持配置加解密插件（如 jasypt + 自定义算法），控制台存的密文，应用侧解密后使用；② <b>独立密钥管理</b>：密钥放 KMS/Vault，配置只存引用；③ <b>最小可见</b>：敏感配置用独立 namespace/权限控制，开发环境用开发库的凭据，不共享生产密码。面试重点不是方案多高级，而是表达"<b>意识到配置中心存的可能是敏感信息，不能明文裸奔</b>"这个安全意识。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ==================== 6 ==================== -->
+<section id="s6">
+  <h2>6. 小结与口诀</h2>
+  <div class="card">
+    <b>一句话定位：</b>配置中心 = 配置的"中央厨房"，改一处、秒级生效、不重启、能回滚。<br><br>
+    <b>口诀：</b>"<b>长轮询挂三十秒，MD5 比对见分晓；@RefreshScope 重建 Bean，配置改了不重启；namespace 分环境，import 导入新写法。</b>"<br><br>
+    <b>三大坑：</b>① @Value 不加 @RefreshScope 刷新不生效；② Spring Cloud 2020+ 别写 bootstrap.yml，用 spring.config.import；③ 非 optional 导入在配置中心挂时会导致启动失败。<br><br>
+    <b>下一跳：</b>调用方怎么优雅地调用服务？下一篇讲<b>OpenFeign</b>——声明式 HTTP 客户端的原理。
+  </div>
+</section>
+
+<footer>
+  微服务组件文档系列 · 03/16 · 技术栈 Spring Boot 2.7 + Spring Cloud Alibaba 2021.0.4.0 + Nacos 2.2<br>
+  知识点已核对官方文档与社区资料（2026-09）· 生成于 2026-09-19
+</footer>
+
+</div>
+</body>
+</html>

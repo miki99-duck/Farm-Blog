@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+  <!-- 穿透 -->
+  <rect x="30" y="30" width="260" height="240" rx="10" fill="rgba(248,81,73,.05)" stroke="#f85149"/>
+  <text x="160" y="58" text-anchor="middle" fill="#f85149" font-size="13.5" font-weight="bold">① 缓存穿透</text>
+  <rect x="50" y="75" width="90" height="36" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="95" y="97" text-anchor="middle" fill="#e6edf3" font-size="11">大量请求</text>
+  <rect x="50" y="125" width="90" height="36" rx="6" fill="#161b22" stroke="#d29922"/>
+  <text x="95" y="147" text-anchor="middle" fill="#d29922" font-size="11">缓存（查不到）</text>
+  <rect x="50" y="175" width="90" height="36" rx="6" fill="#161b22" stroke="#f85149"/>
+  <text x="95" y="197" text-anchor="middle" fill="#f85149" font-size="11">数据库（被打爆）</text>
+  <line x1="140" y1="93" x2="145" y2="120" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="140" y1="143" x2="145" y2="170" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="160" y="105" fill="#8b949e" font-size="10.5">查不存在的 key（如 id=-1）</text>
+  <text x="160" y="228" fill="#e6edf3" font-size="11">缓存没有 → 全打到数据库</text>
+  <text x="160" y="248" fill="#3fb950" font-size="11">解决：① 空值缓存（短 TTL）</text>
+  <text x="160" y="266" fill="#3fb950" font-size="11">② 布隆过滤器拦截</text>
+  <!-- 击穿 -->
+  <rect x="310" y="30" width="260" height="240" rx="10" fill="rgba(216,150,34,.05)" stroke="#d29922"/>
+  <text x="440" y="58" text-anchor="middle" fill="#d29922" font-size="13.5" font-weight="bold">② 缓存击穿</text>
+  <rect x="330" y="75" width="90" height="36" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="375" y="97" text-anchor="middle" fill="#e6edf3" font-size="11">热点 key 过期</text>
+  <rect x="330" y="125" width="90" height="36" rx="6" fill="#161b22" stroke="#d29922"/>
+  <text x="375" y="147" text-anchor="middle" fill="#d29922" font-size="11">瞬间并发请求</text>
+  <rect x="330" y="175" width="90" height="36" rx="6" fill="#161b22" stroke="#f85149"/>
+  <text x="375" y="197" text-anchor="middle" fill="#f85149" font-size="11">数据库（压力瞬间拉满）</text>
+  <line x1="420" y1="93" x2="425" y2="120" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="420" y1="143" x2="425" y2="170" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="440" y="105" fill="#8b949e" font-size="10.5">同一个 key 同时失效，</text>
+  <text x="440" y="120" fill="#8b949e" font-size="10.5">并发重建缓存</text>
+  <text x="440" y="228" fill="#e6edf3" font-size="11">只打一个 key，但并发巨大</text>
+  <text x="440" y="248" fill="#3fb950" font-size="11">解决：① 互斥锁重建（只放一个人）</text>
+  <text x="440" y="266" fill="#3fb950" font-size="11">② 逻辑过期（不过期+异步刷新）</text>
+  <!-- 雪崩 -->
+  <rect x="590" y="30" width="260" height="240" rx="10" fill="rgba(88,166,255,.05)" stroke="#58a6ff"/>
+  <text x="720" y="58" text-anchor="middle" fill="#58a6ff" font-size="13.5" font-weight="bold">③ 缓存雪崩</text>
+  <rect x="610" y="75" width="90" height="36" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="655" y="97" text-anchor="middle" fill="#e6edf3" font-size="11">大量 key 同时过期</text>
+  <rect x="610" y="125" width="90" height="36" rx="6" fill="#161b22" stroke="#d29922"/>
+  <text x="655" y="147" text-anchor="middle" fill="#d29922" font-size="11">请求全部落库</text>
+  <rect x="610" y="175" width="90" height="36" rx="6" fill="#161b22" stroke="#f85149"/>
+  <text x="655" y="197" text-anchor="middle" fill="#f85149" font-size="11">数据库宕机</text>
+  <line x1="700" y1="93" x2="705" y2="120" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="700" y1="143" x2="705" y2="170" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="720" y="105" fill="#8b949e" font-size="10.5">Redis 集群宕机 /</text>
+  <text x="720" y="120" fill="#8b949e" font-size="10.5">key 过期时间扎堆</text>
+  <text x="720" y="228" fill="#e6edf3" font-size="11">整个缓存层失效</text>
+  <text x="720" y="248" fill="#3fb950" font-size="11">解决：① TTL 加随机值打散</text>
+  <text x="720" y="266" fill="#3fb950" font-size="11">② Redis 高可用集群 + 限流降级</text>
+</svg>

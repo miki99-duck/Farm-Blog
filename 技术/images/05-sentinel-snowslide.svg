@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="210" viewBox="0 0 880 210">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+        </marker>
+      </defs>
+      <rect x="20" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="85" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 A</text>
+      <text x="85" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">超时（慢）</text>
+      <rect x="240" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="305" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 B</text>
+      <text x="305" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">线程被 A 占满</text>
+      <rect x="460" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="525" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 C</text>
+      <text x="525" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">被 B 拖垮</text>
+      <rect x="680" y="60" width="130" height="50" rx="8" fill="#1c2129" stroke="#f85149" stroke-width="1.5"/>
+      <text x="745" y="83" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="bold">服务 D</text>
+      <text x="745" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">雪崩</text>
+      <line x1="150" y1="85" x2="235" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="370" y1="85" x2="455" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="590" y1="85" x2="675" y2="85" stroke="#f85149" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="440" y="40" text-anchor="middle" fill="#f85149" font-size="13" font-weight="bold">一个服务慢 → 调用方线程全部阻塞等待 → 层层传递 → 整个链路崩溃</text>
+      <text x="440" y="170" text-anchor="middle" fill="#8b949e" font-size="12">防线：超时（快速失败）→ 限流（挡住过量请求）→ 熔断（停止调用故障服务）→ 降级（返回兜底数据）</text>
+    </svg>

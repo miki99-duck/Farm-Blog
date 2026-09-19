@@ -1,0 +1,15 @@
+# Jekyll 本地构建产物（GitHub 是服务端构建，不需要提交）
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# 依赖锁（GitHub Pages 用内建 gem 集，不需要）
+Gemfile.lock
+vendor/
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+*.bak
+.DS_Store
+Thumbs.db

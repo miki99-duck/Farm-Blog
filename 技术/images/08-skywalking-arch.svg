@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="340" viewBox="0 0 880 340">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- 应用层 + Agent -->
+  <rect x="30" y="30" width="250" height="130" rx="10" fill="rgba(63,185,80,.06)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="155" y="55" text-anchor="middle" fill="#3fb950" font-size="13.5" font-weight="bold">业务应用（JVM 进程）</text>
+  <rect x="50" y="70" width="100" height="40" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="100" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">Gateway / 服务A</text>
+  <text x="100" y="104" text-anchor="middle" fill="#8b949e" font-size="9.5">Feign 调用链</text>
+  <rect x="165" y="70" width="100" height="40" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="215" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">服务B / 服务C</text>
+  <text x="215" y="104" text-anchor="middle" fill="#8b949e" font-size="9.5">JDBC / Redis</text>
+  <rect x="60" y="125" width="200" height="24" rx="5" fill="rgba(188,140,255,.1)" stroke="#bc8cff"/>
+  <text x="160" y="142" text-anchor="middle" fill="#bc8cff" font-size="11">SkyWalking Agent（字节码增强埋点，无侵入）</text>
+  <!-- OAP -->
+  <rect x="390" y="60" width="220" height="90" rx="10" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="2"/>
+  <text x="500" y="88" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="bold">OAP Server</text>
+  <text x="500" y="108" text-anchor="middle" fill="#8b949e" font-size="10.5">收集 Agent 上报的 Trace/指标</text>
+  <text x="500" y="126" text-anchor="middle" fill="#8b949e" font-size="10.5">分析聚合 + 告警规则</text>
+  <text x="500" y="142" text-anchor="middle" fill="#8b949e" font-size="10.5">默认端口 11800(gRPC) / 12800(HTTP)</text>
+  <!-- Storage -->
+  <rect x="700" y="60" width="150" height="60" rx="10" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+  <text x="775" y="88" text-anchor="middle" fill="#d29922" font-size="13.5" font-weight="bold">Storage 存储</text>
+  <text x="775" y="108" text-anchor="middle" fill="#8b949e" font-size="10.5">Elasticsearch / MySQL</text>
+  <!-- UI -->
+  <rect x="700" y="150" width="150" height="50" rx="10" fill="#161b22" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="775" y="172" text-anchor="middle" fill="#bc8cff" font-size="13" font-weight="bold">UI 可视化</text>
+  <text x="775" y="190" text-anchor="middle" fill="#8b949e" font-size="10.5">拓扑图/链路/仪表盘</text>
+  <!-- 箭头 -->
+  <line x1="280" y1="80" x2="385" y2="80" stroke="#3fb950" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="330" y="72" fill="#8b949e" font-size="10.5">gRPC 上报 trace</text>
+  <line x1="610" y1="90" x2="695" y2="90" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="775" y1="120" x2="775" y2="145" stroke="#d29922" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="775" y1="150" x2="500" y2="150" stroke="#bc8cff" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="500" y1="150" x2="500" y2="154" stroke="#bc8cff" stroke-width="1.5"/>
+  <!-- 底部 -->
+  <text x="440" y="300" text-anchor="middle" fill="#8b949e" font-size="11.5">Agent 自动注入：HTTP 入口、Feign 调用、JDBC 访问、Redis 操作…全部自动生成 Span，无需改业务代码</text>
+  <text x="440" y="322" text-anchor="middle" fill="#8b949e" font-size="11.5">链路：Trace（一次请求）→ 多个 Span（每个调用节点）→ traceId 串联</text>
+</svg>

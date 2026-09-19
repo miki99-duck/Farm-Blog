@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <!-- 左：客户端负载均衡 -->
+  <text x="200" y="30" text-anchor="middle" fill="#e6edf3" font-size="13.5" font-weight="bold">客户端负载均衡（LB 在调用方）</text>
+  <rect x="30" y="45" width="150" height="56" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="105" y="70" text-anchor="middle" fill="#3fb950" font-size="12.5" font-weight="bold">调用方（user-service）</text>
+  <text x="105" y="90" text-anchor="middle" fill="#8b949e" font-size="9.5">Feign/RestTemplate + LB</text>
+  <rect x="230" y="45" width="140" height="56" rx="8" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="300" y="70" text-anchor="middle" fill="#58a6ff" font-size="12.5" font-weight="bold">LoadBalancer</text>
+  <text x="300" y="90" text-anchor="middle" fill="#8b949e" font-size="9.5">策略：轮询/随机/权重</text>
+  <rect x="420" y="45" width="140" height="56" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+  <text x="490" y="70" text-anchor="middle" fill="#d29922" font-size="12.5" font-weight="bold">order-service 实例A</text>
+  <text x="490" y="90" text-anchor="middle" fill="#8b949e" font-size="9.5">192.168.1.10:8081</text>
+  <rect x="420" y="115" width="140" height="56" rx="8" fill="#1c2129" stroke="#d29922" stroke-width="1.5"/>
+  <text x="490" y="140" text-anchor="middle" fill="#d29922" font-size="12.5" font-weight="bold">order-service 实例B</text>
+  <text x="490" y="160" text-anchor="middle" fill="#8b949e" font-size="9.5">192.168.1.11:8081</text>
+  <text x="300" y="120" text-anchor="middle" fill="#8b949e" font-size="10">从注册中心拉实例列表 → 选一个 → 直连</text>
+  <line x1="180" y1="73" x2="225" y2="73" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="370" y1="73" x2="415" y2="73" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="370" y1="90" x2="415" y2="140" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- 右：服务端负载均衡 -->
+  <text x="700" y="175" text-anchor="middle" fill="#e6edf3" font-size="13.5" font-weight="bold">服务端负载均衡（LB 在中间）</text>
+  <rect x="590" y="195" width="120" height="50" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="650" y="220" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">客户端</text>
+  <rect x="760" y="195" width="110" height="50" rx="8" fill="rgba(88,166,255,.08)" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="815" y="220" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Nginx（LB）</text>
+  <line x1="710" y1="220" x2="755" y2="220" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="700" y="268" text-anchor="middle" fill="#8b949e" font-size="10.5">典型：Nginx 入口级（服务端） + 客户端 LoadBalancer 内部调用级，两级配合</text>
+  <!-- 底部 -->
+  <text x="440" y="295" text-anchor="middle" fill="#8b949e" font-size="11">区别：客户端 LB 在调用方进程内（分散），服务端 LB 是独立组件集中转发（Nginx/网关）</text>
+</svg>
