@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星露谷农场日志 · Farm Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   星露谷物语博客主题  ·  Stardew Valley Blog Theme
+   ============================================================ */
+
+:root{
+  --wood-900:#2e1a0c;
+  --wood-800:#3d2413;
+  --wood-700:#4a2c17;
+  --wood-600:#6b3f1d;
+  --wood-500:#8b5a2b;
+  --wood-400:#a9713f;
+  --wood-300:#c99c5e;
+  --wood-200:#d9a86c;
+  --wood-100:#efd7a8;
+  --paper:#f8e8c0;
+  --paper-light:#fff6dd;
+  --ink:#4a2c17;
+  --ink-soft:#6b4a2a;
+  --green-700:#2f5017;
+  --green-600:#3f6b1f;
+  --green-500:#5d8f2a;
+  --green-400:#8bc34a;
+  --grass-500:#5a9e3a;
+  --grass-600:#4f8f31;
+  --gold:#ffd23f;
+  --gold-deep:#e0a828;
+  --red:#d94f3d;
+  --blue:#5b9bd5;
+}
+
+*{ box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+  margin:0;
+  min-height:100vh;
+  padding:26px 16px 60px;
+  color:var(--ink);
+  font-family:'Press Start 2P','Zpix','Microsoft YaHei','PingFang SC',monospace;
+  font-size:13px;
+  line-height:1.6;
+  background-color:var(--grass-500);
+  background-image:
+    repeating-conic-gradient(#5a9e3a 0% 25%, #4f8f31 0% 50%);
+  background-size:22px 22px;
+  -webkit-font-smoothing:none;
+}
+
+svg{ shape-rendering:crispEdges; display:block; }
+
+/* ---------- 通用面板（星露谷对话框风格） ---------- */
+.sv-panel{
+  position:relative;
+  padding:20px;
+  background-color:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(180,140,80,.07) 0 2px, transparent 2px 6px);
+  border:4px solid var(--wood-300);
+  border-radius:5px;
+  box-shadow:
+    0 0 0 4px var(--wood-700),
+    inset 0 0 0 3px var(--paper-light),
+    inset 0 0 22px rgba(180,120,74,.22),
+    6px 8px 0 rgba(0,0,0,.28);
+}
+
+/* ---------- 页面容器 ---------- */
+.game-wrap{
+  max-width:1060px;
+  margin:0 auto;
+}
+
+/* ============================================================
+   顶部 HUD
+   ============================================================ */
+.hud{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  margin-bottom:18px;
+  border:4px solid var(--wood-800);
+  border-radius:6px;
+  background:linear-gradient(#7b4a24, #57331a);
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.25),
+    inset 0 -4px 0 rgba(0,0,0,.3),
+    0 6px 0 rgba(0,0,0,.3);
+  color:#ffe9b8;
+  font-size:12px;
+}
+
+.hud-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.hud-chip{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 10px;
+  background:rgba(0,0,0,.22);
+  border:2px solid rgba(255,220,160,.28);
+  border-radius:4px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.08);
+  white-space:nowrap;
+}
+
+.gold-chip{
+  color:var(--gold);
+  border-color:rgba(255,210,63,.45);
+}
+
+.ico{
+  width:16px;
+  height:16px;
+  flex:none;
+}
+
+/* ============================================================
+   木牌标题
+   ============================================================ */
+.blog-sign{
+  padding:18px 20px 15px;
+  margin-bottom:20px;
+  text-align:center;
+  border:4px solid var(--wood-700);
+  border-radius:6px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 2px, transparent 2px 46px),
+    linear-gradient(#b07a44, #8b5a2b);
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.35),
+    inset 0 -5px 0 rgba(0,0,0,.22),
+    0 6px 0 rgba(0,0,0,.3);
+}
+
+.blog-sign h1{
+  margin:0;
+  font-size:22px;
+  line-height:1.4;
+  letter-spacing:2px;
+  color:#ffe9b8;
+  text-shadow:2px 2px 0 var(--wood-700), 4px 4px 0 rgba(0,0,0,.2);
+}
+
+.blog-sign p{
+  margin:9px 0 0;
+  font-size:9px;
+  letter-spacing:3px;
+  color:#e8c99a;
+}
+
+/* ============================================================
+   双栏布局
+   ============================================================ */
+.layout{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:20px;
+  align-items:start;
+}
+
+.main-col{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.side-col{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+/* ============================================================
+   文章卡片
+   ============================================================ */
+.post{
+  transition:transform .15s ease;
+}
+
+.post:hover{
+  transform:translate(-2px,-2px);
+}
+
+.post-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.post-badge{
+  display:inline-block;
+  padding:4px 10px;
+  font-size:10px;
+  color:#fff6dd;
+  background:linear-gradient(#e8604f, #c93f2e);
+  border:2px solid #8f2a1c;
+  border-radius:3px;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.3),
+    0 2px 0 rgba(0,0,0,.2);
+  text-shadow:1px 1px 0 rgba(0,0,0,.35);
+}
+
+.post-time{
+  font-size:11px;
+  color:var(--wood-500);
+}
+
+.post-title{
+  margin:0 0 10px;
+  font-size:18px;
+  line-height:1.5;
+  color:var(--ink);
+  text-shadow:1px 1px 0 rgba(255,255,255,.7);
+}
+
+.post-text{
+  margin:0 0 16px;
+  font-size:12px;
+  line-height:2;
+  color:var(--ink-soft);
+}
+
+.post-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:16px;
+}
+
+.tag{
+  display:inline-block;
+  padding:3px 9px;
+  font-size:10px;
+  color:var(--wood-600);
+  background:#eed9ab;
+  border:2px solid var(--wood-300);
+  border-radius:3px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+}
+
+.divider{
+  height:3px;
+  margin:14px 0;
+  background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
+  opacity:.7;
+}
+
+.post-foot{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-top:14px;
+  border-top:3px dashed rgba(180,120,74,.4);
+}
+
+.post-meta{
+  font-size:10px;
+  color:var(--wood-500);
+}
+
+/* ---------- 像素按钮 ---------- */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:9px 16px;
+  font-family:inherit;
+  font-size:11px;
+  color:#fff6dd;
+  text-decoration:none;
+  background:linear-gradient(#8bc34a, #5d8f2a);
+  border:3px solid var(--green-600);
+  border-radius:4px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.32),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 4px 0 var(--green-700),
+    0 6px 0 rgba(0,0,0,.28);
+  text-shadow:1px 1px 0 rgba(0,0,0,.4);
+  cursor:pointer;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.32),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 6px 0 var(--green-700),
+    0 8px 0 rgba(0,0,0,.28);
+}
+
+.btn:active{
+  transform:translateY(3px);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.2),
+    inset 0 -2px 0 rgba(0,0,0,.25),
+    0 1px 0 var(--green-700);
+}
+
+/* ============================================================
+   侧边栏 · 名片
+   ============================================================ */
+.profile-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.avatar-frame{
+  flex:none;
+  width:76px;
+  height:76px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(#9ed0ef, #d6ecf9);
+  border:4px solid var(--wood-500);
+  border-radius:4px;
+  box-shadow:
+    0 0 0 3px var(--wood-700),
+    inset 0 0 0 2px var(--paper-light);
+}
+
+.avatar-frame svg{
+  width:62px;
+  height:62px;
+}
+
+.profile-info h3{
+  margin:0 0 4px;
+  font-size:15px;
+  color:var(--ink);
+}
+
+.farm-name{
+  margin:0 0 8px;
+  font-size:10px;
+  color:var(--wood-500);
+}
+
+.hearts{
+  display:flex;
+  gap:2px;
+}
+
+.heart{
+  width:16px;
+  height:14px;
+  color:var(--red);
+  filter:drop-shadow(1px 1px 0 rgba(0,0,0,.28));
+}
+
+.heart.empty{
+  color:#cbb489;
+}
+
+.profile-bio{
+  margin:0;
+  font-size:11px;
+  line-height:1.9;
+  color:var(--ink-soft);
+}
+
+/* ============================================================
+   侧边栏 · 技能条
+   ============================================================ */
+.panel-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 16px;
+  font-size:13px;
+  color:var(--ink);
+}
+
+.panel-title::after{
+  content:"";
+  flex:1;
+  height:3px;
+  background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
+}
+
+.skill{
+  margin-bottom:13px;
+}
+
+.skill:last-child{
+  margin-bottom:0;
+}
+
+.skill-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:5px;
+  font-size:10px;
+  color:var(--ink-soft);
+}
+
+.skill-head .lv{
+  color:var(--wood-500);
+}
+
+.bar{
+  height:14px;
+  padding:2px;
+  background:#6b4a2a;
+  border:2px solid var(--wood-800);
+  border-radius:2px;
+  box-shadow:inset 0 2px 0 rgba(0,0,0,.35);
+}
+
+.bar-fill{
+  height:100%;
+  background:linear-gradient(#9bd14a, #5d8f2a);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.35),
+    inset 0 -2px 0 rgba(0,0,0,.2);
+  border-radius:1px;
+}
+
+/* ============================================================
+   底部物品栏
+   ============================================================ */
+.hotbar{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+  margin-top:24px;
+  padding:10px;
+  background:rgba(61,36,19,.88);
+  border:4px solid var(--wood-800);
+  border-radius:6px;
+  box-shadow:
+    0 6px 0 rgba(0,0,0,.3),
+    inset 0 2px 0 rgba(255,220,160,.15);
+}
+
+.slot{
+  position:relative;
+  width:52px;
+  height:52px;
+  display:grid;
+  place-items:center;
+  background:#f2dcae;
+  border:3px solid var(--wood-500);
+  border-radius:3px;
+  box-shadow:
+    inset 0 0 0 2px #ffeec6,
+    inset 0 -3px 0 rgba(0,0,0,.12);
+}
+
+.slot.active{
+  box-shadow:
+    inset 0 0 0 2px #ffeec6,
+    0 0 0 3px var(--gold),
+    0 0 14px rgba(255,210,63,.85);
+  animation:slotPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes slotPulse{
+  0%,100%{ box-shadow:inset 0 0 0 2px #ffeec6, 0 0 0 3px var(--gold), 0 0 10px rgba(255,210,63,.7); }
+  50%    { box-shadow:inset 0 0 0 2px #ffeec6, 0 0 0 3px var(--gold), 0 0 20px rgba(255,210,63,1); }
+}
+
+.slot .num{
+  position:absolute;
+  top:1px;
+  left:4px;
+  font-size:8px;
+  color:var(--wood-500);
+}
+
+.slot svg{
+  width:32px;
+  height:32px;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width:880px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+  .side-col{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:20px;
+  }
+}
+
+@media (max-width:560px){
+  body{
+    padding:14px 9px 40px;
+    font-size:12px;
+    background-size:16px 16px;
+  }
+  .sv-panel{ padding:15px; }
+  .blog-sign h1{ font-size:16px; letter-spacing:1px; }
+  .blog-sign p{ font-size:8px; letter-spacing:1px; }
+  .post-title{ font-size:14px; }
+  .post-text{ font-size:11px; line-height:1.9; }
+  .hud{ font-size:10px; padding:8px 10px; }
+  .hud-chip{ padding:4px 7px; }
+  .ico{ width:13px; height:13px; }
+  .avatar-frame{ width:64px; height:64px; }
+  .avatar-frame svg{ width:52px; height:52px; }
+  .slot{ width:40px; height:40px; }
+  .slot svg{ width:25px; height:25px; }
+  .hotbar{ gap:3px; padding:8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="game-wrap">
+
+  <!-- ==================== 顶部 HUD ==================== -->
+  <header class="hud">
+    <div class="hud-group">
+
+      <!-- 日期 -->
+      <div class="hud-chip">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="4" y="1" width="2" height="3" fill="#3d2413"/>
+          <rect x="10" y="1" width="2" height="3" fill="#3d2413"/>
+          <rect x="2" y="3" width="12" height="11" fill="#f5e2b8"/>
+          <rect x="2" y="3" width="12" height="3" fill="#d94f3d"/>
+          <rect x="4" y="8" width="2" height="2" fill="#8b5a2b"/>
+          <rect x="7" y="8" width="2" height="2" fill="#8b5a2b"/>
+          <rect x="10" y="8" width="2" height="2" fill="#8b5a2b"/>
+          <rect x="4" y="11" width="2" height="2" fill="#8b5a2b"/>
+          <rect x="7" y="11" width="2" height="2" fill="#8b5a2b"/>
+        </svg>
+        <span>秋季 12 日 · 周三</span>
+      </div>
+
+      <!-- 时间 -->
+      <div class="hud-chip">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="6" y="2" width="4" height="12" fill="#e8d5a8"/>
+          <rect x="2" y="6" width="12" height="4" fill="#e8d5a8"/>
+          <rect x="4" y="4" width="8" height="8" fill="#e8d5a8"/>
+          <rect x="7" y="5" width="2" height="4" fill="#4a2c17"/>
+          <rect x="8" y="7" width="3" height="2" fill="#4a2c17"/>
+        </svg>
+        <span>下午 3:40</span>
+      </div>
+
+      <!-- 天气 -->
+      <div class="hud-chip">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <g fill="#ffd23f">
+            <rect x="7" y="0" width="2" height="2"/>
+            <rect x="7" y="14" width="2" height="2"/>
+            <rect x="0" y="7" width="2" height="2"/>
+            <rect x="14" y="7" width="2" height="2"/>
+            <rect x="2" y="2" width="2" height="2"/>
+            <rect x="12" y="2" width="2" height="2"/>
+            <rect x="2" y="12" width="2" height="2"/>
+            <rect x="12" y="12" width="2" height="2"/>
+            <rect x="5" y="4" width="6" height="8"/>
+            <rect x="4" y="5" width="8" height="6"/>
+          </g>
+          <rect x="6" y="6" width="4" height="4" fill="#fff0a8"/>
+        </svg>
+        <span>晴天</span>
+      </div>
+
+    </div>
+
+    <!-- 金币 -->
+    <div class="hud-chip gold-chip">
+      <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="4" y="3" width="8" height="10" fill="#ffd23f"/>
+        <rect x="3" y="4" width="10" height="8" fill="#ffd23f"/>
+        <rect x="6" y="5" width="4" height="6" fill="#ffe98a"/>
+        <rect x="7" y="6" width="3" height="4" fill="#e0a828"/>
+      </svg>
+      <span>12,480 G</span>
+    </div>
+  </header>
+
+  <!-- ==================== 木牌标题 ==================== -->
+  <div class="blog-sign">
+    <h1>星露谷农场日志</h1>
+    <p>STARDEW VALLEY · FARM BLOG</p>
+  </div>
+
+  <!-- ==================== 主体 ==================== -->
+  <div class="layout">
+
+    <!-- ---------- 文章列表 ---------- -->
+    <main class="main-col">
+
+      <!-- 文章 1 -->
+      <article class="sv-panel post">
+        <div class="post-top">
+          <span class="post-badge">置顶</span>
+          <time class="post-time" datetime="2024-10-12">秋季 12 日</time>
+        </div>
+
+        <h2 class="post-title">第一次收获巨型南瓜！</h2>
+
+        <p class="post-text">
+          今天早上给南瓜地浇水的时候，锄头差点被弹飞——一个占了三格地的巨型南瓜从土里冒了出来。
+          镇长刘易斯说这是今年农场最大的作物，还给我颁了一枚金色奖章。
+          傍晚把南瓜运到集市，卖了个好价钱，终于凑够了升级鸡舍的钱。
+        </p>
+
+        <div class="post-tags">
+          <span class="tag"># 农场日记</span>
+          <span class="tag"># 秋季</span>
+          <span class="tag"># 收获</span>
+        </div>
+
+        <div class="post-foot">
+          <span class="post-meta">💬 12 条评论 · ♥ 48 赞</span>
+          <a href="#" class="btn">阅读全文 ▸</a>
+        </div>
+      </article>
+
+      <!-- 文章 2 -->
+      <article class="sv-panel post">
+        <div class="post-top">
+          <time class="post-time" datetime="2024-10-08">秋季 8 日</time>
+        </div>
+
+        <h2 class="post-title">用 CSS 复刻星露谷的对话框</h2>
+
+        <p class="post-text">
+          星露谷的 UI 有一种特别的「厚重感」：四层描边、内阴影、还有右下角那一道硬阴影。
+          这次我试着用纯 CSS 的 box-shadow 把它还原出来，意外地只需要几行代码。
+          关键在于——不要用 border-radius 做圆角，像素风要的是直角。
+        </p>
+
+        <div class="post-tags">
+          <span class="tag"># 前端</span>
+          <span class="tag"># CSS</span>
+          <span class="tag"># 像素风</span>
+        </div>
+
+        <div class="post-foot">
+          <span class="post-meta">💬 27 条评论 · ♥ 156 赞</span>
+          <a href="#" class="btn">阅读全文 ▸</a>
+        </div>
+      </article>
+
+      <!-- 文章 3 -->
+      <article class="sv-panel post">
+        <div class="post-top">
+          <time class="post-time" datetime="2024-10-03">秋季 3 日</time>
+        </div>
+
+        <h2 class="post-title">矿洞第 40 层：终于见到了骷髅</h2>
+
+        <p class="post-text">
+          带了 12 个炸弹、3 组石头和一份南瓜汤下矿，在第 38 层被一群史莱姆围住，血量掉到个位数。
+          幸好背包里还剩最后一颗樱桃炸弹。第 40 层的骷髅比想象中难缠，
+          但掉落的铁矿石足够我把洒水器全部升级一遍了。
+        </p>
+
+        <div class="post-tags">
+          <span class="tag"># 游戏随笔</span>
+          <span class="tag"># 矿洞</span>
+          <span class="tag"># 冒险</span>
+        </div>
+
+        <div class="post-foot">
+          <span class="post-meta">💬 8 条评论 · ♥ 33 赞</span>
+          <a href="#" class="btn">阅读全文 ▸</a>
+        </div>
+      </article>
+
+    </main>
+
+    <!-- ---------- 侧边栏 ---------- -->
+    <aside class="side-col">
+
+      <!-- 农夫名片 -->
+      <div class="sv-panel">
+        <div class="profile-head">
+          <div class="avatar-frame">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <!-- 草帽 -->
+              <rect x="5" y="0" width="6" height="1" fill="#e8c46a"/>
+              <rect x="4" y="1" width="8" height="1" fill="#e8c46a"/>
+              <rect x="2" y="2" width="12" height="1" fill="#d4a94e"/>
+              <rect x="2" y="3" width="12" height="1" fill="#b8893a"/>
+              <!-- 脸 -->
+              <rect x="5" y="4" width="6" height="1" fill="#f5cba7"/>
+              <rect x="4" y="5" width="8" height="3" fill="#f5cba7"/>
+              <rect x="5" y="8" width="6" height="1" fill="#f5cba7"/>
+              <!-- 头发 -->
+              <rect x="4" y="4" width="1" height="3" fill="#6b3f1d"/>
+              <rect x="11" y="4" width="1" height="3" fill="#6b3f1d"/>
+              <!-- 眼睛 -->
+              <rect x="6" y="6" width="1" height="1" fill="#3a2415"/>
+              <rect x="9" y="6" width="1" height="1" fill="#3a2415"/>
+              <!-- 腮红 & 嘴 -->
+              <rect x="5" y="7" width="1" height="1" fill="#f0a58a"/>
+              <rect x="10" y="7" width="1" height="1" fill="#f0a58a"/>
+              <rect x="7" y="8" width="2" height="1" fill="#d99a7a"/>
+              <!-- 身体 -->
+              <rect x="4" y="9" width="8" height="4" fill="#5b9bd5"/>
+              <rect x="5" y="11" width="6" height="2" fill="#3f6b9e"/>
+              <rect x="3" y="9" width="1" height="3" fill="#f5cba7"/>
+              <rect x="12" y="9" width="1" height="3" fill="#f5cba7"/>
+              <!-- 腿 -->
+              <rect x="5" y="13" width="2" height="2" fill="#6b4a2a"/>
+              <rect x="9" y="13" width="2" height="2" fill="#6b4a2a"/>
+            </svg>
+          </div>
+
+          <div class="profile-info">
+            <h3>阿星</h3>
+            <p class="farm-name">月牙湾农场</p>
+            <div class="hearts" aria-label="好感度 4.5 颗心">
+              <svg class="heart" viewBox="0 0 9 8" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="0" y="1" width="4" height="1"/><rect x="5" y="1" width="4" height="1"/><rect x="0" y="2" width="9" height="2"/><rect x="1" y="4" width="7" height="1"/><rect x="2" y="5" width="5" height="1"/><rect x="3" y="6" width="3" height="1"/><rect x="4" y="7" width="1" height="1"/></g></svg>
+              <svg class="heart" viewBox="0 0 9 8" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="0" y="1" width="4" height="1"/><rect x="5" y="1" width="4" height="1"/><rect x="0" y="2" width="9" height="2"/><rect x="1" y="4" width="7" height="1"/><rect x="2" y="5" width="5" height="1"/><rect x="3" y="6" width="3" height="1"/><rect x="4" y="7" width="1" height="1"/></g></svg>
+              <svg class="heart" viewBox="0 0 9 8" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="0" y="1" width="4" height="1"/><rect x="5" y="1" width="4" height="1"/><rect x="0" y="2" width="9" height="2"/><rect x="1" y="4" width="7" height="1"/><rect x="2" y="5" width="5" height="1"/><rect x="3" y="6" width="3" height="1"/><rect x="4" y="7" width="1" height="1"/></g></svg>
+              <svg class="heart" viewBox="0 0 9 8" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="0" y="1" width="4" height="1"/><rect x="5" y="1" width="4" height="1"/><rect x="0" y="2" width="9" height="2"/><rect x="1" y="4" width="7" height="1"/><rect x="2" y="5" width="5" height="1"/><rect x="3" y="6" width="3" height="1"/><rect x="4" y="7" width="1" height="1"/></g></svg>
+              <svg class="heart empty" viewBox="0 0 9 8" aria-hidden="true"><g fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="0" y="1" width="4" height="1"/><rect x="5" y="1" width="4" height="1"/><rect x="0" y="2" width="9" height="2"/><rect x="1" y="4" width="7" height="1"/><rect x="2" y="5" width="5" height="1"/><rect x="3" y="6" width="3" height="1"/><rect x="4" y="7" width="1" height="1"/></g></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="profile-bio">
+          在这里种地、钓鱼、写代码。<br>
+          记录星露谷里的每一天，也记录屏幕外的小事。
+        </p>
+      </div>
+
+      <!-- 技能面板 -->
+      <div class="sv-panel">
+        <h3 class="panel-title">技能</h3>
+
+        <div class="skill">
+          <div class="skill-head"><span>🌾 农耕</span><span class="lv">Lv.8</span></div>
+          <div class="bar"><div class="bar-fill" style="width:80%"></div></div>
+        </div>
+
+        <div class="skill">
+          <div class="skill-head"><span>⛏️ 采矿</span><span class="lv">Lv.6</span></div>
+          <div class="bar"><div class="bar-fill" style="width:60%"></div></div>
+        </div>
+
+        <div class="skill">
+          <div class="skill-head"><span>🍎 采集</span><span class="lv">Lv.5</span></div>
+          <div class="bar"><div class="bar-fill" style="width:50%"></div></div>
+        </div>
+
+        <div class="skill">
+          <div class="skill-head"><span>🎣 钓鱼</span><span class="lv">Lv.4</span></div>
+          <div class="bar"><div class="bar-fill" style="width:40%"></div></div>
+        </div>
+
+        <div class="skill">
+          <div class="skill-head"><span>⚔️ 战斗</span><span class="lv">Lv.3</span></div>
+          <div class="bar"><div class="bar-fill" style="width:30%"></div></div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ==================== 底部物品栏 ==================== -->
+  <div class="hotbar">
+
+    <!-- 1 南瓜 -->
+    <div class="slot active">
+      <span class="num">1</span>
+      <svg viewBox="0 0 16 16" aria-label="南瓜">
+        <rect x="7" y="1" width="2" height="2" fill="#6a8a30"/>
+        <rect x="3" y="3" width="10" height="10" fill="#e8892b"/>
+        <rect x="2" y="5" width="12" height="6" fill="#e8892b"/>
+        <rect x="5" y="3" width="2" height="10" fill="#c96a18"/>
+        <rect x="9" y="3" width="2" height="10" fill="#c96a18"/>
+        <rect x="7" y="4" width="1" height="8" fill="#f5a94f"/>
+      </svg>
+    </div>
+
+    <!-- 2 鱼 -->
+    <div class="slot">
+      <span class="num">2</span>
+      <svg viewBox="0 0 16 16" aria-label="鱼">
+        <rect x="4" y="5" width="7" height="6" fill="#5b9bd5"/>
+        <rect x="3" y="6" width="9" height="4" fill="#5b9bd5"/>
+        <rect x="1" y="4" width="3" height="3" fill="#3f7fb5"/>
+        <rect x="1" y="9" width="3" height="3" fill="#3f7fb5"/>
+        <rect x="3" y="7" width="3" height="2" fill="#3f7fb5"/>
+        <rect x="9" y="6" width="1" height="1" fill="#1c2a3a"/>
+      </svg>
+    </div>
+
+    <!-- 3 镐子 -->
+    <div class="slot">
+      <span class="num">3</span>
+      <svg viewBox="0 0 16 16" aria-label="镐子">
+        <rect x="2" y="3" width="10" height="2" fill="#b0c4d8"/>
+        <rect x="1" y="4" width="3" height="2" fill="#b0c4d8"/>
+        <rect x="10" y="5" width="2" height="2" fill="#8fa8c0"/>
+        <rect x="6" y="5" width="2" height="9" fill="#8b5a2b"/>
+      </svg>
+    </div>
+
+    <!-- 4 剑 -->
+    <div class="slot">
+      <span class="num">4</span>
+      <svg viewBox="0 0 16 16" aria-label="剑">
+        <rect x="7" y="1" width="2" height="10" fill="#d8e4ee"/>
+        <rect x="8" y="1" width="1" height="10" fill="#9fb8cc"/>
+        <rect x="4" y="10" width="8" height="2" fill="#c99c5e"/>
+        <rect x="7" y="12" width="2" height="3" fill="#6b3f1d"/>
+      </svg>
+    </div>
+
+    <!-- 5 鸡蛋 -->
+    <div class="slot">
+      <span class="num">5</span>
+      <svg viewBox="0 0 16 16" aria-label="鸡蛋">
+        <rect x="5" y="3" width="6" height="10" fill="#f0dcb0"/>
+        <rect x="4" y="5" width="8" height="7" fill="#f0dcb0"/>
+        <rect x="6" y="5" width="2" height="3" fill="#fffbe8"/>
+      </svg>
+    </div>
+
+    <!-- 6 宝石 -->
+    <div class="slot">
+      <span class="num">6</span>
+      <svg viewBox="0 0 16 16" aria-label="宝石">
+        <rect x="5" y="3" width="6" height="2" fill="#7ee0c8"/>
+        <rect x="3" y="5" width="10" height="4" fill="#4ec9a8"/>
+        <rect x="5" y="9" width="6" height="3" fill="#3aa886"/>
+        <rect x="6" y="10" width="4" height="2" fill="#3aa886"/>
+        <rect x="6" y="5" width="2" height="2" fill="#b8f5e6"/>
+      </svg>
+    </div>
+
+    <!-- 7~12 空槽 -->
+    <div class="slot"><span class="num">7</span></div>
+    <div class="slot"><span class="num">8</span></div>
+    <div class="slot"><span class="num">9</span></div>
+    <div class="slot"><span class="num">0</span></div>
+    <div class="slot"><span class="num">-</span></div>
+    <div class="slot"><span class="num">=</span></div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
