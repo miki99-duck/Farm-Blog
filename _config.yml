@@ -19,41 +19,45 @@ kramdown:
 # ============================================================
 #  新增一篇文档要做什么
 # ============================================================
-# 1) 把 .md 放进分类文件夹。
-#    顶层文件夹名就是分类名；放在仓库根目录的算「未分类」。
-#    也可以用 front matter 的 category 字段覆盖文件夹名。
+# 1) 把 .md 放进分类文件夹。顶层文件夹名就是分类名，根目录的算「未分类」。
+# 2) push。完事。
 #
-# 2) 文件开头写 front matter：
+# 不需要写任何 front matter。下面这些全是可选项：
 #
-#      ---
-#      layout: default          # 必填，套文档阅读页布局
-#      title: "标题"
-#      date: 2024-10-15         # 必填，首页按它倒序。**不要加引号**
-#      tags: [Kafka, Java]      # 首页标签 + 侧栏「农作物」筛选都读它
-#      summary: "一句话摘要"     # 可选；不写就截取正文前 110 字
-#      ---
+#   ---
+#   layout: default          # 不写会自动套 _layouts/default.html
+#   title: "标题"             # 不写会自动取正文第一个 # 标题
+#   date: 2024-10-15         # 不写就排在同类最后、按文件名升序。不要加引号
+#   tags: [Kafka, Java]      # 不写就没有标签，也不参与侧栏「农作物」筛选
+#   summary: "一句话摘要"     # 不写就截取正文前 110 字
+#   category: 自定义分类      # 不写就用顶层文件夹名
+#   listed: false            # 写了就不出现在首页列表（页面本身仍可访问）
+#   ---
 #
-# 3) push。首页 index.html 里的 Liquid 会遍历 site.pages 自动生成卡片，
-#    分组用的就是顶层文件夹名。不需要手写卡片。
+# 首页列表由 index.html 里的 Liquid 生成：遍历 site.pages，按顶层文件夹分组，
+# 组内有 date 的按日期倒序，没 date 的按文件名升序排在最后。
 #
-# ---- 为什么 date 不能加引号 ----
-# YAML 里裸写的 2024-10-15 会解析成 Date 对象，加引号就变成字符串。
-# Jekyll 的 sort 用 <=> 比较，Date 和 String 混在一起会抛异常，
-# 直接导致整站构建失败。全部不写引号（或全部加引号）都行，别混。
+# ---- date 为什么不能加引号 ----
+# YAML 里裸写的 2024-10-15 解析成 Date 对象，加了引号就变成字符串。
+# Jekyll 的 sort 用 <=> 比较，两者混在一起会抛异常，直接导致整站构建失败。
+# 要么全部不加引号，要么全部加，别混。
 #
-# 漏写 date 不会让构建失败：文档会排在首页列表最后、日期显示为空
-# （依据 jekyll/lib/jekyll/filters.rb 的 sort_input，默认 nils="first"，
-#   升序后 reverse 正好把空值翻到末尾）。
+# ---- 为什么首页列表刻意不用 where 过滤器 ----
+# Jekyll 3.10 的 where 会按 input.hash 记忆化结果：
+#     @where_filter_cache[input_id][property][value] ||= ...
+# 而 jekyll-optional-front-matter 是在渲染期把没有 front matter 的 .md
+# concat 进 site.pages 的，两者叠加会让 where 返回不完整的结果 ——
+# 实测 21 篇文档用 `where: "layout","default"` 只筛出 4 篇。
+# 所以改成显式 for 循环。以后改这块模板时不要换回 where。
 #
-# ---- 为什么不用 defaults 自动补 front matter ----
-# defaults 的 scope 只能按路径前缀过滤，没法只匹配 .md，index.html 会被一起套上。
-# 而 index.html 的 front matter 写的正是 layout: null，就是为了不被套布局：
-# 它的 url 是 "/"，会被 jekyll-default-layout 匹配到 home/default 布局，
-# 一旦套上，整个博客首页会被塞进文档布局里拆坏。
+# ---- 分类名为什么取 page.path 而不是 page.dir ----
+# Page#dir 是从（已编码的）url 派生的：
+#     def dir; url.end_with?("/") ? url : ...; end
+# 所以中文文件夹会变成 %E6%8A%80%E6%9C%AF，页面上就是乱码。
+# page.path 走的是 relative_path（拼接原始的 @dir），还是「技术」。
 #
-# 顺带：别在仓库根目录放 README.md。
-# jekyll-optional-front-matter 对 README/LICENSE 这类文件名有黑名单，
-# 而 jekyll-readme-index 会试图把根目录 README.md 变成 index.html，和现有首页冲突。
+# ---- 别在仓库根目录放 README.md ----
+# jekyll-readme-index 会试图把根目录的 README.md 变成 index.html，和现有首页冲突。
 #
 # ============================================================
 #  唯一需要人工注意的坑：{{ 和 {%

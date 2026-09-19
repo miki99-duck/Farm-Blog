@@ -6,6 +6,7 @@ layout: null
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
 <title>星露谷农场日志 · Farm Blog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -760,38 +761,60 @@ a:focus-visible,
     <!-- ---------- 文章列表 ---------- -->
     <main class="main-col">
       {%- comment -%}
-        文章列表由 Jekyll 自动生成。
-        遍历 site.pages 里所有使用 default 布局的文档，按顶层文件夹分组
-        （文件夹名 = 分类，可用 front matter 的 category 覆盖），组内按日期倒序。
-        index.html 自己用的是 layout: null，不会被列进来。
+        文章列表由 Jekyll 生成。
+        刻意不用 where 过滤器：Jekyll 3.10 的 where 按 input.hash 记忆化结果，
+        而 jekyll-optional-front-matter 会在渲染期把新页面 concat 进 site.pages，
+        两者叠加会让 where 返回不完整的结果（实测只出 4 篇，实际 21 篇）。
+        改成一个显式 for 循环，行为完全可预测。
+        分类取 page.path 的第一段——不能用 page.dir，
+        因为 Page#dir 是从（已编码的）url 派生的，中文文件夹会变成 %E6%8A%80%E6%9C%AF。
       {%- endcomment -%}
-      {%- assign docs = site.pages | where: "layout", "default" | sort: "date" | reverse -%}
+      {%- assign docs = "" | split: "|" -%}
+      {%- for p in site.pages -%}
+        {%- if p.url != "/" and p.name != "index.html" and p.listed != false -%}
+          {%- assign docs = docs | push: p -%}
+        {%- endif -%}
+      {%- endfor -%}
 
       {%- assign cats = "" | split: "|" -%}
       {%- for d in docs -%}
-        {%- assign folder = d.dir | remove_first: "/" | split: "/" | first -%}
-        {%- assign c = d.category | default: folder | default: "未分类" -%}
+        {%- assign segs = d.path | split: "/" -%}
+        {%- if segs.size > 1 -%}{%- assign folder = segs | first -%}{%- else -%}{%- assign folder = "未分类" -%}{%- endif -%}
+        {%- assign c = d.category | default: folder -%}
         {%- unless cats contains c -%}{%- assign cats = cats | push: c -%}{%- endunless -%}
       {%- endfor -%}
 
+      <!-- 构建信息：site.pages={{ site.pages.size }} / 收录文档={{ docs.size }} / 分类={{ cats.size }} -->
+
       {%- if docs.size == 0 -%}
       <div class="sv-panel post">
-        <p class="post-text">还没有文章。把 .md 文件放进仓库，写上 layout: default 和 date，就会自动出现在这里。</p>
+        <p class="post-text">还没有文章。把 .md 文件放进仓库（可以再套一层分类文件夹），push 后就会自动出现在这里。</p>
       </div>
       {%- endif -%}
 
       {%- for c in cats -%}
+        {%- assign dated = "" | split: "|" -%}
+        {%- assign undated = "" | split: "|" -%}
+        {%- for d in docs -%}
+          {%- assign segs = d.path | split: "/" -%}
+          {%- if segs.size > 1 -%}{%- assign folder = segs | first -%}{%- else -%}{%- assign folder = "未分类" -%}{%- endif -%}
+          {%- assign dc = d.category | default: folder -%}
+          {%- if dc == c -%}
+            {%- if d.date -%}{%- assign dated = dated | push: d -%}{%- else -%}{%- assign undated = undated | push: d -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- assign dated = dated | sort: "date" | reverse -%}
+        {%- assign undated = undated | sort: "path" -%}
+        {%- assign ordered = dated | concat: undated -%}
+        {%- if ordered.size > 0 -%}
       <section class="cat-group">
         <h2 class="cat-title">📁 {{ c }}</h2>
 
-        {%- for d in docs -%}
-          {%- assign folder = d.dir | remove_first: "/" | split: "/" | first -%}
-          {%- assign dc = d.category | default: folder | default: "未分类" -%}
-          {%- if dc == c -%}
+          {%- for d in ordered -%}
         <article class="sv-panel post">
           <div class="post-top">
             <span class="post-badge">{{ c }}</span>
-            <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{{ d.date | date: "%Y-%m-%d" }}</time>
+            <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
           </div>
 
           <h3 class="post-title">{{ d.title | default: d.name }}</h3>
@@ -806,12 +829,12 @@ a:focus-visible,
 
           <div class="post-foot">
             <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
-            <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title }}">阅读全文 ▸</a>
+            <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title | default: d.name }}">阅读全文 ▸</a>
           </div>
         </article>
-          {%- endif -%}
-        {%- endfor -%}
+          {%- endfor -%}
       </section>
+        {%- endif -%}
       {%- endfor -%}
 
     </main>
