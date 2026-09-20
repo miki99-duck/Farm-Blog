@@ -1,3 +1,8 @@
+---
+title: "第6章 Spring 启动流程 refresh()"
+tags: [Spring]
+---
+
 # 第6章 Spring 启动流程 refresh()
 
 > 面试定位：中高频。考法是"12 步记不全没关系，但要知道哪几步是重点、扩展点挂在哪个阶段"。

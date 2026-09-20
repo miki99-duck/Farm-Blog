@@ -1,3 +1,8 @@
+---
+title: "第7章 Spring Boot 自动装配"
+tags: [Spring]
+---
+
 # 第7章 Spring Boot 自动装配
 
 > 面试定位：中高频。必考三连：
