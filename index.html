@@ -212,6 +212,9 @@ svg{ shape-rendering:crispEdges; display:block; }
   gap:20px;
 }
 
+/* display:flex 会覆盖 [hidden]，必须显式补回 */
+.side-col[hidden]{ display:none; }
+
 /* ============================================================
    文章卡片
    ============================================================ */
@@ -223,6 +226,9 @@ svg{ shape-rendering:crispEdges; display:block; }
   padding:16px 18px;
   transition:transform .15s ease;
 }
+
+/* .post 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，必须显式补回 */
+.post[hidden]{ display:none; }
 
 .post:hover{
   transform:translate(-2px,-2px);
