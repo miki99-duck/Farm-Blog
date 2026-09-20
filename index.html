@@ -197,12 +197,8 @@ svg{ shape-rendering:crispEdges; display:block; }
 /* ============================================================
    双栏布局
    ============================================================ */
-.layout{
-  display:grid;
-  grid-template-columns:1fr 320px;
-  gap:20px;
-  align-items:start;
-}
+/* .layout 现在只装 main 一列 —— 侧栏已挪进 .fullpage 里和菜园子并排，不再占 grid 的第二列 */
+.layout{ display:block; }
 
 .main-col{
   display:flex;
@@ -499,13 +495,30 @@ a:focus-visible,
 }
 
 /* ============================================================
+   菜园子 + 侧边栏（同一行）
+   左列 900px 放菜园子；右列 320px 放侧边栏，两者顶对齐。
+   点田块 → .garden-view 隐藏、.list-section 显示，占同一格；
+   侧栏始终在右列不动。
+   ============================================================ */
+.fullpage{
+  display:grid;
+  grid-template-columns:minmax(0,900px) 320px;
+  gap:20px;
+  align-items:start;
+}
+
+.fullpage > .side-col{
+  align-self:start;
+}
+
+/* ============================================================
    菜园子（文档入口：一块田 = 一个标签，点进去看那片地的文章）
    田块由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
    ============================================================ */
 .garden-view{
-  /* 左对齐贴住 .game-wrap 左边线，不居中（右侧空出的宽度正好是侧栏那 320px 一带） */
+  /* 左对齐贴住 .game-wrap 左边线，不居中 */
   max-width:900px;
-  margin:0 0 24px;
+  align-self:start;
 }
 
 .garden-head{
@@ -669,8 +682,12 @@ a:focus-visible,
    作物横幅（点田块后显示在列表上方）
    .layout 常驻不隐藏，侧边栏始终可见；只切菜园子面板和这一块。
    ============================================================ */
+/* .list-section = 作物横幅 + 文档列表，默认隐藏，点田块才显示；
+   它和 .garden-view 占 .fullpage 的同一个左列格子，侧栏不受影响 */
+.list-section{ display:block; }
+.list-section[hidden]{ display:none; }
+
 .list-head{ margin:0 0 16px; }
-.list-head[hidden]{ display:none; }
 
 .breadcrumb{
   display:flex;
@@ -848,9 +865,8 @@ a:focus-visible,
    响应式
    ============================================================ */
 @media (max-width:880px){
-  .layout{
-    grid-template-columns:1fr;
-  }
+  /* 菜园子与侧栏堆叠，侧栏里的名片/技能并排铺 */
+  .fullpage{ grid-template-columns:1fr; }
   .side-col{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
@@ -869,6 +885,8 @@ a:focus-visible,
   .sv-panel{ padding:15px; }
   .blog-sign h1{ font-size:16px; letter-spacing:1px; }
   .blog-sign p{ font-size:9px; letter-spacing:1px; }
+  /* 手机上菜园子独占一行，侧栏整块排到下面 */
+  .fullpage{ grid-template-columns:1fr; }
   /* 手机上一列田块，横幅收成两行 */
   .garden{ grid-template-columns:1fr; gap:9px; }
   .plot{ padding:10px 8px 8px; }
@@ -1074,127 +1092,132 @@ a:focus-visible,
     <p>STARDEW VALLEY · FARM BLOG</p>
   </div>
 
-  <!-- ==================== 菜园子：文档入口 ====================
-       田块由页尾脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
-       每篇的「主标签」= front matter 里第一个 tag，所以一块田只归一种文档。
-       点一块田 → 隐藏菜园子 + 显示作物横幅 + 列表按主标签过滤；返回 / Esc → 恢复菜园子、列表回到全部。
-       侧边栏（.layout）始终可见，不做视图切换。
-       深链：#crop=spring / #all / #untagged。
-       注意：不用 Jekyll where 过滤器，原因见下方列表区的 comment。 -->
-  <section class="garden-view" id="garden-view" aria-label="菜园子">
-    <div class="sv-panel">
-      <div class="garden-head">
-        <h2 class="panel-title">🌾 菜园子</h2>
-        <p class="garden-hint">点一块田，进去看那片地的文章</p>
-      </div>
-
-      <div class="garden" id="garden-formal"></div>
-
-      <details class="trial" id="trial-field">
-        <summary>🌱 试验田<span class="trial-count" id="trial-count"></span></summary>
-        <div class="garden" id="garden-trial"></div>
-      </details>
-
-      <div class="garden" id="garden-special"></div>
-    </div>
-  </section>
-
-  <!-- ==================== 作物横幅（点田块后显示在列表上方） ====================
-       侧边栏不做视图切换、始终可见 —— 所以 .layout 不参与隐藏，
-       只切菜园子面板和这一块横幅。 -->
-  <div class="list-head" id="list-head" hidden>
-    <div class="breadcrumb" id="breadcrumb">
-      <a href="#" id="bc-garden">🌾 菜园子</a>
-      <span class="sep">›</span>
-      <span id="bc-current">全部收成</span>
-      <button type="button" class="btn wood back-btn" id="back-garden">◀ 返回菜园子</button>
-    </div>
-    <div class="crop-banner" id="crop-banner">
-      <div class="banner-crop" id="banner-crop">📚</div>
-      <div>
-        <div class="banner-name" id="banner-name">全部收成</div>
-        <div class="banner-sub" id="banner-sub"></div>
-      </div>
-      <div class="banner-meta" id="banner-meta"></div>
-    </div>
-  </div>
-
-  <div class="layout">
-
-    <!-- ---------- 文章列表 ---------- -->
-    <main class="main-col" id="doc-list">
-      {%- comment -%}
-        文档列表由 Jekyll 生成：遍历 site.pages，排除首页自身和资源目录。
-        刻意不用 where 过滤器 —— Jekyll 3.10 的 where 按 input.hash 记忆化结果，
-        而 jekyll-optional-front-matter 是在渲染期把新页面 concat 进 site.pages 的，
-        两者叠加会漏文档（实测 21 篇只筛出 4 篇）。
-        不显示分类：文件夹只用于组织文件，不在页面上出现。
-        排序：有 date 的按日期倒序；没写 date 的按文件名升序排在最后。
-        分页由页尾脚本完成，每页 10 条。
-      {%- endcomment -%}
-      {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
-      {%- assign dated = "" | split: "|" -%}
-      {%- assign undated = "" | split: "|" -%}
-      {%- for p in site.pages -%}
-        {%- assign segs = p.path | split: "/" -%}
-        {%- assign top = segs | first -%}
-        {%- assign keep = true -%}
-        {%- if p.url == "/" or p.name == "index.html" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
-        {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
-        {%- if keep -%}
-          {%- if p.date -%}{%- assign dated = dated | push: p -%}{%- else -%}{%- assign undated = undated | push: p -%}{%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {%- assign dated = dated | sort: "date" | reverse -%}
-      {%- assign undated = undated | sort: "path" -%}
-      {%- assign docs = dated | concat: undated -%}
-
-      <!-- 构建信息：site.pages={{ site.pages.size }} / 收录文档={{ docs.size }} / 每页 10 条 -->
-
-      {%- if docs.size == 0 -%}
+  <!-- ==================== 菜园子 + 侧边栏（同一行：菜园子左 / 侧栏右） ====================
+        菜园子的田块由页尾脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源；
+        每篇的「主标签」= front matter 里第一个 tag，一块田只归一种文档。
+        侧栏不参与视图切换、始终可见；文档列表默认隐藏，点田块才出现（下方 .list-section）。 -->
+  <div class="fullpage">
+    <section class="garden-view" id="garden-view" aria-label="菜园子">
       <div class="sv-panel">
-        <p class="empty-tip">还没有文章。把 .md 文件放进仓库，push 后就会自动出现在这里。</p>
-      </div>
-      {%- endif -%}
-
-      {%- for d in docs -%}
-      <article class="sv-panel post">
-        <div class="post-head">
-          <h3 class="post-title">{{ d.title | default: d.name }}</h3>
-          <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
+        <div class="garden-head">
+          <h2 class="panel-title">🌾 菜园子</h2>
+          <p class="garden-hint">点一块田，进去看那片地的文章</p>
         </div>
 
-        <p class="post-text">{{ d.summary | default: d.description | default: d.content | strip_html | truncate: 110 }}</p>
+        <div class="garden" id="garden-formal"></div>
 
-        <div class="post-foot">
-          <div class="post-tags">
-            {%- for tag in d.tags %}
-            <span class="tag"># {{ tag }}</span>
-            {%- endfor %}
-          </div>
-          <div class="post-act">
-            <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
-            <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title | default: d.name }}">阅读全文 ▸</a>
-          </div>
+        <details class="trial" id="trial-field">
+          <summary>🌱 试验田<span class="trial-count" id="trial-count"></span></summary>
+          <div class="garden" id="garden-trial"></div>
+        </details>
+
+        <div class="garden" id="garden-special"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 作物横幅 + 文档列表（默认隐藏，点田块才显示） ====================
+          默认停在菜园子；点一块田 → 隐藏菜园子、显示这里并按主标签过滤列表；
+          返回 / Esc → 恢复菜园子、列表回到全部。深链：#crop=spring / #all / #untagged。 -->
+    <div class="list-section" id="list-section" hidden>
+      <div class="list-head" id="list-head">
+        <div class="breadcrumb" id="breadcrumb">
+          <a href="#" id="bc-garden">🌾 菜园子</a>
+          <span class="sep">›</span>
+          <span id="bc-current">全部收成</span>
+          <button type="button" class="btn wood back-btn" id="back-garden">◀ 返回菜园子</button>
         </div>
-      </article>
-      {%- endfor -%}
-
-      <!-- 筛选后 0 篇时的占位（点进一块空田、或全部文档都补齐了 tags 却访问 #untagged） -->
-      <div class="sv-panel empty-filter" id="empty-filter" hidden>
-        <p class="empty-tip">这片地里还没种上文章。把 .md 文件 front matter 里
-          <code>tags:</code> 的<b>第一个</b>标签换成
-          <code>#<span id="empty-crop-name">Spring</span></code> 就会种上这块田。</p>
-        <p class="empty-back-row"><button type="button" class="btn wood" id="empty-back">◀ 返回菜园子</button></p>
+        <div class="crop-banner" id="crop-banner">
+          <div class="banner-crop" id="banner-crop">📚</div>
+          <div>
+            <div class="banner-name" id="banner-name">全部收成</div>
+            <div class="banner-sub" id="banner-sub"></div>
+          </div>
+          <div class="banner-meta" id="banner-meta"></div>
+        </div>
       </div>
 
-      <nav class="pager" id="pager" aria-label="分页" hidden>
-        <button type="button" class="pager-btn" data-page="prev">◂ 上一页</button>
-        <span class="pager-pages" id="pager-pages"></span>
-        <button type="button" class="pager-btn" data-page="next">下一页 ▸</button>
-      </nav>
-      <p class="pager-info" id="pager-info" role="status"></p>
-    </main>
+      <div class="layout">
+
+
+        <!-- ---------- 文章列表 ---------- -->
+        <main class="main-col" id="doc-list">
+          {%- comment -%}
+            文档列表由 Jekyll 生成：遍历 site.pages，排除首页自身和资源目录。
+            刻意不用 where 过滤器 —— Jekyll 3.10 的 where 按 input.hash 记忆化结果，
+            而 jekyll-optional-front-matter 是在渲染期把新页面 concat 进 site.pages 的，
+            两者叠加会漏文档（实测 21 篇只筛出 4 篇）。
+            不显示分类：文件夹只用于组织文件，不在页面上出现。
+            排序：有 date 的按日期倒序；没写 date 的按文件名升序排在最后。
+            分页由页尾脚本完成，每页 10 条。
+          {%- endcomment -%}
+          {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
+          {%- assign dated = "" | split: "|" -%}
+          {%- assign undated = "" | split: "|" -%}
+          {%- for p in site.pages -%}
+            {%- assign segs = p.path | split: "/" -%}
+            {%- assign top = segs | first -%}
+            {%- assign keep = true -%}
+            {%- if p.url == "/" or p.name == "index.html" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
+            {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
+            {%- if keep -%}
+              {%- if p.date -%}{%- assign dated = dated | push: p -%}{%- else -%}{%- assign undated = undated | push: p -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- assign dated = dated | sort: "date" | reverse -%}
+          {%- assign undated = undated | sort: "path" -%}
+          {%- assign docs = dated | concat: undated -%}
+
+          <!-- 构建信息：site.pages={{ site.pages.size }} / 收录文档={{ docs.size }} / 每页 10 条 -->
+
+          {%- if docs.size == 0 -%}
+          <div class="sv-panel">
+            <p class="empty-tip">还没有文章。把 .md 文件放进仓库，push 后就会自动出现在这里。</p>
+          </div>
+          {%- endif -%}
+
+          {%- for d in docs -%}
+          <article class="sv-panel post">
+            <div class="post-head">
+              <h3 class="post-title">{{ d.title | default: d.name }}</h3>
+              <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
+            </div>
+
+            <p class="post-text">{{ d.summary | default: d.description | default: d.content | strip_html | truncate: 110 }}</p>
+
+            <div class="post-foot">
+              <div class="post-tags">
+                {%- for tag in d.tags %}
+                <span class="tag"># {{ tag }}</span>
+                {%- endfor %}
+              </div>
+              <div class="post-act">
+                <span class="post-meta">{{ d.content | strip_html | strip_newlines | size }} 字</span>
+                <a href="{{ d.url | remove_first: '/' }}" class="btn" aria-label="阅读全文：{{ d.title | default: d.name }}">阅读全文 ▸</a>
+              </div>
+            </div>
+          </article>
+          {%- endfor -%}
+
+          <!-- 筛选后 0 篇时的占位（点进一块空田、或全部文档都补齐了 tags 却访问 #untagged） -->
+          <div class="sv-panel empty-filter" id="empty-filter" hidden>
+            <p class="empty-tip">这片地里还没种上文章。把 .md 文件 front matter 里
+              <code>tags:</code> 的<b>第一个</b>标签换成
+              <code>#<span id="empty-crop-name">Spring</span></code> 就会种上这块田。</p>
+            <p class="empty-back-row"><button type="button" class="btn wood" id="empty-back">◀ 返回菜园子</button></p>
+          </div>
+
+          <nav class="pager" id="pager" aria-label="分页" hidden>
+            <button type="button" class="pager-btn" data-page="prev">◂ 上一页</button>
+            <span class="pager-pages" id="pager-pages"></span>
+            <button type="button" class="pager-btn" data-page="next">下一页 ▸</button>
+          </nav>
+          <p class="pager-info" id="pager-info" role="status"></p>
+        </main>
+
+
+      </div>
+
+    </div>
 
     <!-- ---------- 侧边栏 ---------- -->
     <aside class="side-col">
@@ -1284,10 +1307,8 @@ a:focus-visible,
           <div class="bar"><div class="bar-fill" style="width:30%"></div></div>
         </div>
       </div>
-
     </aside>
   </div>
-
   <!-- ==================== 底部物品栏 ==================== -->
   <div class="hotbar">
 
@@ -1532,6 +1553,7 @@ a:focus-visible,
   var pagesEl = document.getElementById('pager-pages');
   var infoEl = document.getElementById('pager-info');
   var gardenView = document.getElementById('garden-view');
+  var listSection = document.getElementById('list-section');
   var listHead = document.getElementById('list-head');
   var gardenFormal = document.getElementById('garden-formal');
   var gardenTrial = document.getElementById('garden-trial');
@@ -1721,7 +1743,7 @@ a:focus-visible,
     page = 1;
     render();
     if (gardenView) { gardenView.hidden = false; }
-    if (listHead) { listHead.hidden = true; }
+    if (listSection) { listSection.hidden = true; }
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
     window.scrollTo(0, 0);
   }
@@ -1747,7 +1769,7 @@ a:focus-visible,
     }
     render();
     if (gardenView) { gardenView.hidden = true; }
-    if (listHead) { listHead.hidden = false; }
+    if (listSection) { listSection.hidden = false; }
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -1810,7 +1832,7 @@ a:focus-visible,
   var initial = readHash();
   if (initial === null) {
     if (gardenView) { gardenView.hidden = false; }
-    if (listHead) { listHead.hidden = true; }
+    if (listSection) { listSection.hidden = true; }
     render();
     /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
