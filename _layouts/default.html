@@ -436,6 +436,10 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
     window.addEventListener('resize', tick);
     tick();
   }
+
+  /* ---------- 农具光标：从 localStorage 恢复（首页热键栏选择后持久化） ---------- */
+  var savedCursor = localStorage.getItem('sv_cursor');
+  if (savedCursor) { document.body.style.cursor = savedCursor; }
 }());
 </script>
 

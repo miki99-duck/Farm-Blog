@@ -1320,86 +1320,170 @@ a:focus-visible,
       </div>
     </aside>
   </div>
-  <!-- ==================== 底部物品栏 ==================== -->
-  <div class="hotbar">
+  <!-- ==================== 底部物品栏：农具 ====================
+       点一个农具 → 全站鼠标变成该农具样式；选「空手」恢复默认光标。
+       选择保存在 localStorage，刷新 / 进其他页不会丢。 -->
+  <div class="hotbar" id="hotbar">
 
-    <!-- 1 南瓜 -->
-    <div class="slot active">
+    <!-- 1 斧头 -->
+    <div class="slot active" data-tool="axe">
       <span class="num" aria-hidden="true">1</span>
-      <svg viewBox="0 0 16 16" role="img" aria-label="南瓜">
-        <rect x="7" y="1" width="2" height="2" fill="#6a8a30"/>
-        <rect x="3" y="3" width="10" height="10" fill="#e8892b"/>
-        <rect x="2" y="5" width="12" height="6" fill="#e8892b"/>
-        <rect x="5" y="3" width="2" height="10" fill="#c96a18"/>
-        <rect x="9" y="3" width="2" height="10" fill="#c96a18"/>
-        <rect x="7" y="4" width="1" height="8" fill="#f5a94f"/>
+      <svg viewBox="0 0 16 16" role="img" aria-label="斧头">
+        <rect x="7" y="4" width="2" height="10" fill="#8b5a2b"/>
+        <rect x="8" y="4" width="1" height="10" fill="#6b3f1d"/>
+        <rect x="4" y="2" width="8" height="3" fill="#b0c4d8"/>
+        <rect x="3" y="2" width="2" height="3" fill="#d8e4ee"/>
+        <rect x="11" y="3" width="2" height="1" fill="#8fa8c0"/>
+        <rect x="5" y="3" width="2" height="1" fill="#e8f0f8"/>
       </svg>
     </div>
 
-    <!-- 2 鱼 -->
-    <div class="slot">
+    <!-- 2 镐子 -->
+    <div class="slot" data-tool="pickaxe">
       <span class="num" aria-hidden="true">2</span>
-      <svg viewBox="0 0 16 16" role="img" aria-label="鱼">
-        <rect x="4" y="5" width="7" height="6" fill="#5b9bd5"/>
-        <rect x="3" y="6" width="9" height="4" fill="#5b9bd5"/>
-        <rect x="1" y="4" width="3" height="3" fill="#3f7fb5"/>
-        <rect x="1" y="9" width="3" height="3" fill="#3f7fb5"/>
-        <rect x="3" y="7" width="3" height="2" fill="#3f7fb5"/>
-        <rect x="9" y="6" width="1" height="1" fill="#1c2a3a"/>
-      </svg>
-    </div>
-
-    <!-- 3 镐子 -->
-    <div class="slot">
-      <span class="num" aria-hidden="true">3</span>
       <svg viewBox="0 0 16 16" role="img" aria-label="镐子">
-        <rect x="2" y="3" width="10" height="2" fill="#b0c4d8"/>
-        <rect x="1" y="4" width="3" height="2" fill="#b0c4d8"/>
-        <rect x="10" y="5" width="2" height="2" fill="#8fa8c0"/>
-        <rect x="6" y="5" width="2" height="9" fill="#8b5a2b"/>
+        <rect x="7" y="4" width="2" height="10" fill="#8b5a2b"/>
+        <rect x="8" y="4" width="1" height="10" fill="#6b3f1d"/>
+        <rect x="2" y="2" width="12" height="2" fill="#b0c4d8"/>
+        <rect x="1" y="3" width="2" height="2" fill="#d8e4ee"/>
+        <rect x="13" y="3" width="2" height="2" fill="#8fa8c0"/>
+        <rect x="3" y="2" width="2" height="1" fill="#e8f0f8"/>
       </svg>
     </div>
 
-    <!-- 4 剑 -->
-    <div class="slot">
+    <!-- 3 锄头 -->
+    <div class="slot" data-tool="hoe">
+      <span class="num" aria-hidden="true">3</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="锄头">
+        <rect x="7" y="1" width="2" height="10" fill="#8b5a2b"/>
+        <rect x="8" y="1" width="1" height="10" fill="#6b3f1d"/>
+        <rect x="4" y="11" width="8" height="2" fill="#b0c4d8"/>
+        <rect x="5" y="11" width="6" height="1" fill="#d8e4ee"/>
+        <rect x="7" y="10" width="2" height="1" fill="#8fa8c0"/>
+      </svg>
+    </div>
+
+    <!-- 4 镰刀 -->
+    <div class="slot" data-tool="scythe">
       <span class="num" aria-hidden="true">4</span>
-      <svg viewBox="0 0 16 16" role="img" aria-label="剑">
-        <rect x="7" y="1" width="2" height="10" fill="#d8e4ee"/>
-        <rect x="8" y="1" width="1" height="10" fill="#9fb8cc"/>
-        <rect x="4" y="10" width="8" height="2" fill="#c99c5e"/>
-        <rect x="7" y="12" width="2" height="3" fill="#6b3f1d"/>
+      <svg viewBox="0 0 16 16" role="img" aria-label="镰刀">
+        <rect x="10" y="5" width="2" height="9" fill="#8b5a2b"/>
+        <rect x="11" y="5" width="1" height="9" fill="#6b3f1d"/>
+        <rect x="2" y="2" width="9" height="2" fill="#b0c4d8"/>
+        <rect x="1" y="3" width="2" height="2" fill="#d8e4ee"/>
+        <rect x="3" y="3" width="4" height="1" fill="#e8f0f8"/>
       </svg>
     </div>
 
-    <!-- 5 鸡蛋 -->
-    <div class="slot">
+    <!-- 5 洒水壶 -->
+    <div class="slot" data-tool="watering">
       <span class="num" aria-hidden="true">5</span>
-      <svg viewBox="0 0 16 16" role="img" aria-label="鸡蛋">
-        <rect x="5" y="3" width="6" height="10" fill="#f0dcb0"/>
-        <rect x="4" y="5" width="8" height="7" fill="#f0dcb0"/>
-        <rect x="6" y="5" width="2" height="3" fill="#fffbe8"/>
+      <svg viewBox="0 0 16 16" role="img" aria-label="洒水壶">
+        <rect x="3" y="5" width="8" height="8" fill="#5b9bd5"/>
+        <rect x="4" y="6" width="6" height="6" fill="#7bb5e8"/>
+        <rect x="11" y="4" width="4" height="2" fill="#5b9bd5"/>
+        <rect x="14" y="5" width="2" height="2" fill="#7bb5e8"/>
+        <rect x="5" y="3" width="4" height="2" fill="#3f7fb5"/>
+        <rect x="6" y="3" width="2" height="1" fill="#7bb5e8"/>
+        <rect x="5" y="8" width="2" height="1" fill="#fff" opacity=".5"/>
       </svg>
     </div>
 
-    <!-- 6 宝石 -->
-    <div class="slot">
+    <!-- 6 捕兽夹 -->
+    <div class="slot" data-tool="trap">
       <span class="num" aria-hidden="true">6</span>
-      <svg viewBox="0 0 16 16" role="img" aria-label="宝石">
-        <rect x="5" y="3" width="6" height="2" fill="#7ee0c8"/>
-        <rect x="3" y="5" width="10" height="4" fill="#4ec9a8"/>
-        <rect x="5" y="9" width="6" height="3" fill="#3aa886"/>
-        <rect x="6" y="10" width="4" height="2" fill="#3aa886"/>
-        <rect x="6" y="5" width="2" height="2" fill="#b8f5e6"/>
+      <svg viewBox="0 0 16 16" role="img" aria-label="捕兽夹">
+        <rect x="3" y="3" width="10" height="2" fill="#8fa8c0"/>
+        <rect x="3" y="11" width="10" height="2" fill="#8fa8c0"/>
+        <rect x="3" y="5" width="2" height="6" fill="#8fa8c0"/>
+        <rect x="11" y="5" width="2" height="6" fill="#8fa8c0"/>
+        <rect x="5" y="5" width="2" height="2" fill="#b0c4d8"/>
+        <rect x="9" y="9" width="2" height="2" fill="#b0c4d8"/>
+        <rect x="7" y="7" width="2" height="2" fill="#d8e4ee"/>
       </svg>
     </div>
 
-    <!-- 7~12 空槽 -->
-    <div class="slot"><span class="num" aria-hidden="true">7</span></div>
-    <div class="slot"><span class="num" aria-hidden="true">8</span></div>
-    <div class="slot"><span class="num" aria-hidden="true">9</span></div>
-    <div class="slot"><span class="num" aria-hidden="true">0</span></div>
-    <div class="slot"><span class="num" aria-hidden="true">-</span></div>
-    <div class="slot"><span class="num" aria-hidden="true">=</span></div>
+    <!-- 7 鱼竿 -->
+    <div class="slot" data-tool="rod">
+      <span class="num" aria-hidden="true">7</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="鱼竿">
+        <rect x="12" y="2" width="2" height="12" fill="#8b5a2b"/>
+        <rect x="13" y="2" width="1" height="12" fill="#6b3f1d"/>
+        <rect x="7" y="2" width="6" height="1" fill="#b0c4d8"/>
+        <rect x="7" y="3" width="1" height="10" fill="#d8e4ee"/>
+        <rect x="6" y="12" width="2" height="2" fill="#5b9bd5"/>
+      </svg>
+    </div>
+
+    <!-- 8 弹弓 -->
+    <div class="slot" data-tool="sling">
+      <span class="num" aria-hidden="true">8</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="弹弓">
+        <rect x="7" y="6" width="2" height="8" fill="#8b5a2b"/>
+        <rect x="8" y="6" width="1" height="8" fill="#6b3f1d"/>
+        <rect x="4" y="3" width="2" height="5" fill="#8b5a2b"/>
+        <rect x="10" y="3" width="2" height="5" fill="#8b5a2b"/>
+        <rect x="4" y="4" width="8" height="2" fill="#e85555"/>
+        <rect x="5" y="4" width="6" height="1" fill="#ff8888"/>
+        <rect x="7" y="3" width="2" height="1" fill="#c99c5e"/>
+      </svg>
+    </div>
+
+    <!-- 9 炸弹 -->
+    <div class="slot" data-tool="bomb">
+      <span class="num" aria-hidden="true">9</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="炸弹">
+        <rect x="5" y="5" width="6" height="6" fill="#4a4a4a"/>
+        <rect x="4" y="6" width="8" height="4" fill="#4a4a4a"/>
+        <rect x="6" y="4" width="4" height="1" fill="#6b6b6b"/>
+        <rect x="7" y="2" width="2" height="3" fill="#8b5a2b"/>
+        <rect x="7" y="1" width="1" height="1" fill="#ffd23f"/>
+        <rect x="8" y="2" width="1" height="1" fill="#ff8800"/>
+        <rect x="6" y="6" width="2" height="1" fill="#6b6b6b"/>
+      </svg>
+    </div>
+
+    <!-- 10 割灌剪 -->
+    <div class="slot" data-tool="shears">
+      <span class="num" aria-hidden="true">0</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="割灌剪">
+        <rect x="5" y="2" width="2" height="6" fill="#b0c4d8"/>
+        <rect x="9" y="2" width="2" height="6" fill="#b0c4d8"/>
+        <rect x="5" y="2" width="1" height="6" fill="#d8e4ee"/>
+        <rect x="10" y="2" width="1" height="6" fill="#d8e4ee"/>
+        <rect x="6" y="8" width="4" height="2" fill="#8b5a2b"/>
+        <rect x="6" y="10" width="2" height="4" fill="#8b5a2b"/>
+        <rect x="8" y="10" width="2" height="4" fill="#8b5a2b"/>
+      </svg>
+    </div>
+
+    <!-- 11 手锯 -->
+    <div class="slot" data-tool="saw">
+      <span class="num" aria-hidden="true">-</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="手锯">
+        <rect x="2" y="6" width="10" height="3" fill="#b0c4d8"/>
+        <rect x="2" y="6" width="10" height="1" fill="#d8e4ee"/>
+        <rect x="3" y="9" width="1" height="1" fill="#8fa8c0"/>
+        <rect x="5" y="9" width="1" height="1" fill="#8fa8c0"/>
+        <rect x="7" y="9" width="1" height="1" fill="#8fa8c0"/>
+        <rect x="9" y="9" width="1" height="1" fill="#8fa8c0"/>
+        <rect x="12" y="5" width="3" height="5" fill="#8b5a2b"/>
+        <rect x="13" y="5" width="1" height="5" fill="#6b3f1d"/>
+      </svg>
+    </div>
+
+    <!-- 12 空手（恢复默认光标） -->
+    <div class="slot" data-tool="empty">
+      <span class="num" aria-hidden="true">=</span>
+      <svg viewBox="0 0 16 16" role="img" aria-label="空手">
+        <rect x="5" y="5" width="6" height="8" fill="#f0c8a0"/>
+        <rect x="4" y="6" width="8" height="6" fill="#f0c8a0"/>
+        <rect x="6" y="3" width="2" height="3" fill="#f0c8a0"/>
+        <rect x="8" y="3" width="2" height="3" fill="#f0c8a0"/>
+        <rect x="6" y="8" width="1" height="2" fill="#d4a878"/>
+        <rect x="9" y="8" width="1" height="2" fill="#d4a878"/>
+      </svg>
+    </div>
 
   </div>
 
@@ -1859,6 +1943,45 @@ a:focus-visible,
     showCrop(initial);
   }
 }());
+
+
+  /* ============================================================
+     农具光标：点热键栏的农具 → 全站鼠标变成该农具样式。
+     选「空手」恢复默认光标。选择存在 localStorage，跨页持久。
+     ============================================================ */
+  var TOOL_HS = {
+    axe:[4,3], pickaxe:[2,3], hoe:[8,12], scythe:[2,3],
+    watering:[14,5], trap:[8,8], rod:[7,2], sling:[8,4],
+    bomb:[8,7], shears:[6,3], saw:[12,7], empty:null
+  };
+  function applyTool(toolId) {
+    var slot = document.querySelector('.slot[data-tool="' + toolId + '"]');
+    var svg = slot ? slot.querySelector('svg') : null;
+    var hs = TOOL_HS[toolId];
+    var cur = '';
+    if (svg && hs) {
+      var svgStr = svg.outerHTML.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+      cur = 'url("data:image/svg+xml,' + encodeURIComponent(svgStr) + '") ' + hs[0] + ' ' + hs[1] + ', auto';
+    }
+    document.body.style.cursor = cur;
+    localStorage.setItem('sv_cursor', cur);
+    localStorage.setItem('sv_tool', toolId);
+  }
+  function selectTool(toolId) {
+    document.querySelectorAll('.hotbar .slot.active').forEach(function (s) { s.classList.remove('active'); });
+    var slot = document.querySelector('.slot[data-tool="' + toolId + '"]');
+    if (slot) { slot.classList.add('active'); applyTool(toolId); }
+  }
+  (function () {
+    var saved = localStorage.getItem('sv_cursor');
+    if (saved) { document.body.style.cursor = saved; }
+  })();
+  document.querySelectorAll('.hotbar .slot').forEach(function (slot) {
+    slot.addEventListener('click', function () {
+      var t = slot.getAttribute('data-tool');
+      if (t) { selectTool(t); }
+    });
+  });
 </script>
 
 </body>
