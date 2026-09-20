@@ -315,6 +315,19 @@ svg{ shape-rendering:crispEdges; display:block; }
   text-align:center;
 }
 
+/* 筛选后 0 篇时的占位 */
+.empty-filter{ padding:26px 20px; }
+.empty-filter .empty-back-row{ margin:16px 0 0; text-align:center; }
+.empty-filter code{
+  padding:1px 5px;
+  font-family:inherit;
+  font-size:11px;
+  color:var(--green-700);
+  background:rgba(63,107,31,.1);
+  border:2px solid rgba(63,107,31,.3);
+  border-radius:3px;
+}
+
 /* ---------- 像素按钮 ---------- */
 .btn{
   display:inline-flex;
@@ -486,82 +499,288 @@ a:focus-visible,
 }
 
 /* ============================================================
-   侧边栏 · 农作物（点击筛选对应标签的文章）
+   菜园子（文档入口：一块田 = 一个标签，点进去看那片地的文章）
+   田块由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
    ============================================================ */
-.crop{
-  display:block;
-  width:100%;
-  padding:7px 9px;
-  margin:0 0 6px;
-  font:inherit;
-  color:inherit;
-  text-align:left;
-  background:transparent;
-  border:2px solid transparent;
-  border-radius:4px;
-  cursor:pointer;
-  transition:background .12s ease, border-color .12s ease;
+.garden-view{
+  max-width:900px;
+  margin:0 auto 24px;
 }
 
-.crop:last-child{ margin-bottom:0; }
-
-.crop:hover{
-  background:rgba(201,156,94,.22);
-  border-color:var(--wood-300);
-}
-
-/* 当前选中的农作物 */
-.crop[aria-pressed="true"]{
-  background:rgba(255,210,63,.2);
-  border-color:var(--gold-deep);
-  box-shadow:inset 0 0 0 2px rgba(255,246,221,.55);
-}
-
-/* 还没有对应文章的农作物，不可点 */
-.crop:disabled{
-  cursor:default;
-  opacity:.55;
-}
-
-.crop:disabled:hover{
-  background:transparent;
-  border-color:transparent;
-}
-
-/* button 里不能放 div，所以内部用 span；这两个原本靠块级撑高度，得显式声明 */
-.crop .bar,
-.crop .bar-fill{ display:block; }
-
-.crop-status{
+.garden-head{
   display:flex;
-  flex-wrap:wrap;
-  align-items:center;
+  align-items:baseline;
   justify-content:space-between;
-  gap:8px;
-  margin:16px 0 0;
-  padding-top:12px;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.garden-hint{
+  margin:0;
   font-size:10px;
   color:var(--ink-soft);
-  border-top:3px dashed rgba(180,120,74,.4);
 }
 
-.crop-clear{
-  padding:4px 9px;
-  font-family:inherit;
-  font-size:10px;
-  color:var(--wood-700);
-  background:#eed9ab;
-  border:2px solid var(--wood-300);
-  border-radius:3px;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+/* 田块网格：一块田 = 一个标签 */
+.garden{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:12px;
+  margin:0 0 14px;
+}
+
+.plot{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:12px 8px 10px;
   cursor:pointer;
+  text-align:center;
+  /* 土壤纹理：水平垄沟 + 土色渐变，和草地棋盘形成「田/路」对比 */
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 2px, transparent 2px 9px),
+    linear-gradient(#8a5526, #5d3418);
+  border:3px solid var(--wood-700);
+  border-radius:5px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.22),
+    inset 0 -4px 0 rgba(0,0,0,.28),
+    4px 5px 0 rgba(0,0,0,.28);
+  transition:transform .15s ease;
 }
 
-.crop-clear:hover{ background:#e6cd97; }
+.plot:hover{ transform:translate(-2px,-2px); }
 
-/* 焦点环要盖过上面的选中态，所以放在最后 */
-.crop:focus-visible,
-.crop-clear:focus-visible,
+.plot-crop{
+  font-size:26px;
+  line-height:1.2;
+  filter:drop-shadow(1px 1px 0 rgba(0,0,0,.35));
+}
+
+.plot-name{
+  font-size:11px;
+  color:#ffe9b8;
+  text-shadow:1px 1px 0 rgba(0,0,0,.5);
+}
+
+.plot-count{
+  font-size:9px;
+  color:var(--gold);
+}
+
+/* 生长阶段：5 格进度，篇数越多越满 */
+.pips{ display:flex; gap:3px; }
+
+.pip{
+  width:9px;
+  height:9px;
+  border:2px solid rgba(0,0,0,.35);
+  border-radius:2px;
+  background:rgba(0,0,0,.25);
+}
+
+.pip.on{
+  background:var(--gold);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.4);
+}
+
+.stage{
+  font-size:9px;
+  color:#ffdca0;
+  letter-spacing:1px;
+}
+
+/* 试验田里的单篇地块：小一号，省略进度格 */
+.plot.tiny{ padding:9px 6px 8px; }
+.plot.tiny .plot-crop{ font-size:20px; }
+.plot.tiny .plot-name{ font-size:10px; }
+
+/* 空田：0 篇，灰化且不可点 */
+.plot.fallow{
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 2px, transparent 2px 9px),
+    linear-gradient(#7a6a52, #5d4f3c);
+  border-color:var(--wood-800);
+  cursor:default;
+}
+
+.plot.fallow:hover{ transform:none; }
+.plot.fallow .plot-crop{ filter:grayscale(1) opacity(.55); }
+
+/* 特殊地块：全部收成 / 田头空地 */
+.plot.special{
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
+    linear-gradient(#6b7a4a, #4a5634);
+  border-color:#3d4a26;
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.22),
+    inset 0 -4px 0 rgba(0,0,0,.28),
+    4px 5px 0 rgba(0,0,0,.25);
+}
+
+/* 试验田：可折叠 */
+.trial{
+  margin:0 0 14px;
+  border:3px solid var(--wood-700);
+  border-radius:5px;
+  background:rgba(0,0,0,.18);
+  overflow:hidden;
+}
+
+.trial[hidden]{ display:none; }
+
+.trial summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-size:11px;
+  color:#ffe9b8;
+  text-shadow:1px 1px 0 rgba(0,0,0,.5);
+  list-style:none;
+}
+
+.trial summary::-webkit-details-marker{ display:none; }
+
+.trial summary::after{
+  content:"▾";
+  font-size:11px;
+  color:var(--gold);
+  transition:transform .15s ease;
+}
+
+.trial:not([open]) summary::after{ transform:rotate(-90deg); }
+
+.trial-count{
+  font-size:9px;
+  color:var(--gold);
+  text-shadow:none;
+}
+
+.trial .garden{ margin:0 12px 12px; }
+
+/* ============================================================
+   文档列表页（点田块后显示，菜园子隐藏）
+   宽度沿用 .game-wrap 的 1060px，卡片 + 侧栏布局与改造前完全一致；
+   900px 的限制只针对菜园子（田块网格更方整）。
+   ============================================================ */
+.list-view{ max-width:1060px; margin:0 auto; }
+
+.list-head{ margin-bottom:16px; }
+
+.breadcrumb{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 12px;
+  font-size:11px;
+  color:var(--wood-600);
+}
+
+.breadcrumb a{
+  color:var(--green-600);
+  text-decoration:none;
+  border-bottom:2px dotted rgba(63,107,31,.5);
+}
+
+.breadcrumb a:hover{ color:var(--green-700); }
+
+.breadcrumb .sep{ color:var(--wood-300); }
+
+.breadcrumb .back-btn{ margin-left:auto; }
+
+.crop-banner{
+  display:grid;
+  grid-template-columns:56px 1fr auto;
+  gap:14px;
+  align-items:center;
+  padding:14px 16px;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
+    linear-gradient(#8a5526, #5d3418);
+  border:3px solid var(--wood-700);
+  border-radius:5px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.22),
+    inset 0 -4px 0 rgba(0,0,0,.28),
+    4px 5px 0 rgba(0,0,0,.25);
+}
+
+.banner-crop{
+  font-size:34px;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4));
+}
+
+.banner-name{
+  font-size:14px;
+  color:#ffe9b8;
+  text-shadow:2px 2px 0 rgba(0,0,0,.4);
+}
+
+.banner-sub{
+  margin-top:4px;
+  font-size:9px;
+  color:#ffdca0;
+}
+
+.banner-meta{
+  font-size:10px;
+  color:var(--gold);
+  text-align:right;
+}
+
+.banner-bar{
+  display:block;
+  width:110px;
+  height:12px;
+  margin-top:6px;
+  background:rgba(0,0,0,.3);
+  border:2px solid rgba(0,0,0,.4);
+  border-radius:3px;
+  overflow:hidden;
+}
+
+.banner-bar span{
+  display:block;
+  height:100%;
+  background:linear-gradient(#ffe07a, var(--gold-deep));
+}
+
+/* 木质按钮（返回菜园子） */
+.btn.wood{
+  background:linear-gradient(#8b5a2b, #6b3f1d);
+  border-color:var(--wood-700);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.28),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 4px 0 var(--wood-700),
+    0 6px 0 rgba(0,0,0,.28);
+}
+
+.btn.wood:hover{
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.28),
+    inset 0 -3px 0 rgba(0,0,0,.22),
+    0 6px 0 var(--wood-700),
+    0 8px 0 rgba(0,0,0,.28);
+}
+
+.btn.wood:active{
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.18),
+    inset 0 -2px 0 rgba(0,0,0,.25),
+    0 1px 0 var(--wood-700);
+}
+
+/* 田块是 div[role=button]，焦点环要显式声明；放在最后压过选中态 */
+.plot:focus-visible,
+.trial summary:focus-visible,
 .pager-btn:focus-visible{
   outline:3px solid var(--paper-light);
   outline-offset:2px;
@@ -638,6 +857,8 @@ a:focus-visible,
     grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
     gap:20px;
   }
+  /* 田块收成 2 列，避免单块太窄 */
+  .garden{ grid-template-columns:repeat(2, 1fr); }
 }
 
 @media (max-width:560px){
@@ -649,6 +870,14 @@ a:focus-visible,
   .sv-panel{ padding:15px; }
   .blog-sign h1{ font-size:16px; letter-spacing:1px; }
   .blog-sign p{ font-size:9px; letter-spacing:1px; }
+  /* 手机上一列田块，横幅收成两行 */
+  .garden{ grid-template-columns:1fr; gap:9px; }
+  .plot{ padding:10px 8px 8px; }
+  .plot-crop{ font-size:22px; }
+  .crop-banner{ grid-template-columns:40px 1fr; }
+  .banner-crop{ font-size:26px; }
+  .banner-meta{ grid-column:1 / -1; text-align:left; }
+  .breadcrumb .back-btn{ margin-left:0; width:100%; justify-content:center; }
   .post-title{ font-size:14px; }
   .post-text{ font-size:11px; line-height:1.8; }
   .hud{ font-size:10px; padding:8px 10px; }
@@ -680,6 +909,7 @@ a:focus-visible,
   .slot.active{ animation:none; }
 
   .post:hover,
+  .plot:hover,
   .btn:hover,
   .pager-btn:hover:not(:disabled),
   .pager-btn:active:not(:disabled){ transform:none; }
@@ -845,8 +1075,51 @@ a:focus-visible,
     <p>STARDEW VALLEY · FARM BLOG</p>
   </div>
 
-  <!-- ==================== 主体 ==================== -->
-  <div class="layout">
+  <!-- ==================== 菜园子：文档入口 ====================
+       田块由页尾脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
+       每篇的「主标签」= front matter 里第一个 tag，所以一块田只归一种文档。
+       点一块田 → 隐藏菜园子、显示该标签的文档列表；返回 → 切回菜园子。
+       深链：#crop=spring / #all / #untagged。
+       注意：不用 Jekyll where 过滤器，原因见下方列表区的 comment。 -->
+  <section class="garden-view" id="garden-view" aria-label="菜园子">
+    <div class="sv-panel">
+      <div class="garden-head">
+        <h2 class="panel-title">🌾 菜园子</h2>
+        <p class="garden-hint">点一块田，进去看那片地的文章</p>
+      </div>
+
+      <div class="garden" id="garden-formal"></div>
+
+      <details class="trial" id="trial-field">
+        <summary>🌱 试验田<span class="trial-count" id="trial-count"></span></summary>
+        <div class="garden" id="garden-trial"></div>
+      </details>
+
+      <div class="garden" id="garden-special"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 文档列表页（点田块后显示） ==================== -->
+  <div class="list-view" id="list-view" hidden>
+
+    <div class="list-head" id="list-head">
+      <div class="breadcrumb" id="breadcrumb">
+        <a href="#" id="bc-garden">🌾 菜园子</a>
+        <span class="sep">›</span>
+        <span id="bc-current">全部收成</span>
+        <button type="button" class="btn wood back-btn" id="back-garden">◀ 返回菜园子</button>
+      </div>
+      <div class="crop-banner" id="crop-banner">
+        <div class="banner-crop" id="banner-crop">📚</div>
+        <div>
+          <div class="banner-name" id="banner-name">全部收成</div>
+          <div class="banner-sub" id="banner-sub"></div>
+        </div>
+        <div class="banner-meta" id="banner-meta"></div>
+      </div>
+    </div>
+
+    <div class="layout">
 
     <!-- ---------- 文章列表 ---------- -->
     <main class="main-col" id="doc-list">
@@ -906,6 +1179,14 @@ a:focus-visible,
         </div>
       </article>
       {%- endfor -%}
+
+      <!-- 筛选后 0 篇时的占位（点进一块空田、或全部文档都补齐了 tags 却访问 #untagged） -->
+      <div class="sv-panel empty-filter" id="empty-filter" hidden>
+        <p class="empty-tip">这片地里还没种上文章。把 .md 文件 front matter 里
+          <code>tags:</code> 的<b>第一个</b>标签换成
+          <code>#<span id="empty-crop-name">Spring</span></code> 就会种上这块田。</p>
+        <p class="empty-back-row"><button type="button" class="btn wood" id="empty-back">◀ 返回菜园子</button></p>
+      </div>
 
       <nav class="pager" id="pager" aria-label="分页" hidden>
         <button type="button" class="pager-btn" data-page="prev">◂ 上一页</button>
@@ -974,50 +1255,6 @@ a:focus-visible,
         </p>
       </div>
 
-      <!-- 农作物面板：点击筛选对应标签的文章（成熟度 1 度 = 1 篇文章） -->
-      <div class="sv-panel">
-        <h3 class="panel-title">农作物</h3>
-
-        <div class="crops">
-
-          <button type="button" class="crop" data-crop="微服务" aria-pressed="false">
-            <span class="skill-head"><span>🧩 微服务</span><span class="lv">成熟度 <span class="maturity">17</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:100%"></span></span>
-          </button>
-
-          <button type="button" class="crop" data-crop="Java" aria-pressed="false">
-            <span class="skill-head"><span>☕ Java</span><span class="lv">成熟度 <span class="maturity">3</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:18%"></span></span>
-          </button>
-
-          <button type="button" class="crop" data-crop="Spring" aria-pressed="false">
-            <span class="skill-head"><span>🍃 Spring</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
-          </button>
-
-          <button type="button" class="crop" data-crop="Kafka" aria-pressed="false">
-            <span class="skill-head"><span>📨 Kafka</span><span class="lv">成熟度 <span class="maturity">2</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:12%"></span></span>
-          </button>
-
-          <button type="button" class="crop" data-crop="MySQL" aria-pressed="false">
-            <span class="skill-head"><span>🐬 MySQL</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
-          </button>
-
-          <button type="button" class="crop" data-crop="Nginx" aria-pressed="false">
-            <span class="skill-head"><span>🌐 Nginx</span><span class="lv">成熟度 <span class="maturity">1</span> 度</span></span>
-            <span class="bar"><span class="bar-fill" style="width:8%"></span></span>
-          </button>
-
-        </div>
-
-        <p class="crop-status">
-          <span class="crop-status-text" role="status">共 21 篇</span>
-          <button type="button" class="crop-clear" hidden>显示全部</button>
-        </p>
-      </div>
-
       <!-- 技能面板 -->
       <div class="sv-panel">
         <h3 class="panel-title">技能</h3>
@@ -1049,6 +1286,7 @@ a:focus-visible,
       </div>
 
     </aside>
+  </div>
   </div>
 
   <!-- ==================== 底部物品栏 ==================== -->
@@ -1281,7 +1519,12 @@ a:focus-visible,
     }
   }
 
-  /* ---------- 2 & 3. 列表分页 + 农作物筛选 ---------- */
+  /* ---------- 2 & 3. 菜园子（入口）+ 列表分页 ----------
+     田块完全由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
+     每篇的「主标签」= 第一个 tag（作者把哪个 tag 放第一行，它就是这篇的归属），
+     所以一块田只归一种文档，不会出现同一篇在四块田里重复。
+     点田块 → 隐藏菜园子、显示该标签的文档列表；返回 → 切回菜园子。
+     深链：#crop=spring / #all / #untagged；Esc 或返回按钮回菜园子。 */
   var list = document.getElementById('doc-list');
   if (!list) { return; }
 
@@ -1289,27 +1532,155 @@ a:focus-visible,
   var pager = document.getElementById('pager');
   var pagesEl = document.getElementById('pager-pages');
   var infoEl = document.getElementById('pager-info');
-  var cropButtons = Array.prototype.slice.call(document.querySelectorAll('.crop'));
-  var statusEl = document.querySelector('.crop-status-text');
-  var clearEl = document.querySelector('.crop-clear');
-  var active = null;
+  var gardenView = document.getElementById('garden-view');
+  var listView = document.getElementById('list-view');
+  var listHead = document.getElementById('list-head');
+  var gardenFormal = document.getElementById('garden-formal');
+  var gardenTrial = document.getElementById('garden-trial');
+  var gardenSpecial = document.getElementById('garden-special');
+  var trialField = document.getElementById('trial-field');
+  var trialCount = document.getElementById('trial-count');
+  var bannerCrop = document.getElementById('banner-crop');
+  var bannerName = document.getElementById('banner-name');
+  var bannerSub = document.getElementById('banner-sub');
+  var bannerMeta = document.getElementById('banner-meta');
+  var bcCurrent = document.getElementById('bc-current');
+  var bcGarden = document.getElementById('bc-garden');
+  var backBtn = document.getElementById('back-garden');
+  var emptyFilter = document.getElementById('empty-filter');
+  var emptyCropName = document.getElementById('empty-crop-name');
+  var emptyBack = document.getElementById('empty-back');
   var page = 1;
+  var active = null;   /* 选中的主标签；null = 菜园子 */
 
-  function tagsOf(el) {
-    return Array.prototype.slice.call(el.querySelectorAll('.post-tags .tag')).map(function (t) {
-      return t.textContent.replace(/^#\s*/, '').trim().toLowerCase();
-    });
+  /* 标签元数据：显示名 + emoji。FORMAL 是固定 6 块正式田，其余标签进试验田 */
+  var TAG_META = {
+    '微服务': { name:'微服务', emoji:'🧩' },
+    'java':    { name:'Java',    emoji:'☕' },
+    'spring':  { name:'Spring',  emoji:'🍃' },
+    'kafka':   { name:'Kafka',   emoji:'📨' },
+    'mysql':   { name:'MySQL',   emoji:'🐬' },
+    'nginx':   { name:'Nginx',   emoji:'🌐' },
+    '矿洞':    { name:'矿洞',    emoji:'⛏️' },
+    '冒险':    { name:'冒险',    emoji:'🧭' },
+    '秋季':    { name:'秋季',    emoji:'🍂' },
+    '收获':    { name:'收获',    emoji:'🎃' },
+    '像素风':  { name:'像素风',  emoji:'🎨' },
+    '前端':    { name:'前端',    emoji:'🖥️' },
+    'css':     { name:'CSS',     emoji:'🖌️' }
+  };
+  var FORMAL = ['微服务', 'spring', 'java', 'kafka', 'mysql', 'nginx'];
+  var ALL_ITEM = { name:'全部收成', emoji:'📚' };
+  var NONE_ITEM = { name:'田头空地', emoji:'❔' };
+  var KEY_ALL = '__all__', KEY_NONE = '__none__';
+
+  function primaryOf(el) {
+    var t = el.querySelector('.post-tags .tag');
+    return t ? t.textContent.replace(/^#\s*/, '').trim().toLowerCase() : '';
   }
-  var tagIndex = posts.map(tagsOf);
+  var primaryIndex = posts.map(primaryOf);
 
+  function metaOf(key) {
+    if (key === KEY_ALL) { return ALL_ITEM; }
+    if (key === KEY_NONE) { return NONE_ITEM; }
+    return TAG_META[key] || { name:key, emoji:'🌱' };
+  }
+
+  /* 生长阶段：5 格进度，篇数越多越满 */
+  function stageOf(n) {
+    if (n === 0)  { return { pips:0, label:'尚未开垦' }; }
+    if (n === 1)  { return { pips:1, label:'种子期' }; }
+    if (n <= 3)   { return { pips:2, label:'幼苗期' }; }
+    if (n <= 9)   { return { pips:3, label:'成长期' }; }
+    if (n <= 14)  { return { pips:4, label:'茂盛期' }; }
+    return { pips:5, label:'丰收期' };
+  }
+
+  /* ---------- 统计 ---------- */
+  var counts = {};
+  var untaggedCount = 0;
+  for (var i = 0; i < primaryIndex.length; i++) {
+    var pk = primaryIndex[i];
+    if (!pk) { untaggedCount++; continue; }
+    counts[pk] = (counts[pk] || 0) + 1;
+  }
+  var trialTags = [];
+  for (var tk in counts) {
+    if (!Object.prototype.hasOwnProperty.call(counts, tk)) { continue; }
+    if (FORMAL.indexOf(tk) === -1 && counts[tk] > 0) { trialTags.push(tk); }
+  }
+  trialTags.sort();
+  var maxCropCount = 1;
+  for (var mk in counts) {
+    if (Object.prototype.hasOwnProperty.call(counts, mk) && counts[mk] > maxCropCount) { maxCropCount = counts[mk]; }
+  }
+
+  /* ---------- 生成田块 ---------- */
+  function pipsHtml(n) {
+    var s = stageOf(n), h = '', p;
+    for (p = 0; p < 5; p++) { h += '<i class="pip' + (p < s.pips ? ' on' : '') + '"></i>'; }
+    return h;
+  }
+
+  function makePlot(key, tiny) {
+    var m = metaOf(key);
+    var n = counts[key] || 0;
+    var s = stageOf(n);
+    var d = document.createElement('div');
+    d.className = 'plot' + (tiny ? ' tiny' : '') + (n === 0 ? ' fallow' : '');
+    d.setAttribute('role', 'button');
+    d.setAttribute('data-crop', key);
+    d.title = n === 0 ? '这块田还没种上文章' : '进入「' + m.name + '」：' + n + ' 篇';
+    d.innerHTML = '<div class="plot-crop">' + m.emoji + '</div>' +
+      '<div class="plot-name">' + m.name + '</div>' +
+      (tiny ? '' : '<div class="pips">' + pipsHtml(n) + '</div>' +
+        '<div class="stage">' + s.label + '</div>') +
+      '<div class="plot-count">' + n + ' 篇 · 成熟度 ' + n + ' 度</div>';
+    if (n === 0) { d.setAttribute('aria-disabled', 'true'); d.setAttribute('tabindex', '-1'); }
+    else { d.setAttribute('tabindex', '0'); }
+    return d;
+  }
+
+  function makeSpecial(item, count, desc, dataset) {
+    var d = document.createElement('div');
+    d.className = 'plot special';
+    d.setAttribute('role', 'button');
+    d.setAttribute('tabindex', '0');
+    d.setAttribute('data-crop', dataset);
+    d.title = '进入「' + item.name + '」：' + count + ' 篇';
+    d.innerHTML = '<div class="plot-crop">' + item.emoji + '</div>' +
+      '<div class="plot-name">' + item.name + '</div>' +
+      '<div class="stage">' + desc + '</div>' +
+      '<div class="plot-count">' + count + ' 篇</div>';
+    return d;
+  }
+
+  FORMAL.forEach(function (key) { gardenFormal.appendChild(makePlot(key, false)); });
+
+  if (trialTags.length === 0) {
+    if (trialField) { trialField.hidden = true; }
+  } else {
+    var trialDocs = 0;
+    trialTags.forEach(function (t) { trialDocs += counts[t]; });
+    if (trialCount) { trialCount.textContent = trialTags.length + ' 块田 · ' + trialDocs + ' 篇'; }
+    trialTags.forEach(function (key) { gardenTrial.appendChild(makePlot(key, true)); });
+  }
+
+  gardenSpecial.appendChild(makeSpecial(ALL_ITEM, posts.length, '总仓', KEY_ALL));
+  if (untaggedCount > 0) {
+    gardenSpecial.appendChild(makeSpecial(NONE_ITEM, untaggedCount, '待补标签', KEY_NONE));
+  }
+
+  /* ---------- 过滤 + 分页 ---------- */
   function matches(i) {
-    if (!active) { return true; }
-    return tagIndex[i].indexOf(active.toLowerCase()) !== -1;
+    if (active === null || active === KEY_ALL) { return true; }
+    if (active === KEY_NONE) { return primaryIndex[i] === ''; }
+    return primaryIndex[i] === active;
   }
 
   function render() {
-    var idx = [];
-    for (var i = 0; i < posts.length; i++) { if (matches(i)) { idx.push(i); } }
+    var idx = [], i;
+    for (i = 0; i < posts.length; i++) { if (matches(i)) { idx.push(i); } }
 
     var pages = Math.max(1, Math.ceil(idx.length / PER_PAGE));
     if (page > pages) { page = pages; }
@@ -1338,53 +1709,71 @@ a:focus-visible,
       if (prev) { prev.disabled = page <= 1; }
       if (next) { next.disabled = page >= pages; }
     }
-
     if (infoEl) {
-      infoEl.textContent = (active ? '已筛选「' + active + '」· ' : '') +
+      var nm = metaOf(active).name;
+      infoEl.textContent = (active === KEY_ALL ? '' : '已筛选「' + nm + '」· ') +
         '共 ' + idx.length + ' 篇 · 第 ' + page + ' / ' + pages + ' 页';
     }
-    if (statusEl) {
-      statusEl.textContent = active
-        ? '已筛选「' + active + '」· ' + idx.length + ' 篇'
-        : '共 ' + idx.length + ' 篇';
+    if (emptyFilter) { emptyFilter.hidden = idx.length !== 0; }
+  }
+
+  /* ---------- 视图切换 ---------- */
+  function showGarden() {
+    active = null;
+    page = 1;
+    render();
+    if (gardenView) { gardenView.hidden = false; }
+    if (listView) { listView.hidden = true; }
+    if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
+    window.scrollTo(0, 0);
+  }
+
+  function showCrop(key) {
+    active = key;
+    page = 1;
+    var m = metaOf(key);
+    var n = key === KEY_ALL ? posts.length : (key === KEY_NONE ? untaggedCount : (counts[key] || 0));
+    if (bannerCrop) { bannerCrop.textContent = m.emoji; }
+    if (bannerName) { bannerName.textContent = m.name; }
+    if (bcCurrent) { bcCurrent.textContent = m.emoji + ' ' + m.name; }
+    if (emptyCropName) { emptyCropName.textContent = m.name; }
+    if (bannerSub) {
+      bannerSub.textContent = key === KEY_ALL
+        ? '全部文档 · 不分标签'
+        : (key === KEY_NONE ? '还没写 tags，暂时不归属任何田' : stageOf(n).label + ' · 成熟度 ' + n + ' 度');
     }
-    if (clearEl) { clearEl.hidden = !active; }
-
-    cropButtons.forEach(function (b) {
-      b.setAttribute('aria-pressed', String(!!active && b.getAttribute('data-crop') === active));
-    });
+    if (bannerMeta) {
+      var w = key === KEY_ALL ? 100 : Math.max(6, Math.round((n / maxCropCount) * 100));
+      bannerMeta.innerHTML = '成熟度 ' + n + ' 度' +
+        '<span class="banner-bar"><span style="width:' + w + '%"></span></span>';
+    }
+    render();
+    if (gardenView) { gardenView.hidden = true; }
+    if (listView) { listView.hidden = false; }
+    var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
+    if (location.hash !== hash) { history.replaceState(null, '', hash); }
+    if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   }
 
-  /* 成熟度：一度 = 一篇 */
-  var counts = cropButtons.map(function (b) {
-    var key = String(b.getAttribute('data-crop')).toLowerCase();
-    var n = 0;
-    for (var i = 0; i < posts.length; i++) { if (tagIndex[i].indexOf(key) !== -1) { n += 1; } }
-    return n;
-  });
-  var maxCount = Math.max.apply(null, counts.concat([1]));
-  cropButtons.forEach(function (b, i) {
-    var n = counts[i];
-    var num = b.querySelector('.maturity');
-    var fill = b.querySelector('.bar-fill');
-    if (num) { num.textContent = String(n); }
-    /* 线性归一化；最少 8% 保证只有 1 度的农作物也看得见 */
-    if (fill) { fill.style.width = (n === 0 ? 0 : Math.max(8, Math.round((n / maxCount) * 100))) + '%'; }
-    if (n === 0) { b.disabled = true; b.title = '还没有对应的文章'; }
-  });
-
-  cropButtons.forEach(function (b) {
-    b.addEventListener('click', function () {
-      var name = b.getAttribute('data-crop');
-      active = (active === name) ? null : name;
-      page = 1;
-      render();
-    });
-  });
-
-  if (clearEl) {
-    clearEl.addEventListener('click', function () { active = null; page = 1; render(); });
+  /* ---------- 事件 ---------- */
+  function onPlotActivate(e) {
+    var d = e.target && e.target.closest ? e.target.closest('.plot') : null;
+    if (!d || d.classList.contains('fallow')) { return; }
+    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') { return; }
+    if (e.type === 'keydown') { e.preventDefault(); }
+    showCrop(d.getAttribute('data-crop'));
   }
+
+  [gardenFormal, gardenTrial, gardenSpecial].forEach(function (host) {
+    if (!host) { return; }
+    host.addEventListener('click', onPlotActivate);
+    host.addEventListener('keydown', onPlotActivate);
+  });
+
+  function goBack(e) { e.preventDefault(); showGarden(); }
+  if (backBtn) { backBtn.addEventListener('click', goBack); }
+  if (bcGarden) { bcGarden.addEventListener('click', goBack); }
+  if (emptyBack) { emptyBack.addEventListener('click', goBack); }
 
   if (pager) {
     pager.addEventListener('click', function (e) {
@@ -1400,10 +1789,36 @@ a:focus-visible,
   }
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && active) { active = null; page = 1; render(); }
+    if (e.key === 'Escape' && active !== null) { showGarden(); }
   });
 
-  render();
+  /* ---------- 深链 ---------- */
+  function readHash() {
+    var h = location.hash.replace(/^#/, '');
+    if (h === 'all') { return KEY_ALL; }
+    if (h === 'untagged') { return KEY_NONE; }
+    var m = h.match(/^crop=(.+)$/);
+    if (m) { return decodeURIComponent(m[1]).toLowerCase(); }
+    return null;
+  }
+
+  window.addEventListener('hashchange', function () {
+    var key = readHash();
+    if (key === null) { showGarden(); }
+    else { showCrop(key); }
+  });
+
+  /* ---------- 初始：默认停在菜园子 ---------- */
+  var initial = readHash();
+  if (initial === null) {
+    if (gardenView) { gardenView.hidden = false; }
+    if (listView) { listView.hidden = true; }
+    render();
+    /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
+    if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
+  } else {
+    showCrop(initial);
+  }
 }());
 </script>
 
