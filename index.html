@@ -511,6 +511,11 @@ a:focus-visible,
   align-self:start;
 }
 
+/* 点田块进列表 → 侧栏隐藏，列表撑满整行 */
+.fullpage.no-sidebar{
+  grid-template-columns:minmax(0,1fr);
+}
+
 /* ============================================================
    菜园子（文档入口：一块田 = 一个标签，点进去看那片地的文章）
    田块由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
@@ -1555,6 +1560,8 @@ a:focus-visible,
   var gardenView = document.getElementById('garden-view');
   var listSection = document.getElementById('list-section');
   var listHead = document.getElementById('list-head');
+  var fullpage = document.querySelector('.fullpage');
+  var sideCol = document.querySelector('.side-col');
   var gardenFormal = document.getElementById('garden-formal');
   var gardenTrial = document.getElementById('garden-trial');
   var gardenSpecial = document.getElementById('garden-special');
@@ -1744,6 +1751,8 @@ a:focus-visible,
     render();
     if (gardenView) { gardenView.hidden = false; }
     if (listSection) { listSection.hidden = true; }
+    if (sideCol) { sideCol.hidden = false; }
+    if (fullpage) { fullpage.classList.remove('no-sidebar'); }
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
     window.scrollTo(0, 0);
   }
@@ -1770,6 +1779,8 @@ a:focus-visible,
     render();
     if (gardenView) { gardenView.hidden = true; }
     if (listSection) { listSection.hidden = false; }
+    if (sideCol) { sideCol.hidden = true; }
+    if (fullpage) { fullpage.classList.add('no-sidebar'); }
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -1833,6 +1844,8 @@ a:focus-visible,
   if (initial === null) {
     if (gardenView) { gardenView.hidden = false; }
     if (listSection) { listSection.hidden = true; }
+    if (sideCol) { sideCol.hidden = false; }
+    if (fullpage) { fullpage.classList.remove('no-sidebar'); }
     render();
     /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
