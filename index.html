@@ -1538,16 +1538,16 @@ a:focus-visible,
     });
   }
 
-  /* ---------- 1. 返回农场 ---------- */
+  /* ---------- 1. 返回农场 ----------
+     菜园子页面没有 .hud-home，这里是空操作；保留给将来可能的子页面 */
   var home = document.querySelector('.hud-home');
   if (home) {
-    var homeUrl = home.getAttribute('data-url') || '/';
-    var depth = homeUrl.split('/').filter(Boolean).length - 1;
-    if (depth > 0) {
-      var up = '';
-      for (var k = 0; k < depth; k++) { up += '../'; }
-      home.setAttribute('href', up);
-    }
+    home.addEventListener('click', function (e) {
+      if (window.history && window.history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
   }
 
   /* ---------- 2 & 3. 菜园子（入口）+ 列表分页 ----------

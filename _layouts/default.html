@@ -335,18 +335,17 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 (function () {
   'use strict';
 
-  /* ---------- 「返回农场」：按文档所在层级自动定位站点根 ----------
-     文档在根目录 -> ./      文档在 docs/ 下 -> ../      再深一层 -> ../../
-     没 JS 时保留 href="./"，根目录的文档照样能用                    */
+  /* ---------- 「返回农场」：返回上一页（浏览器历史） ----------
+     从文档列表点「阅读全文」进来，返回农场应该回到列表，不是直接跳站点根。
+     没有上一页可回时（直接打开文档）退化为 ./（站点根）。 */
   var home = document.querySelector('.hud-home');
   if (home) {
-    var url = home.getAttribute('data-url') || '/';
-    var depth = url.split('/').filter(Boolean).length - 1;
-    if (depth > 0) {
-      var up = '';
-      for (var i = 0; i < depth; i++) up += '../';
-      home.setAttribute('href', up);
-    }
+    home.addEventListener('click', function (e) {
+      if (window.history && window.history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
   }
 
   var doc = document.getElementById('doc');
