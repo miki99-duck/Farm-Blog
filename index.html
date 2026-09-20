@@ -503,8 +503,9 @@ a:focus-visible,
    田块由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
    ============================================================ */
 .garden-view{
+  /* 左对齐贴住 .game-wrap 左边线，不居中（右侧空出的宽度正好是侧栏那 320px 一带） */
   max-width:900px;
-  margin:0 auto 24px;
+  margin:0 0 24px;
 }
 
 .garden-head{
@@ -665,13 +666,11 @@ a:focus-visible,
 .trial .garden{ margin:0 12px 12px; }
 
 /* ============================================================
-   文档列表页（点田块后显示，菜园子隐藏）
-   宽度沿用 .game-wrap 的 1060px，卡片 + 侧栏布局与改造前完全一致；
-   900px 的限制只针对菜园子（田块网格更方整）。
+   作物横幅（点田块后显示在列表上方）
+   .layout 常驻不隐藏，侧边栏始终可见；只切菜园子面板和这一块。
    ============================================================ */
-.list-view{ max-width:1060px; margin:0 auto; }
-
-.list-head{ margin-bottom:16px; }
+.list-head{ margin:0 0 16px; }
+.list-head[hidden]{ display:none; }
 
 .breadcrumb{
   display:flex;
@@ -1078,7 +1077,8 @@ a:focus-visible,
   <!-- ==================== 菜园子：文档入口 ====================
        田块由页尾脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
        每篇的「主标签」= front matter 里第一个 tag，所以一块田只归一种文档。
-       点一块田 → 隐藏菜园子、显示该标签的文档列表；返回 → 切回菜园子。
+       点一块田 → 隐藏菜园子 + 显示作物横幅 + 列表按主标签过滤；返回 / Esc → 恢复菜园子、列表回到全部。
+       侧边栏（.layout）始终可见，不做视图切换。
        深链：#crop=spring / #all / #untagged。
        注意：不用 Jekyll where 过滤器，原因见下方列表区的 comment。 -->
   <section class="garden-view" id="garden-view" aria-label="菜园子">
@@ -1099,27 +1099,27 @@ a:focus-visible,
     </div>
   </section>
 
-  <!-- ==================== 文档列表页（点田块后显示） ==================== -->
-  <div class="list-view" id="list-view" hidden>
-
-    <div class="list-head" id="list-head">
-      <div class="breadcrumb" id="breadcrumb">
-        <a href="#" id="bc-garden">🌾 菜园子</a>
-        <span class="sep">›</span>
-        <span id="bc-current">全部收成</span>
-        <button type="button" class="btn wood back-btn" id="back-garden">◀ 返回菜园子</button>
-      </div>
-      <div class="crop-banner" id="crop-banner">
-        <div class="banner-crop" id="banner-crop">📚</div>
-        <div>
-          <div class="banner-name" id="banner-name">全部收成</div>
-          <div class="banner-sub" id="banner-sub"></div>
-        </div>
-        <div class="banner-meta" id="banner-meta"></div>
-      </div>
+  <!-- ==================== 作物横幅（点田块后显示在列表上方） ====================
+       侧边栏不做视图切换、始终可见 —— 所以 .layout 不参与隐藏，
+       只切菜园子面板和这一块横幅。 -->
+  <div class="list-head" id="list-head" hidden>
+    <div class="breadcrumb" id="breadcrumb">
+      <a href="#" id="bc-garden">🌾 菜园子</a>
+      <span class="sep">›</span>
+      <span id="bc-current">全部收成</span>
+      <button type="button" class="btn wood back-btn" id="back-garden">◀ 返回菜园子</button>
     </div>
+    <div class="crop-banner" id="crop-banner">
+      <div class="banner-crop" id="banner-crop">📚</div>
+      <div>
+        <div class="banner-name" id="banner-name">全部收成</div>
+        <div class="banner-sub" id="banner-sub"></div>
+      </div>
+      <div class="banner-meta" id="banner-meta"></div>
+    </div>
+  </div>
 
-    <div class="layout">
+  <div class="layout">
 
     <!-- ---------- 文章列表 ---------- -->
     <main class="main-col" id="doc-list">
@@ -1286,7 +1286,6 @@ a:focus-visible,
       </div>
 
     </aside>
-  </div>
   </div>
 
   <!-- ==================== 底部物品栏 ==================== -->
@@ -1533,7 +1532,6 @@ a:focus-visible,
   var pagesEl = document.getElementById('pager-pages');
   var infoEl = document.getElementById('pager-info');
   var gardenView = document.getElementById('garden-view');
-  var listView = document.getElementById('list-view');
   var listHead = document.getElementById('list-head');
   var gardenFormal = document.getElementById('garden-formal');
   var gardenTrial = document.getElementById('garden-trial');
@@ -1723,7 +1721,7 @@ a:focus-visible,
     page = 1;
     render();
     if (gardenView) { gardenView.hidden = false; }
-    if (listView) { listView.hidden = true; }
+    if (listHead) { listHead.hidden = true; }
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
     window.scrollTo(0, 0);
   }
@@ -1749,7 +1747,7 @@ a:focus-visible,
     }
     render();
     if (gardenView) { gardenView.hidden = true; }
-    if (listView) { listView.hidden = false; }
+    if (listHead) { listHead.hidden = false; }
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -1812,7 +1810,7 @@ a:focus-visible,
   var initial = readHash();
   if (initial === null) {
     if (gardenView) { gardenView.hidden = false; }
-    if (listView) { listView.hidden = true; }
+    if (listHead) { listHead.hidden = true; }
     render();
     /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
