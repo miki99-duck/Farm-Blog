@@ -496,13 +496,13 @@ a:focus-visible,
 
 /* ============================================================
    菜园子 + 侧边栏（同一行）
-   左列 900px 放菜园子；右列 320px 放侧边栏，两者顶对齐。
+   左列 720px 放菜园子；右列 320px 放侧边栏，两者顶对齐。
    点田块 → .garden-view 隐藏、.list-section 显示，占同一格；
    侧栏始终在右列不动。
    ============================================================ */
 .fullpage{
   display:grid;
-  grid-template-columns:minmax(0,900px) 320px;
+  grid-template-columns:minmax(0,720px) 320px;
   gap:20px;
   align-items:start;
 }
@@ -517,7 +517,7 @@ a:focus-visible,
    ============================================================ */
 .garden-view{
   /* 左对齐贴住 .game-wrap 左边线，不居中 */
-  max-width:900px;
+  max-width:720px;
   align-self:start;
 }
 
