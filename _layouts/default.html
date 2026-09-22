@@ -73,7 +73,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<!-- GoatCounter 全站统计：无 cookie、无 IP 存储，免费 ≤5000 页/月 -->
+<!-- GoatCounter 全站统计：无 cookie、无 IP 存储，免费 ≤5000 页/月。
+     首页 index.html 里也有一份同样的脚本，改的时候两边都要改 ——
+     两边不一致会导致「首页访问不计、只有文档页计」这种半残统计。
+     这个脚本只负责「记录」；HUD 上显示的数字由 script.js 走公开接口
+     counter/TOTAL.json 取，两者互不依赖。 -->
 <script data-goatcounter="https://miki99-duck.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <style>
@@ -338,6 +342,31 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   z-index:50;
 }
 
+/* ---------- 长文回到顶部 ----------
+   文档动辄两三千行，没有它就得手动拖回最上面。
+   注意：本页样式是内联的，不能借用 style.css 里的 #back-to-top，
+   否则没加载首页样式的场景（直接打开文档）按钮会没有外观。
+   也正因为用了 display:flex，必须显式补回 [hidden] 的 display:none。 */
+#back-to-top{
+  position:fixed; right:20px; bottom:20px; z-index:60;
+  width:42px; height:42px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--wood-200); color:var(--wood-900);
+  border:3px solid var(--wood-300); border-radius:6px;
+  cursor:pointer;
+  box-shadow:0 0 0 3px var(--wood-700), 0 4px 0 rgba(0,0,0,.28);
+  transition:transform .15s ease, background .15s ease;
+}
+#back-to-top[hidden]{ display:none; }
+#back-to-top:hover{ background:var(--wood-100); transform:translateY(-2px); }
+#back-to-top:active{ transform:translateY(0); }
+#back-to-top:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:3px;
+  box-shadow:0 0 0 7px var(--wood-900);
+}
+#back-to-top svg{ width:18px; height:18px; }
+
 /* ---------- 响应式 ---------- */
 @media (max-width:980px){
   .doc-layout{ grid-template-columns:1fr; }
@@ -354,6 +383,8 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   .prose pre{ font-size:12px; padding:12px 12px; }
   .prose pre code{ font-size:12px; }
   .blog-sign h1{ font-size:14px; }
+  /* 手机上别挡住正文右下角的字，缩小并往角上收 */
+  #back-to-top{ right:12px; bottom:12px; width:38px; height:38px; }
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -393,6 +424,16 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
   </div>
 </div>
+
+<!-- 回到顶部：滚动超过 300px 才出现，点击平滑滚回顶部。
+     用的是 inline <style> 里的 #back-to-top，见文件上部说明。 -->
+<button id="back-to-top" type="button" aria-label="回到顶部" hidden>
+  <svg viewBox="0 0 16 16" role="img" aria-hidden="true">
+    <rect x="6" y="2" width="4" height="10" rx="1" fill="currentColor"/>
+    <polygon points="2,8 8,2 14,8" fill="currentColor"/>
+    <rect x="6" y="13" width="4" height="1" rx="0.5" fill="currentColor"/>
+  </svg>
+</button>
 
 <script>
 /* ============================================================
@@ -507,6 +548,29 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   /* ---------- 农具光标：从 localStorage 恢复（首页热键栏选择后持久化） ---------- */
   var savedCursor = localStorage.getItem('sv_cursor');
   if (savedCursor) { document.body.style.cursor = savedCursor; }
+
+  /* ---------- 回到顶部 ----------
+     只认 window.scrollY，不依赖 <html> 的 scroll-behavior：
+     用户开了「减少动态效果」时全局平滑滚动已被关掉，
+     这里显式传 behavior:'smooth' 会被浏览器自行降级为瞬时跳转，正合预期。 */
+  var toTop = document.getElementById('back-to-top');
+  if (toTop) {
+    var lastShown = null;
+    var syncToTop = function () {
+      var show = window.scrollY > 300;
+      if (show !== lastShown) {
+        toTop.hidden = !show;
+        lastShown = show;
+      }
+    };
+    window.addEventListener('scroll', syncToTop, { passive: true });
+    window.addEventListener('resize', syncToTop);
+    syncToTop();
+
+    toTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 }());
 </script>
 

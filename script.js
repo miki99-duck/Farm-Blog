@@ -492,20 +492,43 @@
     });
   });
 
-  /* ---------- 访客计数（GoatCounter API，30 秒刷新） ---------- */
+  /* ---------- 访客计数（GoatCounter 公开 counter 接口） ----------
+     踩过的坑：原来打的是 https://<code>.goatcounter.com/api/v2/counters/<code>，
+     这个地址根本不存在 —— 官方 JSON API 是 /api/v0/*，而且必须在 header 里
+     带 Authorization: Bearer <token>。把 token 写进前端脚本等于把你的统计后台
+     公开（谁都能读、v0/count 还能伪造数据），所以前端只该用公开接口：
+         https://<code>.goatcounter.com/counter/<PATH>.json   →  {"count": "1,234"}
+     PATH 用大写 TOTAL（区分大小写、不带前导斜杠）取全站总数。
+     ⚠ 该接口需要在 GoatCounter 后台打开设置
+        「Allow adding visitor counts on your website」，
+        否则一律返回 403（设置项默认关闭，防止数据被无意泄露）。
+     响应最多缓存 4 小时，所以没必要刷太勤，5 分钟一次足够。 */
   (function () {
     var el = document.getElementById('visitor-count');
     if (!el) { return; }
+    var CODE = 'miki99-duck';
+    var TIP = '访问 https://' + CODE + '.goatcounter.com，在站点设置里打开' +
+      '「Allow adding visitor counts on your website」后这里才会显示数字';
     function update() {
-      fetch('https://miki99-duck.goatcounter.com/api/v2/counters/miki99-duck')
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) {
-          if (d && d.totals) { el.textContent = d.totals.hits.toLocaleString(); }
+      fetch('https://' + CODE + '.goatcounter.com/counter/TOTAL.json')
+        .then(function (r) {
+          /* 没打开访客计数设置时是 403：保持 "--"，并把原因写进 title */
+          if (!r.ok) { el.title = TIP; return null; }
+          return r.json();
         })
-        .catch(function () {});
+        .then(function (d) {
+          if (d && d.count) {
+            el.textContent = d.count;
+            el.title = '全站累计访问量（GoatCounter 统计）';
+          }
+        })
+        .catch(function () {
+          /* 被广告拦截器或断网挡掉：静默保持 "--"，不打扰阅读 */
+          el.title = TIP;
+        });
     }
     update();
-    setInterval(update, 30000);
+    setInterval(update, 300000);
   })();
 
   /* 9) 回到顶部：滚动超过 300px 显示，点击平滑滚回顶部 */

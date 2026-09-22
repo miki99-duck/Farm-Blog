@@ -59,9 +59,15 @@ layout: null
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<!-- GoatCounter 全站统计（已停用：CDN 超时 + 404） -->
-<!-- <script data-goatcounter="https://miki99-duck.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script> -->
+<!-- GoatCounter 全站统计。
+     注意：_layouts/default.html（文档页）里这行是启用的，只有首页被注释掉了，
+     于是统计只记到文档页、首页访问一律不计——HUD 上的访客数因此长期偏低。
+     2026-09 核实：/count 接口本身是好的（返回 1x1 gif），当初记的
+     「CDN 超时 + 404」并不是 count.js 的问题，而是 HUD 上那个取数字的
+     /api/v2/counters/<code> 地址写错了（官方是 /api/v0/* 且要 token）。
+     取数字已改用公开接口 counter/TOTAL.json，见 script.js 的访客计数段。 -->
+<script data-goatcounter="https://miki99-duck.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
