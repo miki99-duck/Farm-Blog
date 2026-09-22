@@ -2,7 +2,7 @@
 layout: null
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- 首页 -->
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}/</loc>
@@ -10,9 +10,19 @@ layout: null
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  {% for page in site.pages %}
-  {% unless page.path contains 'assets/' or page.path contains 'html_backup/' or page.path contains 'node_modules/' %}
-  {% unless page.url == '/index.html' or page.url == '/404.html' %}
+  {%- comment -%}
+    收录所有参与列表的文档页（与 index.html 的 skipdirs 保持一致）。
+    排除：资源目录、html_backup、目录索引 README、以及 sitemap.xml 自身
+    （它也是 site.pages 里的一页，不排除会把自己写进结果）。
+  {%- endcomment -%}
+  {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
+  {%- for page in site.pages -%}
+  {%- assign segs = page.path | split: "/" -%}
+  {%- assign top = segs | first -%}
+  {%- assign keep = true -%}
+  {%- if page.name == "index.html" or page.name == "sitemap.xml" or page.name == "README.md" -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if keep %}
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}</loc>
     {% if page.date %}
@@ -23,7 +33,6 @@ layout: null
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  {% endunless %}
-  {% endunless %}
-  {% endfor %}
+  {%- endif -%}
+  {%- endfor %}
 </urlset>

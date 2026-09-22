@@ -8,13 +8,18 @@ description: 种地、钓鱼、写代码 —— 记录星露谷里的每一天�
 lang: zh-CN
 
 # ============================================================
-#  SEO 配置（部署前替换 url / baseurl / author / twitter_handle 为实际值）
+#  SEO 配置
+#  ⚠ 以下四项必须与实际部署地址一致，否则 canonical / og:url / sitemap
+#    会指向不存在的地址，搜索引擎收录会直接受影响。
+#  当前实际仓库：https://github.com/miki99-duck/Farm-Blog
+#  → 默认域名 miki99-duck.github.io，baseurl /Farm-Blog
+#  若以后绑定自定义域（如加 CNAME 文件），记得同步改 url / baseurl。
 # ============================================================
-url: "https://miki99.github.io"       # 站点根 URL，不带路径
-baseurl: "/farmblog"                   # 站点路径前缀，根路径写 ""
+url: "https://miki99-duck.github.io"    # 站点根 URL，不带路径
+baseurl: "/Farm-Blog"                  # 站点路径前缀，根路径写 ""
 author: "Miki99"
-author_url: "https://github.com/miki99"
-twitter_handle: "@miki99"
+author_url: "https://github.com/miki99-duck"
+twitter_handle: "@miki99-duck"
 og_image: "/assets/og-image.svg"       # 社交分享卡片图
 keywords:
   - 星露谷物语
@@ -58,17 +63,34 @@ kramdown:
 # 为什么要前端分页：GitHub Pages 的 jekyll-paginate 只支持 _posts 里的文章，
 # 对 site.pages 无效；jekyll-paginate-v2 不在 GitHub Pages 白名单里，用了会构建失败。
 #
-# ---- 侧栏「农作物」 ----
-# 每个农作物 = 一个标签。成熟度（几度）= 带该标签的文章数，由页面脚本实时统计。
-# 想加一个新农作物，就在 index.html 的 .crops 里加一个按钮：
-#   <button type="button" class="crop" data-crop="新名字" aria-pressed="false">…</button>
-# 然后在文档 front matter 里写 tags: [新名字] 即可，不用改别的地方。
-# 条宽按最大的农作物线性归一化，最少 8% 以保证只有 1 度的也看得见。
+# ---- 侧栏「菜园子」 ----
+# 一块田 = 一个「主标签」。主标签 = front matter 里 tags 数组的第一个标签，
+# 所以一块田只归一种文档，同一篇不会在几块田里重复出现。
+# 成熟度（几度）= 带该主标签的文章数，由 script.js 从已渲染的卡片上现场统计。
+#
+# ---- ⚠ 每个系列都要打 tags（否则整批文档掉进「田头空地」） ----
+# 2026-09 修过一次：css / js / threejs 三个系列（34 篇）当时全都没有 tags，
+# 首页有一半内容显示成「待补标签」，完全不进对应的田。
+# 新增一个系列时，把该系列所有 .md 都加上 front matter：
+#
+#   ---
+#   tags: [系列名]        # 第一个标签就是它的归属田
+#   ---
+#
+# 命名约定（tags 一律小写，脚本会 toLowerCase 后再匹配）：
+#   技术子目录名 = 标签名。css/ → [css]、js/ → [js]、threejs/ → [threejs]、
+#   vue/ → [vue]、spring/ → [Spring]、java/ → [Java]、kafka/ → [Kafka]、
+#   微服务/ → [微服务]。
+#
+# 想把它放进正式田（而不是试验田）就在 script.js 的 FORMAL 数组里加它的名字，
+# 顺手在 TAG_META 里配 name / emoji；键必须全小写，写成 'Java' 会匹配不上、
+# emoji 静默退化成兜底 🌱。
 #
 # ---- 哪些目录不参与列表 ----
 # 这些顶层目录名会被跳过（防止资源目录里的 .md 混进文档列表）：
-#   assets / images / html_backup / node_modules / vendor / _layouts / _site / .git
+#   assets / audio / images / html_backup / music / node_modules / vendor / _layouts / _site / .git
 # 要临时排除单篇文档，用 front matter 的 listed: false。
+# 同一份 skipdirs 在 index.html 和 sitemap.xml 里各有一份，改的时候两边都要改。
 #
 # ---- 文档里的图片 ----
 # 用标准 markdown 写法，路径相对文档所在文件夹：

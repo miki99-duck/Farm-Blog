@@ -1,3 +1,7 @@
+---
+tags: [vue]
+---
+
 # 第7章 Element UI 实战（表格/表单/弹窗/分页的标准组合）
 
 > 一句话讲清：**Element UI 提供现成的"组件积木"（表格、表单、弹窗、分页…）；
@@ -24,6 +28,7 @@
 
 ## 7.2 表格 el-table：渲染 + 自定义列 + 操作列
 
+{% raw %}
 ```vue
 <template>
   <el-table :data="tableData" v-loading="loading" border stripe>
@@ -58,6 +63,7 @@
   </el-table>
 </template>
 ```
+{% endraw %}
 
 要点：
 - `scope.row` 拿当前行数据（作用域插槽带来的）；

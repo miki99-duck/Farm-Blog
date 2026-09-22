@@ -1,3 +1,7 @@
+---
+tags: [vue]
+---
+
 # 第10章 Vue 面试速查与常见坑（考前 30 分钟）
 
 > 使用方式：先自己答再对答案；★ 最高频。答不上来回对应章节。
@@ -120,6 +124,7 @@
 
 ## B. 高频手写题（现场写，每题 <2 分钟）
 
+{% raw %}
 ```js
 // 1. 实现简易响应式（概念版，面试常让手写）
 function reactive(obj) {
@@ -160,7 +165,7 @@ router.beforeEach((to, from, next) => {
 });
 
 // 7. 展开对象给 el-table 行加序号列（临时渲染技巧）
-// {{ scope.$index + 1 + (queryParams.pageNum - 1) * queryParams.pageSize }}
+{% raw %}// {{ scope.$index + 1 + (queryParams.pageNum - 1) * queryParams.pageSize }}{% endraw %}
 ```
 
 ## C. 常见坑速查表（debug 时翻）

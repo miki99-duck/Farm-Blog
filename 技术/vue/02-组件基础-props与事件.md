@@ -1,3 +1,7 @@
+---
+tags: [vue]
+---
+
 # 第2章 组件基础：props、自定义事件与生命周期
 
 > 一句话讲清：**组件 = 可复用的"视图 + 数据 + 逻辑"单元；父组件通过 props 把数据
@@ -19,6 +23,7 @@
 
 ## 2.2 定义一个组件（三块结构第1章见过，重点是粘合的"接口"）
 
+{% raw %}
 ```vue
 <!-- components/DeviceStatus.vue -->
 <template>
@@ -47,6 +52,7 @@ export default {
 .tag--info { background: #f4f4f5; color: #909399; }
 </style>
 ```
+{% endraw %}
 
 ## 2.3 使用组件：父传子（props）★单向数据流
 

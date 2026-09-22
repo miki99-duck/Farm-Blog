@@ -173,7 +173,9 @@
   var page = 1;
   var active = null;   /* 选中的主标签；null = 菜园子 */
 
-  /* 标签元数据：显示名 + emoji。FORMAL 是固定 6 块正式田，其余标签进试验田 */
+  /* 标签元数据：显示名 + emoji。FORMAL 是固定 6 块正式田，其余标签进试验田。
+     注意：键必须全小写 —— primaryOf() 会把标签 toLowerCase() 后再查这张表，
+     写成 'Java' / 'Spring' 这种大小写会匹配不上，emoji 静默退化成兜底 🌱。 */
   var TAG_META = {
     '微服务': { name:'微服务', emoji:'🧩' },
     'java':    { name:'Java',    emoji:'☕' },
@@ -181,14 +183,18 @@
     'kafka':   { name:'Kafka',   emoji:'📨' },
     'mysql':   { name:'MySQL',   emoji:'🐬' },
     'nginx':   { name:'Nginx',   emoji:'🌐' },
+    'css':     { name:'CSS',     emoji:'🖌️' },
+    'js':      { name:'JavaScript', emoji:'📜' },
+    'vue':     { name:'Vue',     emoji:'🟩' },
+    'threejs': { name:'Three.js', emoji:'🧊' },
     '矿洞':    { name:'矿洞',    emoji:'⛏️' },
     '冒险':    { name:'冒险',    emoji:'🧭' },
     '秋季':    { name:'秋季',    emoji:'🍂' },
     '收获':    { name:'收获',    emoji:'🎃' },
     '像素风':  { name:'像素风',  emoji:'🎨' },
-    '前端':    { name:'前端',    emoji:'🖥️' },
-    'css':     { name:'CSS',     emoji:'🖌️' }
+    '前端':    { name:'前端',    emoji:'🖥️' }
   };
+  /* FORMAL 也要全小写，且必须与 TAG_META 的键、以及文档里 tags 的小写形式一致 */
   var FORMAL = ['微服务', 'spring', 'java', 'kafka', 'mysql', 'nginx'];
   var ALL_ITEM = { name:'全部收成', emoji:'📚' };
   var NONE_ITEM = { name:'田头空地', emoji:'❔' };

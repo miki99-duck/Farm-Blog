@@ -1,3 +1,7 @@
+---
+tags: [vue]
+---
+
 # 第1章 Vue 基础：模板语法与响应式
 
 > 一句话讲清：**.vue 文件 = 模板(长什么样) + 脚本(数据和逻辑) + 样式(怎么好看)；
@@ -7,6 +11,7 @@
 
 ## 1.1 .vue 文件三块结构（RuoYi 每个页面长这样）
 
+{% raw %}
 ```vue
 <template>
   <!-- ① 模板：类 HTML，可以写指令和插值 -->
@@ -38,11 +43,13 @@ export default {
 .container { padding: 16px; }
 </style>
 ```
+{% endraw %}
 
 三块的分工就是"视图 / 数据 / 样式"分离，一个组件自包含。
 
 ## 1.2 插值：把数据"放进"模板
 
+{% raw %}
 ```vue
 <template>
   <div>
@@ -60,6 +67,7 @@ export default {
   </div>
 </template>
 ```
+{% endraw %}
 
 ## 1.3 指令：模板里的"JS 钩子"（第一梯队）
 
@@ -73,6 +81,7 @@ export default {
 | v-for | 列表渲染 | `v-for="item in list" :key="item.id"` |
 | v-html | 渲染 HTML（危险） | `v-html="content"` |
 
+{% raw %}
 ```vue
 <template>
   <button :disabled="loading" @click="submit">
@@ -94,6 +103,7 @@ export default {
   <div :style="{ color: textColor, fontSize: fontSize + 'px' }">
 </template>
 ```
+{% endraw %}
 
 为什么 v-for 要 key：Vue 用 key 区分"同一位置的元素是同一个还是新的"，
 没有 key（或用 index）时列表重排/插入会复用错乱的 DOM 状态。面试必讲。

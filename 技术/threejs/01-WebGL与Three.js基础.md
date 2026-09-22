@@ -1,3 +1,7 @@
+---
+tags: [threejs]
+---
+
 # 第1章 WebGL 与 Three.js 基础:第一个立方体
 
 > 一句话讲清:**Three.js 是 WebGL 的对象化封装——WebGL 是浏览器的 3D 底层 API(又难又啰嗦),

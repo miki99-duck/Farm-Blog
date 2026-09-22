@@ -1018,6 +1018,9 @@ a:focus-visible,
   box-shadow:0 2px 8px rgba(46,26,12,.25);
   transition:transform .15s ease, background .15s ease, color .15s ease;
 }
+/* display:flex 会覆盖 UA 的 [hidden]{display:none}，必须显式补回，
+   否则按钮一进页面就常驻右下角（本应滚动 300px 后才出现） */
+#back-to-top[hidden]{ display:none; }
 #back-to-top:hover{
   background:var(--wood-100);
   color:var(--wood-900);
