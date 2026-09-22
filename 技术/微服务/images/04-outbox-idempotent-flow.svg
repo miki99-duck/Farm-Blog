@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="400" viewBox="0 0 920 400">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="26" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">消息可靠投递链路：outbox + 幂等消费</text>
+  <text x="460" y="44" text-anchor="middle" fill="#8b949e" font-size="11">生产端防丢（outbox 重试） + 消费端防重（业务键去重） = 不丢不重</text>
+
+  <!-- 组件框 -->
+  <rect x="20" y="66" width="150" height="54" rx="7" fill="#161b22" stroke="#58a6ff"/>
+  <text x="95" y="88" text-anchor="middle" fill="#58a6ff" font-size="11.5" font-weight="bold">OrderService</text>
+  <text x="95" y="106" text-anchor="middle" fill="#8b949e" font-size="9">业务库（订单表）</text>
+
+  <rect x="20" y="146" width="150" height="54" rx="7" fill="rgba(63,185,80,.12)" stroke="#3fb950"/>
+  <text x="95" y="168" text-anchor="middle" fill="#3fb950" font-size="11.5" font-weight="bold">OutboxStore</text>
+  <text x="95" y="186" text-anchor="middle" fill="#8b949e" font-size="9">本地消息表（PENDING→SENT）</text>
+
+  <rect x="20" y="226" width="150" height="54" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="95" y="248" text-anchor="middle" fill="#d29922" font-size="11.5" font-weight="bold">OutboxRelayTask</text>
+  <text x="95" y="266" text-anchor="middle" fill="#8b949e" font-size="9">定时扫描转发（方案B）</text>
+
+  <rect x="240" y="146" width="150" height="54" rx="7" fill="#161b22" stroke="#a371f7"/>
+  <text x="315" y="168" text-anchor="middle" fill="#a371f7" font-size="11.5" font-weight="bold">MemoryQueue</text>
+  <text x="315" y="186" text-anchor="middle" fill="#8b949e" font-size="9">MQ（模拟 at-least-once）</text>
+
+  <rect x="460" y="66" width="150" height="54" rx="7" fill="#161b22" stroke="#58a6ff"/>
+  <text x="535" y="88" text-anchor="middle" fill="#58a6ff" font-size="11.5" font-weight="bold">PointConsumer</text>
+  <text x="535" y="106" text-anchor="middle" fill="#8b949e" font-size="9">积分消费者（方案C）</text>
+
+  <rect x="460" y="146" width="150" height="54" rx="7" fill="rgba(210,153,34,.12)" stroke="#d29922"/>
+  <text x="535" y="168" text-anchor="middle" fill="#d29922" font-size="11.5" font-weight="bold">ProcessedStore</text>
+  <text x="535" y="186" text-anchor="middle" fill="#8b949e" font-size="9">幂等去重表（业务键）</text>
+
+  <rect x="700" y="146" width="190" height="54" rx="7" fill="rgba(88,166,255,.12)" stroke="#58a6ff"/>
+  <text x="795" y="168" text-anchor="middle" fill="#58a6ff" font-size="11.5" font-weight="bold">下游系统（积分）</text>
+  <text x="795" y="186" text-anchor="middle" fill="#8b949e" font-size="9">totalPoints += 10</text>
+
+  <!-- 生产端箭头 -->
+  <line x1="95" y1="120" x2="95" y2="144" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="104" y="136" fill="#3fb950" font-size="9.5">① 同事务写 outbox</text>
+
+  <line x1="95" y1="226" x2="95" y2="202" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="104" y="216" fill="#3fb950" font-size="9.5">② 扫描 PENDING</text>
+
+  <line x1="170" y1="253" x2="315" y2="202" stroke="#d29922" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="220" y="240" fill="#d29922" font-size="9.5">③ 发送成功后才 markSent</text>
+
+  <!-- 消费端箭头 -->
+  <line x1="315" y1="146" x2="315" y2="122" stroke="#8b949e" stroke-width="1.3" marker-end="url(#arr)"/>
+  <text x="324" y="136" fill="#8b949e" font-size="9">poll()</text>
+
+  <line x1="390" y1="170" x2="458" y2="100" stroke="#8b949e" stroke-width="1.3" marker-end="url(#arr)"/>
+  <text x="386" y="152" fill="#8b949e" font-size="9">消息交消费者</text>
+
+  <line x1="535" y1="120" x2="535" y2="144" stroke="#d29922" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="544" y="136" fill="#d29922" font-size="9.5">tryClaim(bizKey)</text>
+
+  <line x1="610" y1="93" x2="698" y2="170" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="612" y="150" fill="#3fb950" font-size="9.5">complete + ack + 加分</text>
+
+  <!-- 失败重投环 -->
+  <path d="M 460 90 C 400 60, 350 60, 315 84" fill="none" stroke="#f85149" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrR)"/>
+  <text x="360" y="56" text-anchor="middle" fill="#f85149" font-size="9.5">处理失败：release(bizKey) + 不 ack → 消息留在队列重投</text>
+
+  <!-- 底部指标 -->
+  <rect x="20" y="300" width="870" height="86" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="36" y="322" fill="#58a6ff" font-size="11.5" font-weight="bold">metrics 指标口径（这是最容易答错追问的地方）</text>
+  <text x="36" y="344" fill="#f85149" font-size="10.5">lostMessages = 业务落库成功但 MQ.send 失败（方案A 的缺陷）</text>
+  <text x="36" y="362" fill="#8b949e" font-size="10">⚠ 不能用 sent - delivered 推导：发送失败的消息根本进不了队列，推导永远得 0</text>
+  <text x="470" y="344" fill="#d29922" font-size="10.5">duplicateProcessed = 幂等拦截次数</text>
+  <text x="470" y="362" fill="#8b949e" font-size="10">⚠ 出现 &gt;0 恰恰说明方案C 生效：重复投递被拦，业务效果没有重复</text>
+  <text x="470" y="380" fill="#8b949e" font-size="10">去重键必须是【业务键（订单ID）】，不能用 broker msgId——重投/重试时 msgId 会变，业务键不会变</text>
+</svg>

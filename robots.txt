@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://miki99.github.io/farmblog/sitemap.xml

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="380" viewBox="0 0 920 380">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">CAS 原理与 ABA 问题（volatile 解决不了原子性）</text>
+
+  <!-- 左：CAS 流程 -->
+  <rect x="20" y="50" width="420" height="250" rx="10" fill="rgba(63,185,80,.05)" stroke="#3fb950"/>
+  <text x="230" y="76" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">CAS：Compare And Swap（无锁并发）</text>
+
+  <rect x="45" y="96" width="110" height="42" rx="6" fill="#161b22" stroke="#d29922"/>
+  <text x="100" y="115" text-anchor="middle" fill="#d29922" font-size="10.5">内存值 V</text>
+  <text x="100" y="131" text-anchor="middle" fill="#8b949e" font-size="9">线程读进 CPU 寄存器</text>
+
+  <rect x="175" y="96" width="110" height="42" rx="6" fill="#161b22" stroke="#58a6ff"/>
+  <text x="230" y="115" text-anchor="middle" fill="#58a6ff" font-size="10.5">期望值 A</text>
+  <text x="230" y="131" text-anchor="middle" fill="#8b949e" font-size="9">线程想基于的值</text>
+
+  <rect x="305" y="96" width="110" height="42" rx="6" fill="#161b22" stroke="#a371f7"/>
+  <text x="360" y="115" text-anchor="middle" fill="#a371f7" font-size="10.5">新值 B</text>
+  <text x="360" y="131" text-anchor="middle" fill="#8b949e" font-size="9">想写入的值</text>
+
+  <line x1="155" y1="138" x2="200" y2="176" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="285" y1="138" x2="240" y2="176" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <rect x="120" y="180" width="220" height="44" rx="6" fill="rgba(63,185,80,.15)" stroke="#3fb950"/>
+  <text x="230" y="198" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">CAS(V, A, B)：硬件原子指令</text>
+  <text x="230" y="216" text-anchor="middle" fill="#8b949e" font-size="9">if (V == A) V = B，整个过程不可被打断</text>
+
+  <text x="230" y="252" text-anchor="middle" fill="#e6edf3" font-size="10.5">① 内存值没被改（V==A）→ 写入 B，成功</text>
+  <text x="230" y="272" text-anchor="middle" fill="#f85149" font-size="10.5">② 被别人改过（V!=A）→ 失败，自旋重试</text>
+
+  <!-- 右：ABA 问题 -->
+  <rect x="470" y="50" width="430" height="250" rx="10" fill="rgba(248,81,73,.05)" stroke="#f85149"/>
+  <text x="685" y="76" text-anchor="middle" fill="#f85149" font-size="13" font-weight="bold">ABA 问题：CAS 的软肋</text>
+
+  <text x="495" y="108" fill="#8b949e" font-size="10.5">线程T1：读到 V=A，准备 CAS(A→C)</text>
+
+  <rect x="495" y="122" width="70" height="26" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="530" y="140" text-anchor="middle" fill="#d29922" font-size="10">V=A</text>
+  <rect x="575" y="122" width="70" height="26" rx="5" fill="#161b22" stroke="#58a6ff"/>
+  <text x="610" y="140" text-anchor="middle" fill="#58a6ff" font-size="10">V=B</text>
+  <rect x="655" y="122" width="70" height="26" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="690" y="140" text-anchor="middle" fill="#d29922" font-size="10">V=A</text>
+  <rect x="735" y="122" width="90" height="26" rx="5" fill="#161b22" stroke="#f85149"/>
+  <text x="780" y="140" text-anchor="middle" fill="#f85149" font-size="10">CAS 误判成功</text>
+
+  <line x1="565" y1="135" x2="573" y2="135" stroke="#8b949e" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="645" y1="135" x2="653" y2="135" stroke="#8b949e" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="725" y1="135" x2="733" y2="135" stroke="#f85149" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <text x="530" y="162" text-anchor="middle" fill="#8b949e" font-size="9.5">初始</text>
+  <text x="610" y="162" text-anchor="middle" fill="#8b949e" font-size="9.5">线程T2 改成 B</text>
+  <text x="690" y="162" text-anchor="middle" fill="#8b949e" font-size="9.5">线程T2 又改回 A</text>
+
+  <text x="685" y="196" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">T1 的 CAS(A→C) 认为"没被改过"→ 写入 C</text>
+  <text x="685" y="216" text-anchor="middle" fill="#e6edf3" font-size="10.5">但事实上中间经过 B，语义已经变了！</text>
+  <text x="685" y="238" text-anchor="middle" fill="#8b949e" font-size="9.5">典型场景：栈的 pop（指针被改走又改回）、无锁队列、版本号链表</text>
+
+  <text x="685" y="272" text-anchor="middle" fill="#3fb950" font-size="10.5">解：AtomicStampedReference（值 + 版本号一起 CAS）</text>
+
+  <!-- 底部 -->
+  <rect x="20" y="320" width="880" height="48" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="36" y="340" fill="#58a6ff" font-size="11" font-weight="bold">速查：</text>
+  <text x="80" y="340" fill="#e6edf3" font-size="11">volatile = 可见性 + 有序性，保证读写原子但不保证复合操作（i++ 仍不安全）</text>
+  <text x="36" y="359" fill="#8b949e" font-size="10.5">AtomicInteger 内部就是 volatile + CAS（Unsafe.compareAndSwapInt）；竞争激烈时自旋浪费 CPU，考虑 CAS + 自旋退避或直接用锁</text>
+</svg>

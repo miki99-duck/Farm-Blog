@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- 天空渐变 -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#87ceeb"/>
+      <stop offset="100%" stop-color="#b8e0f0"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a9e3a"/>
+      <stop offset="100%" stop-color="#3d7a28"/>
+    </linearGradient>
+  </defs>
+  <!-- 天空 -->
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <!-- 远山 -->
+  <polygon points="0,400 150,280 300,350 450,260 600,320 750,250 900,300 1050,270 1200,310 1200,420 0,420" fill="#4a8a30" opacity="0.6"/>
+  <polygon points="0,420 200,340 400,380 600,330 800,360 1000,340 1200,370 1200,450 0,450" fill="#3d7a28" opacity="0.7"/>
+  <!-- 草地 -->
+  <rect x="0" y="420" width="1200" height="210" fill="url(#ground)"/>
+  <!-- 泥土条 -->
+  <rect x="0" y="420" width="1200" height="8" fill="#6b3f1d"/>
+  <!-- 太阳 -->
+  <circle cx="950" cy="120" r="50" fill="#ffd23f"/>
+  <circle cx="950" cy="120" r="40" fill="#ffe98a"/>
+  <!-- 太阳光芒 -->
+  <rect x="945" y="50" width="10" height="20" fill="#ffd23f"/>
+  <rect x="945" y="170" width="10" height="20" fill="#ffd23f"/>
+  <rect x="880" y="115" width="20" height="10" fill="#ffd23f"/>
+  <rect x="1000" y="115" width="20" height="10" fill="#ffd23f"/>
+  <rect x="900" y="70" width="14" height="14" fill="#ffd23f" transform="rotate(45 907 77)"/>
+  <rect x="986" y="70" width="14" height="14" fill="#ffd23f" transform="rotate(45 993 77)"/>
+  <rect x="900" y="160" width="14" height="14" fill="#ffd23f" transform="rotate(45 907 167)"/>
+  <rect x="986" y="160" width="14" height="14" fill="#ffd23f" transform="rotate(45 993 167)"/>
+  <!-- 云朵 -->
+  <rect x="150" y="80" width="80" height="30" fill="#fff" opacity="0.8"/>
+  <rect x="170" y="70" width="40" height="20" fill="#fff" opacity="0.8"/>
+  <rect x="200" y="85" width="50" height="25" fill="#fff" opacity="0.8"/>
+  <rect x="400" y="100" width="100" height="25" fill="#fff" opacity="0.7"/>
+  <rect x="420" y="90" width="50" height="20" fill="#fff" opacity="0.7"/>
+  <rect x="650" y="60" width="70" height="25" fill="#fff" opacity="0.6"/>
+  <rect x="670" y="50" width="30" height="15" fill="#fff" opacity="0.6"/>
+  <!-- 树 -->
+  <rect x="80" y="360" width="12" height="60" fill="#8b5a2b"/>
+  <rect x="60" y="320" width="52" height="50" fill="#4a8a30"/>
+  <rect x="68" y="300" width="36" height="30" fill="#5a9e3a"/>
+  <rect x="76" y="290" width="20" height="15" fill="#6ab840"/>
+  <rect x="1080" y="370" width="12" height="50" fill="#8b5a2b"/>
+  <rect x="1060" y="335" width="52" height="40" fill="#4a8a30"/>
+  <rect x="1070" y="315" width="32" height="25" fill="#5a9e3a"/>
+  <!-- 木牌标题 -->
+  <rect x="350" y="160" width="500" height="100" rx="8" fill="#8b5a2b"/>
+  <rect x="360" y="170" width="480" height="80" rx="5" fill="#a9713f"/>
+  <rect x="370" y="180" width="460" height="60" rx="3" fill="#c99c5e"/>
+  <!-- 标题文字 -->
+  <text x="600" y="220" font-family="Press Start 2P, monospace" font-size="28" fill="#2e1a0c" text-anchor="middle" font-weight="bold">星露谷农场日志</text>
+  <text x="600" y="250" font-family="Press Start 2P, monospace" font-size="12" fill="#4a2c17" text-anchor="middle">STARDEW VALLEY FARM BLOG</text>
+  <!-- 底部描述 -->
+  <rect x="300" y="480" width="600" height="60" rx="6" fill="#2e1a0c" opacity="0.85"/>
+  <text x="600" y="518" font-family="sans-serif" font-size="18" fill="#f8e8c0" text-anchor="middle">种地 · 钓鱼 · 写代码 —— 记录星露谷里的每一天</text>
+  <!-- 底部链接 -->
+  <text x="600" y="580" font-family="monospace" font-size="14" fill="#fff6dd" text-anchor="middle" opacity="0.7">miki99.github.io/farmblog</text>
+  <!-- 装饰像素 -->
+  <rect x="50" y="500" width="8" height="8" fill="#ffd23f"/>
+  <rect x="70" y="510" width="6" height="6" fill="#e8892b"/>
+  <rect x="1140" y="500" width="8" height="8" fill="#ffd23f"/>
+  <rect x="1120" y="510" width="6" height="6" fill="#e8892b"/>
+  <!-- 花草 -->
+  <rect x="200" y="430" width="4" height="8" fill="#6ab840"/>
+  <rect x="198" y="426" width="8" height="4" fill="#6ab840"/>
+  <rect x="200" y="422" width="4" height="4" fill="#e85555"/>
+  <rect x="500" y="430" width="4" height="8" fill="#6ab840"/>
+  <rect x="498" y="426" width="8" height="4" fill="#6ab840"/>
+  <rect x="500" y="422" width="4" height="4" fill="#ffd23f"/>
+  <rect x="700" y="430" width="4" height="8" fill="#6ab840"/>
+  <rect x="698" y="426" width="8" height="4" fill="#6ab840"/>
+  <rect x="700" y="422" width="4" height="4" fill="#7ee0c8"/>
+  <rect x="900" y="430" width="4" height="8" fill="#6ab840"/>
+  <rect x="898" y="426" width="8" height="4" fill="#6ab840"/>
+  <rect x="900" y="422" width="4" height="4" fill="#e85555"/>
+</svg>

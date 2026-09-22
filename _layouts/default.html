@@ -4,8 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
-<title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<title>{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}</title>
 <meta name="description" content="{{ page.description | default: site.description }}">
+<meta name="keywords" content="{% if page.tags %}{% for tag in page.tags %}{{ tag }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endif %}, 星露谷农场日志, 技术笔记, 博客">
+<meta name="author" content="{{ site.author }}">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#2e1a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="星露谷农场日志">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
+<!-- canonical URL -->
+<link rel="canonical" href="{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}">
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}">
+<meta property="og:description" content="{{ page.description | default: site.description }}">
+<meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}">
+<meta property="og:image" content="{{ site.url }}{{ site.baseurl }}{{ site.og_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="星露谷农场日志">
+<meta property="og:locale" content="zh_CN">
+{% if page.date %}
+<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+{% endif %}
+{% if page.tags %}
+{% for tag in page.tags %}
+<meta property="article:tag" content="{{ tag }}">
+{% endfor %}
+{% endif %}
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="{{ site.twitter_handle }}">
+<meta name="twitter:title" content="{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}">
+<meta name="twitter:description" content="{{ page.description | default: site.description }}">
+<meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}{{ site.og_image }}">
+<!-- JSON-LD 结构化数据 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ page.title | default: site.title | jsonify }}",
+  "description": "{{ page.description | default: site.description | jsonify }}",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}",
+  "mainEntityOfPage": "{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}",
+{% if page.date %}
+  "datePublished": "{{ page.date | date_to_xmlschema }}",
+{% endif %}
+{% if page.tags %}
+  "keywords": [
+{% for tag in page.tags %}
+    "{{ tag | jsonify }}"{% unless forloop.last %},{% endunless %}
+{% endfor %}
+  ],
+{% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ site.author | jsonify }}",
+    "url": "{{ site.author_url | jsonify }}"
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "{{ site.author | jsonify }}"
+  },
+  "inLanguage": "zh-CN"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">

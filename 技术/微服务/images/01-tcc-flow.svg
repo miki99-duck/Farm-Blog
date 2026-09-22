@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">TCC 三阶段：Try → Confirm / Cancel</text>
+  <text x="460" y="48" text-anchor="middle" fill="#8b949e" font-size="11">编排器顺序执行三个参与者的 Try，全部成功才 Confirm；任一步失败立刻 Cancel 全部已执行分支</text>
+
+  <!-- 编排器 -->
+  <rect x="30" y="72" width="150" height="54" rx="7" fill="rgba(88,166,255,.12)" stroke="#58a6ff"/>
+  <text x="105" y="95" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">EnrollmentOrchestrator</text>
+  <text x="105" y="113" text-anchor="middle" fill="#8b949e" font-size="9.5">事务编排器（生成 xid）</text>
+
+  <!-- 三个参与者 Try -->
+  <rect x="240" y="72" width="150" height="54" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="315" y="92" text-anchor="middle" fill="#d29922" font-size="11.5" font-weight="bold">① 课程名额 Try</text>
+  <text x="315" y="110" text-anchor="middle" fill="#8b949e" font-size="9">预留 1 个名额</text>
+
+  <rect x="415" y="72" width="150" height="54" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="490" y="92" text-anchor="middle" fill="#d29922" font-size="11.5" font-weight="bold">② 成绩服务 Try</text>
+  <text x="490" y="110" text-anchor="middle" fill="#8b949e" font-size="9">建 PENDING 记录</text>
+
+  <rect x="590" y="72" width="150" height="54" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="665" y="92" text-anchor="middle" fill="#d29922" font-size="11.5" font-weight="bold">③ 财务服务 Try</text>
+  <text x="665" y="110" text-anchor="middle" fill="#8b949e" font-size="9">冻结学费</text>
+
+  <!-- Try 阶段箭头 -->
+  <line x1="180" y1="99" x2="238" y2="99" stroke="#d29922" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="390" y1="99" x2="413" y2="99" stroke="#d29922" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="565" y1="99" x2="588" y2="99" stroke="#d29922" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="209" y="90" text-anchor="middle" fill="#8b949e" font-size="9">tryReserve</text>
+  <text x="401" y="90" text-anchor="middle" fill="#8b949e" font-size="9">tryCreate</text>
+  <text x="576" y="90" text-anchor="middle" fill="#8b949e" font-size="9">tryFreeze</text>
+
+  <text x="460" y="150" text-anchor="middle" fill="#8b949e" font-size="10.5">★ Try 的本质：只做"资源预留"，不产生最终业务效果（名额扣了但没确认、记录是 PENDING 不是 ACTIVE）</text>
+
+  <!-- 决策点 -->
+  <polygon points="460,168 510,196 460,224 410,196" fill="rgba(63,185,80,.12)" stroke="#3fb950"/>
+  <text x="460" y="193" text-anchor="middle" fill="#3fb950" font-size="10.5" font-weight="bold">三个 Try</text>
+  <text x="460" y="207" text-anchor="middle" fill="#3fb950" font-size="10.5" font-weight="bold">都成功？</text>
+
+  <!-- 成功分支 -->
+  <line x1="460" y1="224" x2="460" y2="252" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="472" y="243" fill="#3fb950" font-size="10">是</text>
+
+  <rect x="300" y="256" width="320" height="52" rx="7" fill="rgba(63,185,80,.12)" stroke="#3fb950"/>
+  <text x="460" y="278" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">Confirm ×3 → CONFIRMED</text>
+  <text x="460" y="296" text-anchor="middle" fill="#8b949e" font-size="9.5">名额扣减生效 / PENDING→ACTIVE / 冻结确认（不可逆）</text>
+
+  <!-- 失败分支 -->
+  <line x1="410" y1="196" x2="230" y2="196" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <text x="320" y="188" text-anchor="middle" fill="#f85149" font-size="10">否（抛异常）</text>
+
+  <rect x="40" y="172" width="190" height="52" rx="7" fill="rgba(248,81,73,.12)" stroke="#f85149"/>
+  <text x="135" y="194" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">Cancel 已执行分支 → CANCELLED</text>
+  <text x="135" y="212" text-anchor="middle" fill="#8b949e" font-size="9.5">释放名额 / 记录 CANCELLED / 解冻</text>
+
+  <!-- 失败点注入 -->
+  <rect x="40" y="252" width="190" height="66" rx="7" fill="#161b22" stroke="#30363d"/>
+  <text x="135" y="272" text-anchor="middle" fill="#58a6ff" font-size="10.5" font-weight="bold">failurePoint 故障注入</text>
+  <text x="55" y="290" fill="#e6edf3" font-size="9.5">NONE → 正常流程</text>
+  <text x="55" y="304" fill="#e6edf3" font-size="9.5">GRADE_TRY → ② 失败</text>
+  <text x="55" y="318" fill="#e6edf3" font-size="9.5">FINANCE_TRY → ③ 失败</text>
+
+  <!-- 底部：三个分支的状态机 -->
+  <rect x="280" y="330" width="600" height="78" rx="7" fill="#161b22" stroke="#30363d"/>
+  <text x="296" y="350" fill="#58a6ff" font-size="10.5" font-weight="bold">每个参与者的本地状态机（以课程名额为例）：</text>
+  <rect x="296" y="362" width="86" height="26" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="339" y="379" text-anchor="middle" fill="#d29922" font-size="10">TRY</text>
+  <line x1="382" y1="375" x2="450" y2="375" stroke="#3fb950" stroke-width="1.3" marker-end="url(#arr)"/>
+  <text x="416" y="368" text-anchor="middle" fill="#3fb950" font-size="9">confirm</text>
+  <rect x="452" y="362" width="102" height="26" rx="5" fill="#161b22" stroke="#3fb950"/>
+  <text x="503" y="379" text-anchor="middle" fill="#3fb950" font-size="10">CONFIRMED</text>
+  <line x1="382" y1="379" x2="586" y2="379" stroke="#f85149" stroke-width="1.3" marker-end="url(#arrR)"/>
+  <text x="490" y="394" text-anchor="middle" fill="#f85149" font-size="9">cancel（含空回滚）</text>
+  <rect x="588" y="362" width="102" height="26" rx="5" fill="#161b22" stroke="#f85149"/>
+  <text x="639" y="379" text-anchor="middle" fill="#f85149" font-size="10">CANCELLED</text>
+  <text x="706" y="379" fill="#8b949e" font-size="9">← 终态，不可再改</text>
+</svg>

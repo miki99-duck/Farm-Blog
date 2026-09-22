@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="330" viewBox="0 0 920 330">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="26" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">双写不一致的两种错误顺序（脏读窗口图解）</text>
+  <text x="460" y="44" text-anchor="middle" fill="#8b949e" font-size="11">窗口期内缓存与 DB 处于不同状态，读请求拿到的就是旧值——这正是延迟双删要关掉的两扇窗</text>
+
+  <!-- 错误顺序① -->
+  <rect x="20" y="62" width="430" height="118" rx="8" fill="rgba(248,81,73,.06)" stroke="#f85149"/>
+  <text x="36" y="84" fill="#f85149" font-size="12" font-weight="bold">① UPDATE_THEN_CACHE：先更 DB，后更缓存</text>
+  <line x1="40" y1="112" x2="430" y2="112" stroke="#f85149" stroke-width="1.4"/>
+  <text x="52" y="105" fill="#8b949e" font-size="9.5">时间 →</text>
+
+  <rect x="60" y="122" width="118" height="24" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="119" y="138" text-anchor="middle" fill="#d29922" font-size="10">DB 改为新值</text>
+  <rect x="298" y="122" width="118" height="24" rx="5" fill="#161b22" stroke="#58a6ff"/>
+  <text x="357" y="138" text-anchor="middle" fill="#58a6ff" font-size="10">缓存改为新值</text>
+
+  <rect x="180" y="112" width="118" height="34" rx="0" fill="rgba(248,81,73,.22)" stroke="#f85149" stroke-dasharray="4 3"/>
+  <text x="239" y="126" text-anchor="middle" fill="#f85149" font-size="9.5" font-weight="bold">脏读窗口</text>
+  <text x="239" y="140" text-anchor="middle" fill="#f85149" font-size="9">缓存=旧 DB=新</text>
+  <text x="230" y="166" fill="#f85149" font-size="10">窗口内所有缓存命中都是旧值 → staleReads 累加</text>
+
+  <!-- 错误顺序② -->
+  <rect x="470" y="62" width="430" height="118" rx="8" fill="rgba(210,153,34,.06)" stroke="#d29922"/>
+  <text x="486" y="84" fill="#d29922" font-size="12" font-weight="bold">② DELETE_THEN_UPDATE：先删缓存，后更 DB</text>
+  <line x1="490" y1="112" x2="880" y2="112" stroke="#d29922" stroke-width="1.4"/>
+  <text x="502" y="105" fill="#8b949e" font-size="9.5">时间 →</text>
+
+  <rect x="510" y="122" width="118" height="24" rx="5" fill="#161b22" stroke="#58a6ff"/>
+  <text x="569" y="138" text-anchor="middle" fill="#58a6ff" font-size="10">删缓存</text>
+  <rect x="748" y="122" width="118" height="24" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="807" y="138" text-anchor="middle" fill="#d29922" font-size="10">DB 改为新值</text>
+
+  <rect x="630" y="112" width="118" height="34" rx="0" fill="rgba(210,153,34,.22)" stroke="#d29922" stroke-dasharray="4 3"/>
+  <text x="689" y="126" text-anchor="middle" fill="#d29922" font-size="9.5" font-weight="bold">旧值回填窗口</text>
+  <text x="689" y="140" text-anchor="middle" fill="#d29922" font-size="9">读未命中→读库旧值→回填</text>
+  <text x="680" y="166" fill="#d29922" font-size="10">回填后无人再删 → 脏值驻留直到 TTL 过期（更糟）</text>
+
+  <!-- 正解：延迟双删 -->
+  <rect x="20" y="200" width="880" height="112" rx="8" fill="rgba(63,185,80,.06)" stroke="#3fb950"/>
+  <text x="36" y="222" fill="#3fb950" font-size="12" font-weight="bold">③ DOUBLE_DELETE 延迟双删（正解）：两个窗口都关掉</text>
+
+  <rect x="52" y="240" width="108" height="26" rx="5" fill="#161b22" stroke="#58a6ff"/>
+  <text x="106" y="257" text-anchor="middle" fill="#58a6ff" font-size="10">1. 删缓存</text>
+  <rect x="200" y="240" width="108" height="26" rx="5" fill="#161b22" stroke="#d29922"/>
+  <text x="254" y="257" text-anchor="middle" fill="#d29922" font-size="10">2. 更新 DB</text>
+  <rect x="348" y="240" width="108" height="26" rx="5" fill="#161b22" stroke="#a371f7"/>
+  <text x="402" y="257" text-anchor="middle" fill="#a371f7" font-size="10">3. 延迟 50ms</text>
+  <rect x="496" y="240" width="108" height="26" rx="5" fill="#161b22" stroke="#58a6ff"/>
+  <text x="550" y="257" text-anchor="middle" fill="#58a6ff" font-size="10">4. 再删缓存</text>
+  <rect x="644" y="240" width="150" height="26" rx="5" fill="rgba(63,185,80,.12)" stroke="#3fb950"/>
+  <text x="719" y="257" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold">staleReads = 0</text>
+
+  <line x1="160" y1="253" x2="198" y2="253" stroke="#8b949e" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="308" y1="253" x2="346" y2="253" stroke="#8b949e" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="456" y1="253" x2="494" y2="253" stroke="#8b949e" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="604" y1="253" x2="642" y2="253" stroke="#3fb950" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <text x="36" y="288" fill="#8b949e" font-size="10.5">第 1 步删缓存：并发读立即走库，不会读到旧缓存值</text>
+  <text x="36" y="304" fill="#8b949e" font-size="10.5">第 3 步延迟：等窗口期内可能发生的「读旧库值→回填缓存」完成</text>
+  <text x="36" y="320" fill="#8b949e" font-size="10.5">第 4 步再删：把步骤 3 期间被回填的旧值清掉 → 两扇窗都关上了</text>
+</svg>

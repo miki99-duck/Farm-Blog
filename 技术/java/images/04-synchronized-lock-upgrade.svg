@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="380" viewBox="0 0 920 380">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">synchronized 锁获取流程与锁升级（JDK 1.6+）</text>
+
+  <!-- 左：Java 对象内存布局 -->
+  <rect x="20" y="56" width="300" height="240" rx="10" fill="rgba(88,166,255,.05)" stroke="#58a6ff"/>
+  <text x="170" y="82" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="bold">Java 对象内存布局</text>
+
+  <rect x="42" y="102" width="120" height="54" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="102" y="124" text-anchor="middle" fill="#e6edf3" font-size="10.5">对象头 Header</text>
+  <text x="102" y="142" text-anchor="middle" fill="#8b949e" font-size="9">Mark Word + Klass</text>
+
+  <rect x="176" y="102" width="120" height="54" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="236" y="124" text-anchor="middle" fill="#e6edf3" font-size="10.5">实例数据</text>
+  <text x="236" y="142" text-anchor="middle" fill="#8b949e" font-size="9">字段值</text>
+
+  <rect x="42" y="170" width="254" height="44" rx="6" fill="rgba(210,153,34,.15)" stroke="#d29922"/>
+  <text x="169" y="188" text-anchor="middle" fill="#d29922" font-size="10.5" font-weight="bold">Mark Word 里存"锁状态"</text>
+  <text x="169" y="205" text-anchor="middle" fill="#8b949e" font-size="9">无锁 → 偏向 → 轻量级 → 重量级 → GC</text>
+
+  <rect x="42" y="228" width="254" height="50" rx="6" fill="#161b22" stroke="#8b949e"/>
+  <text x="169" y="246" text-anchor="middle" fill="#e6edf3" font-size="10.5">Monitor（管程）</text>
+  <text x="169" y="264" text-anchor="middle" fill="#8b949e" font-size="9">重量级锁在对象头里指向的 OS 互斥量</text>
+
+  <!-- 右：升级路径 -->
+  <rect x="350" y="56" width="550" height="240" rx="10" fill="rgba(63,185,80,.05)" stroke="#3fb950"/>
+  <text x="625" y="82" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="bold">锁升级路径（竞争加剧时自动升级，不可逆）</text>
+
+  <!-- 四个状态 -->
+  <rect x="375" y="112" width="118" height="66" rx="7" fill="#161b22" stroke="#8b949e"/>
+  <text x="434" y="134" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">无锁</text>
+  <text x="434" y="152" text-anchor="middle" fill="#8b949e" font-size="9">Mark Word</text>
+  <text x="434" y="167" text-anchor="middle" fill="#8b949e" font-size="9">存对象hashCode</text>
+
+  <rect x="512" y="112" width="118" height="66" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="571" y="134" text-anchor="middle" fill="#d29922" font-size="11" font-weight="bold">偏向锁</text>
+  <text x="571" y="152" text-anchor="middle" fill="#8b949e" font-size="9">线程ID写进Mark</text>
+  <text x="571" y="167" text-anchor="middle" fill="#8b949e" font-size="9">JDK15已默认禁用</text>
+
+  <rect x="649" y="112" width="118" height="66" rx="7" fill="#161b22" stroke="#d29922"/>
+  <text x="708" y="134" text-anchor="middle" fill="#d29922" font-size="11" font-weight="bold">轻量级锁</text>
+  <text x="708" y="152" text-anchor="middle" fill="#8b949e" font-size="9">CAS + 自旋获取</text>
+  <text x="708" y="167" text-anchor="middle" fill="#8b949e" font-size="9">有线程竞争但未阻塞</text>
+
+  <rect x="786" y="112" width="102" height="66" rx="7" fill="#161b22" stroke="#f85149"/>
+  <text x="837" y="134" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">重量级锁</text>
+  <text x="837" y="152" text-anchor="middle" fill="#8b949e" font-size="9">Monitor + OS</text>
+  <text x="837" y="167" text-anchor="middle" fill="#8b949e" font-size="9">抢不到 → BLOCKED</text>
+
+  <!-- 箭头 -->
+  <line x1="493" y1="145" x2="510" y2="145" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="630" y1="145" x2="647" y2="145" stroke="#d29922" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="767" y1="145" x2="784" y2="145" stroke="#f85149" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <text x="625" y="205" text-anchor="middle" fill="#8b949e" font-size="10">升级触发：① 有线程要抢（偏向→轻量）② 自旋次数超阈值（轻量→重量）</text>
+
+  <!-- 底部：synchronized 获取失败路径 -->
+  <rect x="20" y="316" width="880" height="52" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="36" y="336" fill="#58a6ff" font-size="11" font-weight="bold">获取锁失败时的路径：</text>
+  <text x="150" y="336" fill="#e6edf3" font-size="11">CAS 自旋若干次 → 超时标记 ObjectWaiter 加入等待队列 → 挂起线程（BLOCKED）→ 锁释放时唤醒</text>
+  <text x="36" y="356" fill="#8b949e" font-size="10.5">关键点：重量级锁的阻塞/唤醒是 OS 级上下文切换，代价约 10 万条指令；自旋只是 CPU 空转，代价小很多</text>
+</svg>

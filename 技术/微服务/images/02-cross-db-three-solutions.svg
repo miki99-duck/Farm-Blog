@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">跨库分页：三种方案的查询路径对比</text>
+  <text x="460" y="48" text-anchor="middle" fill="#8b949e" font-size="11">同一个查询入口，按 solver 参数分发到不同方案，用 remoteCalls 量化差距</text>
+
+  <!-- 查询入口 -->
+  <rect x="20" y="70" width="140" height="52" rx="7" fill="rgba(88,166,255,.12)" stroke="#58a6ff"/>
+  <text x="90" y="92" text-anchor="middle" fill="#58a6ff" font-size="11.5" font-weight="bold">StudentQueryFacade</text>
+  <text x="90" y="110" text-anchor="middle" fill="#8b949e" font-size="9">?solver=&amp;dept=&amp;level</text>
+
+  <!-- 三个库 -->
+  <rect x="20" y="150" width="140" height="40" rx="6" fill="#161b22" stroke="#a371f7"/>
+  <text x="90" y="174" text-anchor="middle" fill="#a371f7" font-size="10.5">学生库 student</text>
+  <rect x="20" y="200" width="140" height="40" rx="6" fill="#161b22" stroke="#d29922"/>
+  <text x="90" y="224" text-anchor="middle" fill="#d29922" font-size="10.5">成绩库 grade</text>
+
+  <!-- 方案1 聚合 -->
+  <rect x="220" y="70" width="220" height="112" rx="7" fill="rgba(248,81,73,.06)" stroke="#f85149"/>
+  <text x="330" y="92" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">① AGGREGATE 聚合查询</text>
+  <text x="236" y="114" fill="#e6edf3" font-size="9.5">1. 分页查学生库（拿到当页 id）</text>
+  <text x="236" y="132" fill="#e6edf3" font-size="9.5">2. 逐条/批量查成绩库</text>
+  <text x="236" y="150" fill="#e6edf3" font-size="9.5">3. 内存拼装 + 过滤 + 分页</text>
+  <text x="330" y="172" text-anchor="middle" fill="#f85149" font-size="10.5" font-weight="bold">remoteCalls = 页大小 N</text>
+
+  <!-- 方案2 冗余 -->
+  <rect x="470" y="70" width="220" height="112" rx="7" fill="rgba(210,153,34,.06)" stroke="#d29922"/>
+  <text x="580" y="92" text-anchor="middle" fill="#d29922" font-size="12" font-weight="bold">② REDUNDANT 冗余字段</text>
+  <text x="486" y="114" fill="#e6edf3" font-size="9.5">1. 成绩变更时发 DepartmentChangeEvent</text>
+  <text x="486" y="132" fill="#e6edf3" font-size="9.5">2. 学生库冗余 avgScore 字段</text>
+  <text x="486" y="150" fill="#e6edf3" font-size="9.5">3. 只查学生库，本地过滤排序</text>
+  <text x="580" y="172" text-anchor="middle" fill="#d29922" font-size="10.5" font-weight="bold">remoteCalls = 1</text>
+
+  <!-- 方案3 宽表 -->
+  <rect x="720" y="70" width="180" height="112" rx="7" fill="rgba(63,185,80,.06)" stroke="#3fb950"/>
+  <text x="810" y="92" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">③ WIDE_TABLE 宽表</text>
+  <text x="736" y="114" fill="#e6edf3" font-size="9.5">1. 两库变更实时同步到索引</text>
+  <text x="736" y="132" fill="#e6edf3" font-size="9.5">2. 索引宽表含 student+grade</text>
+  <text x="736" y="150" fill="#e6edf3" font-size="9.5">3. 只查宽表一次</text>
+  <text x="810" y="172" text-anchor="middle" fill="#3fb950" font-size="10.5" font-weight="bold">remoteCalls = 1</text>
+
+  <!-- 箭头 -->
+  <line x1="160" y1="96" x2="218" y2="96" stroke="#f85149" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="160" y1="96" x2="468" y2="96" stroke="#d29922" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="160" y1="96" x2="718" y2="96" stroke="#3fb950" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <!-- 代价对比 -->
+  <rect x="20" y="212" width="880" height="128" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="36" y="234" fill="#58a6ff" font-size="11.5" font-weight="bold">代价对比（10 条/页，条件过滤 dept=CS&amp;avgScore&gt;80）</text>
+
+  <text x="36" y="260" fill="#f85149" font-size="10.5" font-weight="bold">① 聚合</text>
+  <text x="120" y="260" fill="#e6edf3" font-size="10">远程调用 10 次；查全量才能正确过滤 → scannedRecords 远大于 10</text>
+  <text x="120" y="278" fill="#8b949e" font-size="9.5">代价：N+1 查询问题，随页大小线性放大</text>
+
+  <text x="36" y="300" fill="#d29922" font-size="10.5" font-weight="bold">② 冗余</text>
+  <text x="120" y="300" fill="#e6edf3" font-size="10">远程调用 1 次；但要求成绩库能发事件、学生库字段随成绩变化</text>
+  <text x="120" y="318" fill="#8b949e" font-size="9.5">代价：冗余字段一致性问题（事件丢失/延迟）；写路径变复杂</text>
+
+  <text x="36" y="326" fill="#3fb950" font-size="10.5" font-weight="bold">③ 宽表</text>
+  <text x="120" y="326" fill="#e6edf3" font-size="10">远程调用 1 次；扫描量最小</text>
+  <text x="120" y="336" fill="#8b949e" font-size="9.5">代价：要维护同步链路（真实场景 Canal/binlog → ES）</text>
+</svg>

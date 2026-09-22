@@ -7,6 +7,24 @@ title: 星露谷农场日志
 description: 种地、钓鱼、写代码 —— 记录星露谷里的每一天，也记录屏幕外的小事。
 lang: zh-CN
 
+# ============================================================
+#  SEO 配置（部署前替换 url / baseurl / author / twitter_handle 为实际值）
+# ============================================================
+url: "https://miki99.github.io"       # 站点根 URL，不带路径
+baseurl: "/farmblog"                   # 站点路径前缀，根路径写 ""
+author: "Miki99"
+author_url: "https://github.com/miki99"
+twitter_handle: "@miki99"
+og_image: "/assets/og-image.svg"       # 社交分享卡片图
+keywords:
+  - 星露谷物语
+  - 游戏博客
+  - 技术笔记
+  - 微服务
+  - Java
+  - Spring Boot
+  - 程序员日记
+
 # GitHub Pages 默认就是 kramdown，这里显式写死，防止以后默认值变化
 markdown: kramdown
 
