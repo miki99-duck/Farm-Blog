@@ -112,7 +112,7 @@ kramdown:
 # 轻则内容被吞，重则整站构建失败。
 #
 # GitHub Pages 用的是 jekyll 3.10.0，不支持 Jekyll 4 的 render_with_liquid: false，
-# 所以只能用 {% raw %}。技术/kafka.md 里已有两处这样的包裹。
+# 所以只能用 {% raw %}。技术/kafka/kafka.md 里已有两处这样的包裹。
 #
 # 推之前自查：
 #   Select-String -Path *.md -Pattern '\{\{|\{%'
