@@ -152,6 +152,61 @@ button:focus-visible{
 }
 a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
+/* 面包屑：系列名可点是链接（回首页筛该系列），当前篇名不可点。
+   两者之间用一个细箭头暗示层级。 */
+.hud-crumb{ border-color:rgba(255,210,63,.45); }
+.hud-crumb::after{
+  content:"›";
+  margin-left:2px;
+  color:rgba(255,220,160,.55);
+}
+.hud-crumb-here{
+  max-width:min(46vw, 340px);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  border-color:transparent;
+  background:none;
+}
+
+/* ---------- 上一章 / 下一章 ----------
+   放在 .doc-layout 之外、正文下方，整行宽。
+   两边对齐（左上一章 / 右下一章），首末篇只有一个时不占位。 */
+.doc-nav{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:24px 0 0;
+}
+.doc-nav-link{
+  display:flex; flex-direction:column; gap:5px;
+  padding:14px 16px;
+  text-decoration:none;
+  background-color:var(--paper);
+  border:3px solid var(--wood-300); border-radius:5px;
+  box-shadow:0 0 0 3px var(--wood-700), inset 0 0 0 2px var(--paper-light), 5px 6px 0 rgba(0,0,0,.26);
+  transition:transform .15s ease, background-color .15s ease;
+}
+.doc-nav-link:hover{ background-color:var(--paper-light); transform:translate(-2px,-2px); }
+.doc-nav-link:focus-visible{ outline:3px solid var(--wood-900); outline-offset:3px; }
+.doc-nav-prev{ text-align:left; }
+.doc-nav-next{ text-align:right; }
+/* 只有一个时让它占满整行，不要半宽悬在左边 */
+.doc-nav-link:only-child{ grid-column:1 / -1; }
+.doc-nav-dir{
+  font-family:var(--pixel); font-size:10px; letter-spacing:1px;
+  color:var(--wood-500);
+}
+.doc-nav-title{
+  font-size:14px; font-weight:700; line-height:1.5;
+  color:var(--ink);
+}
+
+@media (max-width:560px){
+  /* 手机上标题会换行，两列太挤，改成上下堆叠 */
+  .doc-nav{ grid-template-columns:1fr; }
+  .doc-nav-next{ text-align:left; }
+  .hud-crumb-here{ max-width:60vw; }
+}
+
 /* ---------- 木牌 ---------- */
 .blog-sign{
   padding:15px 20px 13px; margin-bottom:20px; text-align:center;
@@ -184,6 +239,25 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   font-family:var(--pixel); font-size:12px; letter-spacing:1px; color:var(--ink);
   border-bottom:3px dashed rgba(180,120,74,.45);
 }
+/* 手机上的折叠控件：整条标题可点，右侧加一个箭头。
+   桌面端不用它（.toc-toggle 只在窄屏出现）。 */
+.toc-toggle{
+  display:none;
+  width:100%;
+  padding:13px 15px 11px;
+  font-family:var(--pixel); font-size:12px; letter-spacing:1px; color:var(--ink);
+  text-align:left;
+  background:none; border:0; border-bottom:3px dashed rgba(180,120,74,.45);
+  cursor:pointer;
+  align-items:center; justify-content:space-between; gap:10px;
+}
+.toc-toggle::after{
+  content:"▾";
+  font-size:11px; color:var(--wood-500);
+  transition:transform .15s ease;
+}
+.toc-toggle[aria-expanded="false"]::after{ transform:rotate(-90deg); }
+.toc-toggle:focus-visible{ outline:3px solid var(--wood-900); outline-offset:-3px; }
 .toc-body{ overflow-y:auto; padding:10px 12px 14px; }
 .toc ol{ list-style:none; margin:0; padding:0; }
 .toc-sub{ margin:3px 0 7px 10px; padding-left:8px !important; border-left:2px solid rgba(180,120,74,.35); }
@@ -274,6 +348,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
 /* 代码块：深色木底 */
 .prose pre{
+  position:relative;
   margin:16px 0 20px; padding:15px 17px;
   overflow-x:auto;
   background:#2b1a0d;
@@ -288,6 +363,44 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 }
 .highlight{ background:none; }
 .highlight pre{ margin:16px 0 20px; }
+
+/* ---------- 代码块「复制」按钮 ----------
+   站点里代码段极多（光 kafka.md 就 180+ 段），「选中→复制」是高频动作。
+   按钮默认半透明，hover / 键盘聚焦时才完全显形，不干扰阅读。
+   sticky + float:right 让它跟着代码块横向滚动一起走：
+   pre 是 overflow-x:auto 的滚动容器，absolute 定位的按钮会随内容滚出视野。 */
+.copy-code{
+  position:sticky;
+  top:0;
+  float:right;
+  margin:-6px -8px 0 10px;
+  padding:4px 10px;
+  font-family:var(--read); font-size:11px; line-height:1.6;
+  color:#ffe9b8;
+  background:rgba(0,0,0,.45);
+  border:2px solid rgba(255,220,160,.35); border-radius:3px;
+  cursor:pointer;
+  opacity:.5;
+  transition:opacity .15s ease, background .15s ease;
+}
+.prose pre:hover .copy-code,
+.copy-code:focus-visible{ opacity:1; }
+.copy-code:hover{ background:rgba(0,0,0,.7); }
+.copy-code:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:2px;
+  box-shadow:none;
+}
+.copy-code.is-done{
+  color:var(--wood-900);
+  background:var(--gold);
+  border-color:var(--gold-deep);
+  opacity:1;
+}
+/* 触屏没有 hover，按钮常显，否则用户根本不知道有这功能 */
+@media (hover:none){
+  .copy-code{ opacity:1; }
+}
 
 /* Rouge 语法着色（配深木底） */
 .highlight .c,.highlight .c1,.highlight .cm,.highlight .cs{ color:#a18f6d; font-style:italic; }
@@ -371,6 +484,11 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 @media (max-width:980px){
   .doc-layout{ grid-template-columns:1fr; }
   .toc{ position:static; max-height:none; }
+  /* 手机/平板上目录默认收起：kafka 那种 160 条的目录会把首屏正文全挤下去。
+     桌面端照旧常显，用 .toc-toggle 切换。 */
+  .toc-title{ display:none; }
+  .toc-toggle{ display:flex; }
+  .toc.is-collapsed .toc-body{ display:none; }
   .toc-body{ max-height:45vh; }
   .prose{ padding:20px 17px 26px; }
   .prose h1{ font-size:18px; }
@@ -379,12 +497,16 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 }
 
 @media (max-width:560px){
-  body{ padding:12px 9px 46px; font-size:15px; background-size:16px 16px; }
+  body{ padding:12px max(9px, env(safe-area-inset-right)) 46px max(9px, env(safe-area-inset-left)); font-size:15px; background-size:16px 16px; }
   .prose pre{ font-size:12px; padding:12px 12px; }
   .prose pre code{ font-size:12px; }
   .blog-sign h1{ font-size:14px; }
-  /* 手机上别挡住正文右下角的字，缩小并往角上收 */
-  #back-to-top{ right:12px; bottom:12px; width:38px; height:38px; }
+  /* 手机上别挡住正文右下角的字，缩小并往角上收（叠加安全区） */
+  #back-to-top{
+    right:calc(12px + env(safe-area-inset-right));
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    width:38px; height:38px;
+  }
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -403,9 +525,58 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
 <div class="wrap">
 
+  {%- comment -%}
+    按路径找出「同系列」的文档，用来做面包屑和上一章 / 下一章。
+    刻意用 path 而不是 dir —— Page#dir 是从已编码的 url 派生的，
+    中文目录会变成 %E6%8A%80%E6%9C%AF；page.path 拼的是原始 @dir。
+    （_config.yml 里也记着这条坑。）
+
+    分组键优先用 front matter 的 series，没有才退回目录名。
+    为什么需要这个：微服务/ 是扁平目录里塞了两个并行系列
+    （「微服务组件」17 篇 + 「四大难题」5 篇），只按目录分组会把
+    两者按文件名编号交错在一起，上一章 / 下一章会串到另一个系列去。
+
+    排序用 path 升序：文件名的序号前缀（00/01/…/16）在字符串序下
+    就是章节序，序号补零到两位，所以不存在 10 排在 2 前面。
+  {%- endcomment -%}
+  {%- assign segs = page.path | split: '/' -%}
+  {%- assign series_dir = segs[0] -%}
+  {%- if segs.size > 1 -%}{%- assign series_dir = segs[0] | append: '/' | append: segs[1] -%}{%- endif -%}
+  {%- if page.series -%}
+    {%- assign series_pages = site.pages | where: "series", page.series | sort: "path" -%}
+    {%- assign series_title = page.series -%}
+  {%- else -%}
+    {%- assign series_pages = site.pages | where_exp: "p", "p.path contains series_dir" | sort: "path" -%}
+    {%- assign series_title = site.series_titles[segs[1]] | default: segs[1] -%}
+  {%- endif -%}
+  {%- assign series_tag = segs[1] | downcase -%}
+  {%- comment -%}
+    面包屑链到首页的标签筛选，而不是目录地址：
+    技术/spring/ 没有 index.html，直接链过去是 404（GitHub Pages 不做目录列表）。
+    首页的 #crop=<tag> 是现成的深链，正好把那个系列筛出来。
+    tag 一律小写，对齐 script.js 里 primaryOf() 的 toLowerCase()。
+  {%- endcomment -%}
+  {%- assign prev_doc = nil -%}
+  {%- assign next_doc = nil -%}
+  {%- assign seen = false -%}
+  {%- for p in series_pages -%}
+    {%- if p.path == page.path -%}
+      {%- assign seen = true -%}
+    {%- elsif seen -%}
+      {%- if next_doc == nil -%}{%- assign next_doc = p -%}{%- endif -%}
+    {%- else -%}
+      {%- assign prev_doc = p -%}
+    {%- endif -%}
+  {%- endfor -%}
+
   <header class="hud">
     <a class="hud-chip hud-home" href="./" data-url="{{ page.url }}">◂ 返回农场</a>
-    <span class="hud-chip">📄 农场文档</span>
+    {%- if segs.size > 1 %}
+    <a class="hud-chip hud-crumb" href="{{ '/' | relative_url }}#crop={{ series_tag }}" title="在首页筛选「{{ series_title }}」系列">{{ series_title }}</a>
+    <span class="hud-chip hud-crumb-here">📄 {{ page.title | default: page.name }}</span>
+    {%- else %}
+    <span class="hud-chip">📄 {{ page.title | default: page.name }}</span>
+    {%- endif %}
   </header>
 
   <div class="blog-sign">
@@ -417,12 +588,38 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
     <nav class="toc" id="toc" aria-label="文档目录">
       <h2 class="toc-title">目录</h2>
-      <div class="toc-body"><ol id="toc-list"></ol></div>
+      <button type="button" class="toc-toggle" id="toc-toggle" aria-expanded="true" aria-controls="toc-body">目录</button>
+      <div class="toc-body" id="toc-body"><ol id="toc-list"></ol></div>
     </nav>
 
     <article class="prose" id="doc">{{ content }}</article>
 
   </div>
+
+  {%- comment -%}
+    上一章 / 下一章：同系列内按 path 排序的前后一篇。
+    长系列（spring 16 篇、AI 13 篇）读完一篇不用退回首页重找。
+    数据全部来自上面的 series_pages，没有新增 Jekyll 数据源。
+    首末篇只有一个链接，不留空位。
+    注意必须放在 .doc-layout 之外 —— 那个容器是两列 grid，
+    多一个直接子元素会被当成第三列排到目录右边去。
+  {%- endcomment -%}
+  {%- if prev_doc or next_doc %}
+  <nav class="doc-nav" aria-label="同系列前后篇">
+    {%- if prev_doc %}
+    <a class="doc-nav-link doc-nav-prev" href="{{ prev_doc.url | relative_url }}" rel="prev">
+      <span class="doc-nav-dir">◂ 上一章</span>
+      <span class="doc-nav-title">{{ prev_doc.title | default: prev_doc.name }}</span>
+    </a>
+    {%- endif %}
+    {%- if next_doc %}
+    <a class="doc-nav-link doc-nav-next" href="{{ next_doc.url | relative_url }}" rel="next">
+      <span class="doc-nav-dir">下一章 ▸</span>
+      <span class="doc-nav-title">{{ next_doc.title | default: next_doc.name }}</span>
+    </a>
+    {%- endif %}
+  </nav>
+  {%- endif %}
 </div>
 
 <!-- 回到顶部：滚动超过 300px 才出现，点击平滑滚回顶部。
@@ -459,6 +656,23 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   var doc = document.getElementById('doc');
   if (!doc) return;
 
+  /* ---------- 窄屏目录折叠 ----------
+     只在窄屏默认收起：kafka.md 有 160 条目录，手机上会把正文全挤到屏幕外。
+     桌面端不加 .is-collapsed，保持常显（toggle 按钮在桌面是 display:none）。 */
+  var tocToggle = document.getElementById('toc-toggle');
+  var tocNav = document.getElementById('toc');
+  if (tocToggle && tocNav) {
+    var narrow = window.matchMedia && window.matchMedia('(max-width: 980px)');
+    if (narrow && narrow.matches) {
+      tocNav.classList.add('is-collapsed');
+      tocToggle.setAttribute('aria-expanded', 'false');
+    }
+    tocToggle.addEventListener('click', function () {
+      var collapsed = tocNav.classList.toggle('is-collapsed');
+      tocToggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+  }
+
   /* ---------- 表格包一层，窄屏可横向滚动 ---------- */
   Array.prototype.forEach.call(doc.querySelectorAll('table'), function (tb) {
     var box = document.createElement('div');
@@ -467,8 +681,68 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
     box.appendChild(tb);
   });
 
-  /* ---------- 把 markdown 的 "- [ ] / - [x]" 变成真正的勾选框 ---------- */
-  Array.prototype.forEach.call(doc.querySelectorAll('li'), function (li) {
+  /* ---------- 代码块加「复制」按钮 ----------
+     按钮插进 <pre> 内部、<code> 之外，这样：
+     ① 按钮的位置随 pre 的横向滚动一起走（样式里用了 position:sticky）；
+     ② 复制时取的是 <code> 的文本，按钮上的字不会被一起复制进去。
+     取文本前先 cloneNode 并移除按钮，是为了兜住「按钮恰好也在 code 里」
+     这类意外结构，保证复制出来的永远是纯代码。 */
+  Array.prototype.forEach.call(doc.querySelectorAll('pre'), function (pre) {
+    var code = pre.querySelector('code');
+
+    function textOf() {
+      var src = code || pre;
+      var copy = src.cloneNode(true);
+      Array.prototype.forEach.call(copy.querySelectorAll('.copy-code'), function (b) {
+        b.parentNode.removeChild(b);
+      });
+      return copy.textContent;
+    }
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-code';
+    btn.textContent = '复制';
+
+    var timer = null;
+    function flash(msg, ok) {
+      btn.textContent = msg;
+      btn.classList.toggle('is-done', !!ok);
+      if (timer) { clearTimeout(timer); }
+      timer = setTimeout(function () {
+        btn.textContent = '复制';
+        btn.classList.remove('is-done');
+        timer = null;
+      }, 1600);
+    }
+
+    btn.addEventListener('click', function () {
+      var text = textOf();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash('已复制', true); },
+          function () { flash('复制失败'); }
+        );
+      } else {
+        /* http 或老浏览器没有异步剪贴板 API，退回 execCommand */
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(ta);
+        flash(ok ? '已复制' : '复制失败', ok);
+      }
+    });
+
+    pre.insertBefore(btn, pre.firstChild);
+  });
+
+  /* ---------- 把 markdown 的 "- [ ] / - [x]" 变成真正的勾选框 ---------- */  Array.prototype.forEach.call(doc.querySelectorAll('li'), function (li) {
     var node = li.firstChild;
     if (!node || node.nodeType !== 3) return;
     var m = /^\s*\[([ xX])\]\s*/.exec(node.nodeValue);

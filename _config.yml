@@ -21,6 +21,25 @@ author: "Miki99"
 author_url: "https://github.com/miki99-duck"
 twitter_handle: "@miki99-duck"
 og_image: "/assets/og-image.svg"       # 社交分享卡片图
+
+# ============================================================
+#  系列显示名（可选）
+#  文档页的面包屑和「上一章 / 下一章」是按路径识别同系列的，
+#  但目录名直接显示会是小写英文（spring、threejs），不好看。
+#  这里给每个系列一个显示名；没登记的系列自动退化成目录名。
+#  键必须和 技术/ 下的目录名完全一致（区分大小写）。
+# ============================================================
+series_titles:
+  spring: "Spring"
+  java: "Java 并发"
+  kafka: "Kafka"
+  css: "CSS"
+  js: "JavaScript"
+  vue: "Vue"
+  threejs: "Three.js"
+  AI: "AI 应用开发"
+  微服务: "微服务"
+
 keywords:
   - 星露谷物语
   - 游戏博客

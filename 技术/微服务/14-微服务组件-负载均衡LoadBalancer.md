@@ -1,5 +1,6 @@
 ---
 tags: [微服务]
+series: 微服务组件
 ---
 
 # 微服务组件 14 · 负载均衡 Spring Cloud LoadBalancer

@@ -170,8 +170,18 @@
   var emptyFilter = document.getElementById('empty-filter');
   var emptyCropName = document.getElementById('empty-crop-name');
   var emptyBack = document.getElementById('empty-back');
+  var searchForm = document.getElementById('search-form');
+  var searchInput = document.getElementById('search-input');
+  var searchClear = document.getElementById('search-clear');
+  var searchStatus = document.getElementById('search-status');
+  var cropBanner = document.getElementById('crop-banner');
   var page = 1;
   var active = null;   /* 选中的主标签；null = 菜园子 */
+  var searchQuery = '';      /* 非空 = 正在搜索 */
+  var searchLabel = '';      /* 面包屑显示的搜索词 */
+  var searchHits = [];       /* 命中的卡片下标，供 render 用 */
+  var searchTexts = [];      /* 每张卡片的可搜索文本（小写，建索引时算一次） */
+  var highlighted = [];      /* 当前被 <mark> 包过的文本节点，清空时要还原 */
 
   /* 标签元数据：显示名 + emoji。FORMAL 是固定 6 块正式田，其余标签进试验田。
      注意：键必须全小写 —— primaryOf() 会把标签 toLowerCase() 后再查这张表，
@@ -187,6 +197,8 @@
     'js':      { name:'JavaScript', emoji:'📜' },
     'vue':     { name:'Vue',     emoji:'🟩' },
     'threejs': { name:'Three.js', emoji:'🧊' },
+    'ai':      { name:'AI',      emoji:'🤖' },
+    'ai':      { name:'AI',       emoji:'🤖' },
     '矿洞':    { name:'矿洞',    emoji:'⛏️' },
     '冒险':    { name:'冒险',    emoji:'🧭' },
     '秋季':    { name:'秋季',    emoji:'🍂' },
@@ -205,6 +217,119 @@
     return t ? t.textContent.replace(/^#\s*/, '').trim().toLowerCase() : '';
   }
   var primaryIndex = posts.map(primaryOf);
+
+  /* ---------- 搜索索引 ----------
+     刻意不新增 Jekyll 数据源：每张卡片上已经有标题、标签、摘要，
+     直接从 DOM 摘下来即可，所以新丢一个 .md 进仓库就自动可搜。
+     只索引标题 / 标签 / 摘要，不索引正文 —— 96 篇正文约 1.5MB，
+     塞进索引会让首页体积翻好几倍，而摘要已足够定位到文章。
+     摘要用 data-plain 缓存纯文本：高亮会把文本节点拆成 <mark>，
+     算索引必须用原始纯文本，否则搜第二次就会匹配到被拆碎的片段。 */
+  function plainOf(el) {
+    var p = el.querySelector('.post-text');
+    return p ? (p.getAttribute('data-plain') || p.textContent) : '';
+  }
+
+  /* 把卡片里被 <mark> 拆开的文本还原成单个文本节点。
+     被标记的是行内元素 <mark>，用它的 textContent 换回去就等价于原文。 */
+  function restoreText() {
+    for (var i = 0; i < highlighted.length; i++) {
+      var n = highlighted[i];
+      if (!n.parentNode) { continue; }
+      n.parentNode.replaceChild(document.createTextNode(n.textContent), n);
+    }
+    highlighted = [];
+  }
+
+  function clearSearchState() {
+    searchQuery = '';
+    searchHits = [];
+    restoreText();
+  }
+
+  function buildSearchIndex() {
+    searchTexts = posts.map(function (el) {
+      var tags = el.querySelector('.post-tags');
+      var title = el.querySelector('.post-title');
+      return [
+        title ? title.textContent : '',
+        tags ? tags.textContent : '',
+        plainOf(el)
+      ].join(' ').toLowerCase();
+    });
+  }
+  buildSearchIndex();
+
+  /* 查询按空格拆词，多个词之间是「全部命中」而不是「任一命中」——
+     搜「微服务 事务」应该是既讲微服务又讲事务的那几篇，不是并集 */
+  function queryWords() {
+    return searchQuery.toLowerCase().split(/\s+/).filter(function (w) { return w; });
+  }
+
+  function searchMatches(i) {
+    var words = queryWords(), t = searchTexts[i];
+    if (!words.length) { return false; }
+    for (var w = 0; w < words.length; w++) {
+      if (t.indexOf(words[w]) === -1) { return false; }
+    }
+    return true;
+  }
+
+  /* ---------- 命中高亮 ----------
+     文档标题里有 ( ) + ? [ ] . 等正则元字符，必须转义，
+     否则搜「C++」「(0,2,0,0)」这类词会直接抛正则语法错误、整页脚本挂掉 */
+  function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function highlightIn(rootEl, re) {
+    var walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null, false);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) {
+      if (n.nodeValue && re.test(n.nodeValue)) { nodes.push(n); }
+      re.lastIndex = 0;
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i], text = node.nodeValue, frag = document.createDocumentFragment();
+      var last = 0, m;
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        if (m.index > last) {
+          frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        }
+        var mark = document.createElement('mark');
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        highlighted.push(mark);
+        last = m.index + m[0].length;
+        if (m[0].length === 0) { re.lastIndex++; }   /* 防零宽匹配死循环 */
+      }
+      if (last < text.length) {
+        frag.appendChild(document.createTextNode(text.slice(last)));
+      }
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+
+  function applyHighlight(words) {
+    if (!words.length) { return; }
+    var re = new RegExp('(' + words.map(escapeRe).join('|') + ')', 'gi');
+    for (var k = 0; k < searchHits.length; k++) {
+      var el = posts[searchHits[k]];
+      var title = el.querySelector('.post-title a');
+      var para = el.querySelector('.post-text');
+      if (!para) { continue; }
+      if (!para.hasAttribute('data-plain')) {
+        para.setAttribute('data-plain', para.textContent);
+      }
+      /* 先清掉上一轮的 <mark>，再基于纯文本重新高亮 */
+      para.textContent = para.getAttribute('data-plain');
+      if (title) { highlightIn(title, re); }
+      highlightIn(para, re);
+    }
+  }
+
+  function clearHighlights() { restoreText(); }
 
   function metaOf(key) {
     if (key === KEY_ALL) { return ALL_ITEM; }
@@ -299,6 +424,7 @@
 
   /* ---------- 过滤 + 分页 ---------- */
   function matches(i) {
+    if (searchQuery) { return searchHits.indexOf(i) !== -1; }
     if (active === null || active === KEY_ALL) { return true; }
     if (active === KEY_NONE) { return primaryIndex[i] === ''; }
     return primaryIndex[i] === active;
@@ -306,7 +432,20 @@
 
   function render() {
     var idx = [], i;
-    for (i = 0; i < posts.length; i++) { if (matches(i)) { idx.push(i); } }
+
+    /* 搜索分支：命中集合每轮重算并写回 searchHits，再走同一套分页。
+       必须先算完再让 matches() 读，否则读到的是上一轮的结果。 */
+    if (searchQuery) {
+      searchHits = [];
+      for (i = 0; i < posts.length; i++) {
+        if (searchMatches(i)) { searchHits.push(i); }
+      }
+      clearHighlights();
+      applyHighlight(queryWords());
+      idx = searchHits.slice();
+    } else {
+      for (i = 0; i < posts.length; i++) { if (matches(i)) { idx.push(i); } }
+    }
 
     var pages = Math.max(1, Math.ceil(idx.length / PER_PAGE));
     if (page > pages) { page = pages; }
@@ -336,17 +475,36 @@
       if (next) { next.disabled = page >= pages; }
     }
     if (infoEl) {
-      var nm = metaOf(active).name;
-      infoEl.textContent = (active === KEY_ALL ? '' : '已筛选「' + nm + '」· ') +
-        '共 ' + idx.length + ' 篇 · 第 ' + page + ' / ' + pages + ' 页';
+      if (searchQuery) {
+        infoEl.textContent = '搜索「' + searchLabel + '」· ' +
+          '共 ' + idx.length + ' 篇 · 第 ' + page + ' / ' + pages + ' 页';
+      } else {
+        var nm = metaOf(active).name;
+        infoEl.textContent = (active === KEY_ALL ? '' : '已筛选「' + nm + '」· ') +
+          '共 ' + idx.length + ' 篇 · 第 ' + page + ' / ' + pages + ' 页';
+      }
     }
     if (emptyFilter) { emptyFilter.hidden = idx.length !== 0; }
+    if (emptyCropName) {
+      emptyCropName.textContent = searchQuery ? '（没有匹配的文档）' : metaOf(active).name;
+    }
+    if (emptyBack) {
+      emptyBack.textContent = searchQuery ? '✕ 清空搜索' : '◀ 返回菜园子';
+    }
+    if (searchStatus) {
+      searchStatus.textContent = searchQuery
+        ? idx.length + ' 篇命中'
+        : (searchInput && searchInput.value ? '没有匹配的文档' : '');
+    }
   }
 
   /* ---------- 视图切换 ---------- */
   function showGarden() {
     active = null;
     page = 1;
+    searchLabel = '';
+    clearSearchState();
+    clearInput();
     render();
     if (gardenView) { gardenView.hidden = false; }
     if (listSection) { listSection.hidden = true; }
@@ -359,6 +517,10 @@
   function showCrop(key) {
     active = key;
     page = 1;
+    /* 从搜索点进某块田，搜索状态要清干净，否则 matches() 会继续按搜索过滤 */
+    searchLabel = '';
+    clearSearchState();
+    clearInput();
     var m = metaOf(key);
     var n = key === KEY_ALL ? posts.length : (key === KEY_NONE ? untaggedCount : (counts[key] || 0));
     if (bannerCrop) { bannerCrop.textContent = m.emoji; }
@@ -378,11 +540,40 @@
     render();
     if (gardenView) { gardenView.hidden = true; }
     if (listSection) { listSection.hidden = false; }
+    if (cropBanner) { cropBanner.hidden = false; }
     if (sideCol) { sideCol.hidden = true; }
     if (fullpage) { fullpage.classList.add('no-sidebar'); }
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
+  /* ---------- 搜索视图 ----------
+     和「点田块」复用同一个列表容器与分页，只是过滤条件换成关键词。
+     搜索时把作物横幅藏起来：「成熟度 N 度」在跨标签的搜索结果里没有意义。 */
+  function showSearch(text) {
+    active = null;
+    page = 1;
+    searchQuery = text;
+    searchLabel = text;
+    render();
+    if (gardenView) { gardenView.hidden = true; }
+    if (listSection) { listSection.hidden = false; }
+    if (cropBanner) { cropBanner.hidden = true; }
+    if (bcCurrent) { bcCurrent.textContent = '🔍 搜索结果'; }
+    if (sideCol) { sideCol.hidden = true; }
+    if (fullpage) { fullpage.classList.add('no-sidebar'); }
+    if (searchClear) { searchClear.hidden = false; }
+    var hash = '#q=' + encodeURIComponent(text);
+    if (location.hash !== hash) { history.replaceState(null, '', hash); }
+    /* 刻意不 scrollIntoView：用户正在输入，抢滚动会很干扰 */
+  }
+
+  /* 清空输入框（不触发 hashchange，避免和 showSearch 互相递归） */
+  function clearInput() {
+    if (searchInput && searchInput.value) { searchInput.value = ''; }
+    if (searchClear) { searchClear.hidden = true; }
+    if (searchStatus) { searchStatus.textContent = ''; }
   }
 
   /* ---------- 事件 ---------- */
@@ -418,8 +609,62 @@
     });
   }
 
+  /* ---------- 搜索交互 ----------
+     索引是本地数组、只有 96 项，所以不做防抖：每敲一个字即时过滤，
+     输入到结果出现之间没有延迟，加了 debounce 反而显得卡。 */
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var v = searchInput.value.trim();
+      if (!v) { showGarden(); return; }
+      showSearch(v);
+    });
+
+    searchInput.addEventListener('focus', function () {
+      if (searchForm) { searchForm.classList.add('is-focused'); }
+    });
+    searchInput.addEventListener('blur', function () {
+      if (searchForm) { searchForm.classList.remove('is-focused'); }
+    });
+  }
+
+  /* 搜索框是 <form role="search">：回车不刷新页面，直接保持当前结果。
+     用 preventDefault 而不是去掉 form —— 有 form 才有原生的 role=search 语义 */
+  if (searchForm) {
+    searchForm.addEventListener('submit', function (e) { e.preventDefault(); });
+  }
+
+  if (searchClear) {
+    searchClear.addEventListener('click', function () {
+      clearInput();
+      if (searchInput) { searchInput.focus(); }
+      showGarden();
+    });
+  }
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && active !== null) { showGarden(); }
+    var el = document.activeElement;
+    var typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+
+    /* Esc：搜索中先清搜索，否则退回菜园子 */
+    if (e.key === 'Escape') {
+      if (searchQuery) {
+        clearInput();
+        showGarden();
+      } else if (active !== null) {
+        showGarden();
+      }
+      return;
+    }
+
+    /* / 或 Ctrl/⌘+K 聚焦搜索框 */
+    if (typing) { return; }
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (searchInput) { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      if (searchInput) { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+    }
   });
 
   /* ---------- 深链 ---------- */
@@ -427,20 +672,27 @@
     var h = location.hash.replace(/^#/, '');
     if (h === 'all') { return KEY_ALL; }
     if (h === 'untagged') { return KEY_NONE; }
+    var q = h.match(/^q=(.*)$/);
+    if (q) { return { q: decodeURIComponent(q[1]) }; }
     var m = h.match(/^crop=(.+)$/);
     if (m) { return decodeURIComponent(m[1]).toLowerCase(); }
     return null;
   }
 
-  window.addEventListener('hashchange', function () {
+  function applyHash() {
     var key = readHash();
     if (key === null) { showGarden(); }
-    else { showCrop(key); }
-  });
+    else if (typeof key === 'object') {
+      if (searchInput) { searchInput.value = key.q; }
+      if (key.q) { showSearch(key.q); } else { showGarden(); }
+    } else { showCrop(key); }
+  }
+
+  window.addEventListener('hashchange', applyHash);
 
   /* ---------- 初始：默认停在菜园子 ---------- */
   var initial = readHash();
-  if (initial === null) {
+  if (initial === null || (typeof initial === 'object' && !initial.q)) {
     if (gardenView) { gardenView.hidden = false; }
     if (listSection) { listSection.hidden = true; }
     if (sideCol) { sideCol.hidden = false; }
@@ -448,6 +700,9 @@
     render();
     /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
+  } else if (typeof initial === 'object') {
+    if (searchInput) { searchInput.value = initial.q; }
+    showSearch(initial.q);
   } else {
     showCrop(initial);
   }

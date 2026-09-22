@@ -173,6 +173,22 @@ layout: null
     <p>STARDEW VALLEY · FARM BLOG</p>
   </div>
 
+  <!-- ==================== 站内搜索 ====================
+       96 篇文档光靠逛菜园子找不到东西，这里给一个即时过滤的入口。
+       索引不新增数据源：每张文章卡片已有标题/标签/摘要，脚本直接从卡片上
+       摘取（见 script.js 的 buildSearchIndex），所以任何 .md 丢进来都自动可搜。
+       快捷键：/ 或 Ctrl/⌘+K 聚焦，Esc 清空并返回菜园子。 -->
+  <form class="search-bar" id="search-form" role="search">
+    <label class="search-label" for="search-input">搜索文档</label>
+    <input type="search" id="search-input" class="search-input"
+           placeholder="试试「缓存一致性」「AQS」「Flexbox」…"
+           autocomplete="off" spellcheck="false"
+           aria-describedby="search-status">
+    <kbd class="search-kbd" aria-hidden="true">/</kbd>
+    <button type="button" class="search-clear" id="search-clear" aria-label="清空搜索" hidden>✕</button>
+    <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+  </form>
+
   <!-- ==================== 菜园子 + 侧边栏（同一行：菜园子左 / 侧栏右） ====================
         菜园子的田块由页尾脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源；
         每篇的「主标签」= front matter 里第一个 tag，一块田只归一种文档。
@@ -259,7 +275,7 @@ layout: null
           {%- for d in docs -%}
           <article class="sv-panel post">
             <div class="post-head">
-              <h3 class="post-title">{{ d.title | default: d.name }}</h3>
+              <h3 class="post-title"><a href="{{ d.url | remove_first: '/' }}" aria-label="阅读全文：{{ d.title | default: d.name }}">{{ d.title | default: d.name }}</a></h3>
               <time class="post-time" datetime="{{ d.date | date: '%Y-%m-%d' }}">{% if d.date %}{{ d.date | date: "%Y-%m-%d" }}{% else %}未标日期{% endif %}</time>
             </div>
 

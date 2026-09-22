@@ -35,7 +35,8 @@ html{ scroll-behavior:smooth; }
 body{
   margin:0;
   min-height:100vh;
-  padding:26px 16px 60px;
+  /* 全面屏左右两侧的安全区（横屏时刘海会盖住内容） */
+  padding:26px max(16px, env(safe-area-inset-right)) 60px max(16px, env(safe-area-inset-left));
   color:var(--ink);
   font-family:'Press Start 2P','Zpix','Microsoft YaHei','PingFang SC',monospace;
   font-size:13px;
@@ -45,6 +46,16 @@ body{
     repeating-conic-gradient(#5a9e3a 0% 25%, #4f8f31 0% 50%);
   background-size:22px 22px;
   -webkit-font-smoothing:none;
+}
+
+/* 触屏：去掉点击时那块半透明高亮（和像素风不搭），并消掉
+   双击缩放的 300ms 等待。只给可点元素加 touch-action，
+   不给整个 document —— 列表和正文要正常滚动、双指缩放。 */
+a, button, summary, .plot, .slot, input{
+  -webkit-tap-highlight-color:transparent;
+}
+button, summary, .plot, .slot{
+  touch-action:manipulation;
 }
 
 svg{ shape-rendering:crispEdges; display:block; }
@@ -181,6 +192,123 @@ svg{ shape-rendering:crispEdges; display:block; }
 }
 
 /* ============================================================
+   站内搜索
+   96 篇文档靠逛菜园子找不到东西，这里给一个即时过滤入口。
+   过滤在本地做（索引来自已渲染的卡片），所以没有网络等待。
+   ============================================================ */
+.search-bar{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 18px;
+  padding:10px 14px;
+  border:4px solid var(--wood-800);
+  border-radius:6px;
+  background:linear-gradient(#7b4a24, #57331a);
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.25),
+    inset 0 -4px 0 rgba(0,0,0,.3),
+    0 6px 0 rgba(0,0,0,.3);
+}
+
+/* 视觉上隐藏但仍给屏幕阅读器 —— 输入框不能没有 label */
+.search-label{
+  position:absolute;
+  width:1px; height:1px;
+  margin:-1px; padding:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* 输入框用可读字体，不用像素字体 —— 像素字体在中文输入法候选框下没法看 */
+.search-input{
+  flex:1;
+  min-width:0;
+  padding:9px 12px;
+  font-family:var(--read, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif);
+  font-size:14px;
+  color:var(--ink);
+  background:var(--paper-light);
+  border:3px solid var(--wood-300);
+  border-radius:4px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), inset 0 3px 0 rgba(0,0,0,.1);
+  -webkit-appearance:none;
+  appearance:none;
+}
+.search-input::placeholder{ color:var(--wood-500); opacity:1; }
+.search-input:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:2px;
+  box-shadow:0 0 0 6px var(--wood-900);
+}
+/* 去掉 Safari/Chrome 给 type=search 自带的那个小叉，我们用自家的清除按钮 */
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration{ -webkit-appearance:none; appearance:none; }
+
+/* 快捷键提示 */
+.search-kbd{
+  flex:none;
+  padding:3px 7px;
+  font-family:var(--read, monospace);
+  font-size:11px;
+  color:#ffe9b8;
+  background:rgba(0,0,0,.28);
+  border:2px solid rgba(255,220,160,.3);
+  border-radius:3px;
+}
+.search-bar.is-focused .search-kbd{ opacity:.35; }
+
+.search-clear{
+  flex:none;
+  width:30px; height:30px;
+  padding:0;
+  font-family:inherit; font-size:13px; line-height:1;
+  color:#ffe9b8;
+  background:rgba(0,0,0,.28);
+  border:2px solid rgba(255,220,160,.3);
+  border-radius:4px;
+  cursor:pointer;
+}
+.search-clear:hover{ background:rgba(0,0,0,.5); color:var(--gold); }
+.search-clear[hidden]{ display:none; }
+.search-clear:focus-visible{
+  outline:3px solid var(--paper-light);
+  outline-offset:2px;
+  box-shadow:0 0 0 6px var(--wood-900);
+}
+
+/* 结果条数：有内容才占位，避免空着一条横线 */
+.search-status{
+  margin:0;
+  font-size:11px;
+  color:var(--gold);
+  white-space:nowrap;
+}
+.search-status:empty{ display:none; }
+
+/* 搜索时藏掉作物横幅 —— 那时「田」的概念不适用，
+   面包屑已经写着「搜索结果」，再显示某块田的成熟度会自相矛盾 */
+.crop-banner[hidden]{ display:none; }
+
+/* 命中高亮：整卡可点那层覆盖层之上，高亮只是视觉标记 */
+mark{
+  padding:0 1px;
+  color:var(--wood-900);
+  background:rgba(255,210,63,.55);
+  border-radius:2px;
+}
+
+@media (max-width:560px){
+  .search-bar{ flex-wrap:wrap; gap:8px; padding:9px 10px; }
+  .search-input{ font-size:16px; }   /* <16px 时 iOS 会自动放大页面 */
+  .search-kbd{ display:none; }       /* 手机上没物理键盘，提示无意义 */
+  .search-status{ width:100%; text-align:right; }
+}
+
+/* ============================================================
    双栏布局
    ============================================================ */
 /* .layout 现在只装 main 一列 —— 侧栏已挪进 .fullpage 里和菜园子并排，不再占 grid 的第二列 */
@@ -211,6 +339,9 @@ svg{ shape-rendering:crispEdges; display:block; }
   gap:6px;
   padding:16px 18px;
   transition:transform .15s ease;
+  /* 标题链接要铺满整张卡片（见下方 ::after），得有个定位祖先。
+     .sv-panel 虽已是 relative，但显式写一遍，卡片样式不依赖面板样式 */
+  position:relative;
 }
 
 /* .post 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，必须显式补回 */
@@ -219,6 +350,26 @@ svg{ shape-rendering:crispEdges; display:block; }
 .post:hover{
   transform:translate(-2px,-2px);
 }
+
+/* ---------- 整卡可点：标题里的链接铺满卡片 ----------
+   技术读者习惯 Ctrl/⌘+click、中键在后台开新标签，只让右下角那个绿色
+   小按钮可点就太窄了。做法是给标题链接加一层透明覆盖层盖住整卡：
+   链接是真的 <a href>，所以新标签、右键菜单、状态栏预览全部原生可用，
+   不需要 JS。用 ::after 撑开而不是把整卡包进 <a>，是为了不破坏
+   卡片内部的 flex 布局。 */
+.post-title a::after{
+  content:"";
+  position:absolute;
+  inset:0;
+}
+
+/* ⚠ 覆盖层会拦住文字选中：它盖住了正文/标签/日期。
+   给需要能选中、能复制的部分加 position:relative，让它们排在覆盖层之上
+   （同为 auto z-index 时按 DOM 顺序绘制，后面的压住前面的）。
+   日期和标题不在此列 —— 让它们留在覆盖层的可点区域里，点哪都能进文章。 */
+.post-text,
+.post-tags,
+.post-act{ position:relative; }
 
 /* 标题与日期同行，日期不再孤悬一整行 */
 .post-head{
@@ -875,7 +1026,7 @@ a:focus-visible,
 
 @media (max-width:560px){
   body{
-    padding:14px 9px 40px;
+    padding:14px max(9px, env(safe-area-inset-right)) 40px max(9px, env(safe-area-inset-left));
     font-size:12px;
     background-size:16px 16px;
   }
@@ -901,7 +1052,16 @@ a:focus-visible,
   .avatar-frame svg{ width:52px; height:52px; }
   .slot{ width:40px; height:40px; }
   .slot svg{ width:25px; height:25px; }
-  .hotbar{ gap:3px; padding:8px; }
+  /* 热键栏在页面最底部，全面屏手机上会撞到手势条 */
+  .hotbar{
+    gap:3px;
+    padding:8px;
+    margin-bottom:env(safe-area-inset-bottom);
+  }
+  #back-to-top{
+    right:calc(12px + env(safe-area-inset-right));
+    bottom:calc(12px + env(safe-area-inset-bottom));
+  }
 }
 
 /* ============================================================
@@ -1001,8 +1161,8 @@ a:focus-visible,
    ============================================================ */
 #back-to-top{
   position:fixed;
-  bottom:20px;
-  right:20px;
+  right:calc(20px + env(safe-area-inset-right));
+  bottom:calc(20px + env(safe-area-inset-bottom));
   z-index:90;
   width:40px;
   height:40px;

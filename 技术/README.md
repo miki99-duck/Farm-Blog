@@ -20,6 +20,7 @@ tags: [微服务]
 ├── java/                8 个文件   Java 并发教程（锁原理/多线程/线程池）
 ├── 微服务/              22 个文件  微服务四大难题 + 微服务组件系列（Gateway~K8s）
 ├── kafka/               1 个文件   Kafka 详解（166KB 大文档）
+├── AI/                  13 个文件  AI 应用开发（LangChain 1.0 + 智谱 GLM）
 └── html_backup/         备份
 ```
 
@@ -39,6 +40,7 @@ tags: [微服务]
 | Java 并发 | java/ | `[Java]` | 8 |
 | 微服务 | 微服务/ | `[微服务]` | 22 |
 | Kafka | kafka/ | `[Kafka]` | 1 |
+| AI 应用开发 | AI/ | `[AI]` | 13 |
 
 ### 1. Spring（spring/）★ 面试核心
 
@@ -123,6 +125,29 @@ tags: [微服务]
 
 166KB 完整文档：原理、集群、生产者/消费者、分区/副本、与 Spring 集成。
 
+### 9. AI 应用开发（AI/）★ LangChain 1.0 + 智谱 GLM
+
+LangChain AI 应用开发实战教程（智谱 GLM 版），全部基于 2025-10 发布的 LangChain 1.0 / LangGraph 1.0 稳定版 API（不含网上过时的 0.x 写法），默认模型 glm-4-flash 免费档零成本学习。
+
+| 文件 | 内容 |
+|------|------|
+| 00-导读与AI应用开发分析 | 痛点分析、LangChain 定位、版本须知、学习路线 |
+| 01-环境准备与第一次对话 | 环境、API Key、ChatModel 三调用、流式、失忆实验 |
+| 02-Prompt工程 | 模板变量、few-shot、第一条链、6 条实战原则 |
+| 03-结构化输出 | with_structured_output、嵌套 schema、分类路由 |
+| 04-LCEL链式编排 | `\|` 管道、并行、重试降级、链内路由 |
+| 05-记忆与会话管理 | 手动历史、trim_messages 裁剪、摘要压缩 |
+| 06-RAG上 | 文档切分、向量化、Chroma 检索 |
+| 07-RAG下 | 完整 RAG 链、引用溯源、多轮对话式 RAG |
+| 08-工具调用与Agent | @tool、手动工具循环、create_agent、MCP |
+| 09-LangGraph | 状态图、条件边、多智能体、人工把关 |
+| 10-生产化与部署 | LangSmith、缓存/限流、FastAPI 服务化 |
+| 附录-名词速查表 | 6 类术语白话解释 + 生活类比 |
+| 练习参考答案 | 第 1-10 章全部练习思路与参考代码 |
+
+配套代码在 `F:\Demo\AI_project\ai教程-glm\`（32 个可独立运行 demo + knowledge_bot 毕业项目）。
+学习路径：00 导读 → 01 → 02 → 03 → 04 → 05 → 06/07（RAG 核心）→ 08 → 09 → 10 → 毕业项目。
+
 ## 按用途选路径
 
 | 目标 | 路径 |
@@ -133,11 +158,12 @@ tags: [微服务]
 | 3D 可视化/大屏 | threejs 09 实战 → 01/07 基础 → 10 性能速查 |
 | 微服务架构认知 | 微服务 00 组件总览 → 01/02/05/06/07 组件 → kafka/kafka.md |
 | 微服务面试（四大难题） | 微服务 00 总览 → 01 TCC → 03 缓存一致性（最高频）→ 04 消息可靠 |
+| AI 应用开发入门 | AI 00 导读 → 01 环境 → 02/03 → 04/05 → 06/07 RAG → 08/09 Agent |
 | 考前 30 分钟冲刺 | 各系列最后一章：java 07 / spring 08 / css 10 / js 10 / vue 10 / threejs 10 |
 
 ## 更新记录
 
-- 2026-09-22：**补齐 tags**——css / js / threejs / vue 四个系列（48 篇）此前无 front matter，
+- 2026-09-22：新增 AI（13 文件）——LangChain 1.0 + 智谱 GLM 实战教程：Prompt/结构化输出/LCEL/RAG/Agent/LangGraph/生产化，含练习答案与名词速查表；源码在 F:\Demo\AI_project\ai教程-glm
   整批掉进首页「田头空地」；现全部补 `tags: [系列名]`，并在 script.js 的 TAG_META 里
   登记 JS / Vue / Three.js 三块新田的显示名与 emoji
 - 2026-09-22：**修复 Vue 教程被 Liquid 吞内容**——教程里的 Vue 插值语法（双大括号）会被 Jekyll

@@ -1,5 +1,6 @@
 ---
 tags: [微服务]
+series: 微服务组件
 ---
 
 # 微服务组件 15 · 分库分表 ShardingSphere
