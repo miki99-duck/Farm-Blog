@@ -501,3 +501,25 @@
     update();
     setInterval(update, 30000);
   })();
+
+  /* 9) 回到顶部：滚动超过 300px 显示，点击平滑滚回顶部 */
+  (function () {
+    var btn = document.getElementById('back-to-top');
+    if (!btn) { return; }
+    var lastVisible = null;
+
+    function onScroll() {
+      var show = window.scrollY > 300;
+      if (show !== lastVisible) {
+        btn.hidden = !show;
+        lastVisible = show;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();

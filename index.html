@@ -553,6 +553,15 @@ layout: null
 
 </div>
 
+<!-- 回到顶部按钮 -->
+<button id="back-to-top" type="button" aria-label="回到顶部" hidden>
+  <svg viewBox="0 0 16 16" role="img" aria-hidden="true">
+    <rect x="6" y="2" width="4" height="10" rx="1" fill="currentColor"/>
+    <polygon points="2,8 8,2 14,8" fill="currentColor"/>
+    <rect x="6" y="13" width="4" height="1" rx="0.5" fill="currentColor"/>
+  </svg>
+</button>
+
 <!-- 背景音乐：曲目列表在脚本的 TRACKS 里配置，mp3 放在 music/ 目录。
      刻意不加 loop 属性：loop 会吞掉 ended 事件，列表循环必须靠 ended 切歌。
      文件缺失时音符按钮会变成提示态，不报错。 -->

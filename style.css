@@ -995,3 +995,38 @@ a:focus-visible,
   border:2px solid var(--wood-300);
   border-radius:3px;
 }
+
+/* ============================================================
+   回到顶部按钮
+   ============================================================ */
+#back-to-top{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  z-index:90;
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border:3px solid var(--wood-300);
+  border-radius:6px;
+  background:var(--wood-200);
+  color:var(--wood-900);
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(46,26,12,.25);
+  transition:transform .15s ease, background .15s ease, color .15s ease;
+}
+#back-to-top:hover{
+  background:var(--wood-100);
+  color:var(--wood-900);
+  transform:translateY(-2px);
+}
+#back-to-top:active{
+  transform:translateY(0);
+}
+#back-to-top svg{
+  width:18px;
+  height:18px;
+}
