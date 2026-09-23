@@ -183,22 +183,21 @@
   var searchTexts = [];      /* 每张卡片的可搜索文本（小写，建索引时算一次） */
   var highlighted = [];      /* 当前被 <mark> 包过的文本节点，清空时要还原 */
 
-  /* 标签元数据：显示名 + emoji。FORMAL 是固定 6 块正式田，其余标签进试验田。
+  /* 标签元数据：显示名 + emoji。FORMAL 里的进正式田，其余标签进试验田。
      注意：键必须全小写 —— primaryOf() 会把标签 toLowerCase() 后再查这张表，
      写成 'Java' / 'Spring' 这种大小写会匹配不上，emoji 静默退化成兜底 🌱。 */
   var TAG_META = {
     '微服务': { name:'微服务', emoji:'🧩' },
-    'java':    { name:'Java',    emoji:'☕' },
     'spring':  { name:'Spring',  emoji:'🍃' },
-    'kafka':   { name:'Kafka',   emoji:'📨' },
-    'mysql':   { name:'MySQL',   emoji:'🐬' },
-    'nginx':   { name:'Nginx',   emoji:'🌐' },
+    'java':    { name:'Java',    emoji:'☕' },
     'css':     { name:'CSS',     emoji:'🖌️' },
     'js':      { name:'JavaScript', emoji:'📜' },
     'vue':     { name:'Vue',     emoji:'🟩' },
     'threejs': { name:'Three.js', emoji:'🧊' },
     'ai':      { name:'AI',      emoji:'🤖' },
-    'ai':      { name:'AI',       emoji:'🤖' },
+    'kafka':   { name:'Kafka',   emoji:'📨' },
+    'mysql':   { name:'MySQL',   emoji:'🐬' },
+    'nginx':   { name:'Nginx',   emoji:'🌐' },
     '矿洞':    { name:'矿洞',    emoji:'⛏️' },
     '冒险':    { name:'冒险',    emoji:'🧭' },
     '秋季':    { name:'秋季',    emoji:'🍂' },
@@ -206,8 +205,10 @@
     '像素风':  { name:'像素风',  emoji:'🎨' },
     '前端':    { name:'前端',    emoji:'🖥️' }
   };
-  /* FORMAL 也要全小写，且必须与 TAG_META 的键、以及文档里 tags 的小写形式一致 */
-  var FORMAL = ['微服务', 'spring', 'java', 'kafka', 'mysql', 'nginx'];
+  /* FORMAL 也要全小写，且必须与 TAG_META 的键、以及文档里 tags 的小写形式一致。
+     有内容的系列放前面；mysql / nginx 目前 0 篇，先留作占位田（会显示成灰的「尚未开垦」）。
+     想调整哪几块进正式田，只改这个数组即可，顺序就是显示顺序。 */
+  var FORMAL = ['微服务', 'spring', 'java', 'css', 'js', 'vue', 'threejs', 'ai', 'mysql', 'nginx'];
   var ALL_ITEM = { name:'全部收成', emoji:'📚' };
   var NONE_ITEM = { name:'田头空地', emoji:'❔' };
   var KEY_ALL = '__all__', KEY_NONE = '__none__';
