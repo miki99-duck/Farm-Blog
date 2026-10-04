@@ -12,15 +12,16 @@ layout: null
   </url>
   {%- comment -%}
     收录所有参与列表的文档页（与 index.html 的 skipdirs 保持一致）。
-    排除：资源目录、html_backup、目录索引 README、以及 sitemap.xml 自身
+    排除：资源目录、html_backup、目录索引 README、404 页、以及 sitemap.xml 自身
     （它也是 site.pages 里的一页，不排除会把自己写进结果）。
+    404.html 必须排除，否则「不存在的地址」会被当成正常页面提交给搜索引擎。
   {%- endcomment -%}
   {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
   {%- for page in site.pages -%}
   {%- assign segs = page.path | split: "/" -%}
   {%- assign top = segs | first -%}
   {%- assign keep = true -%}
-  {%- if page.name == "index.html" or page.name == "sitemap.xml" or page.name == "README.md" -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if page.name == "index.html" or page.name == "sitemap.xml" or page.name == "README.md" or page.name == "404.html" -%}{%- assign keep = false -%}{%- endif -%}
   {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
   {%- if keep %}
   <url>

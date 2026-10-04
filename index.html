@@ -24,7 +24,7 @@ layout: null
 <meta property="og:title" content="星露谷农场日志 | 游戏 &amp; 技术博客">
 <meta property="og:description" content="种地、钓鱼、写代码 —— 记录星露谷里的每一天，也记录屏幕外的小事。">
 <meta property="og:url" content="https://miki99-duck.github.io/Farm-Blog/">
-<meta property="og:image" content="https://miki99-duck.github.io/Farm-Blog/assets/og-image.svg">
+<meta property="og:image" content="https://miki99-duck.github.io/Farm-Blog/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="星露谷农场日志">
@@ -34,7 +34,7 @@ layout: null
 <meta name="twitter:site" content="@miki99-duck">
 <meta name="twitter:title" content="星露谷农场日志 | 游戏 &amp; 技术博客">
 <meta name="twitter:description" content="种地、钓鱼、写代码 —— 记录星露谷里的每一天，也记录屏幕外的小事。">
-<meta name="twitter:image" content="https://miki99-duck.github.io/Farm-Blog/assets/og-image.svg">
+<meta name="twitter:image" content="https://miki99-duck.github.io/Farm-Blog/assets/og-image.png">
 <!-- JSON-LD 结构化数据 -->
 <script type="application/ld+json">
 {
@@ -60,8 +60,8 @@ layout: null
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <!-- GoatCounter 全站统计。
-     注意：_layouts/default.html（文档页）里这行是启用的，只有首页被注释掉了，
-     于是统计只记到文档页、首页访问一律不计——HUD 上的访客数因此长期偏低。
+     ⚠ 这一行要和 _layouts/default.html（文档页）里那一行保持一致。
+     以前首页这行被注释掉过，结果统计只记到文档页、首页访问一律不计。
      2026-09 核实：/count 接口本身是好的（返回 1x1 gif），当初记的
      「CDN 超时 + 404」并不是 count.js 的问题，而是 HUD 上那个取数字的
      /api/v2/counters/<code> 地址写错了（官方是 /api/v0/* 且要 token）。
@@ -174,7 +174,7 @@ layout: null
   </div>
 
   <!-- ==================== 站内搜索 ====================
-       96 篇文档光靠逛菜园子找不到东西，这里给一个即时过滤的入口。
+       108 篇文档光靠逛菜园子找不到东西，这里给一个即时过滤的入口。
        索引不新增数据源：每张文章卡片已有标题/标签/摘要，脚本直接从卡片上
        摘取（见 script.js 的 buildSearchIndex），所以任何 .md 丢进来都自动可搜。
        快捷键：/ 或 Ctrl/⌘+K 聚焦，Esc 清空并返回菜园子。 -->
@@ -246,6 +246,13 @@ layout: null
             不显示分类：文件夹只用于组织文件，不在页面上出现。
             排序：有 date 的按日期倒序；没写 date 的按文件名升序排在最后。
             分页由页尾脚本完成，每页 10 条。
+            索引页不收录：技术/README.md 靠 front matter 的 listed: false 排除，
+            与 sitemap.xml 里排除 README.md 的口径一致（原来一个收录一个排除，
+            首页「微服务」田会多出一张索引卡片）。
+            404.html 与 sitemap.xml 按文件名硬排除，不依赖它们的 front matter。
+            ⚠ sitemap.xml 自己也是一个「带 front matter 的页面」，所以它在 site.pages
+            里。之前这里没排除它，线上首页第 5 张卡片就是标题为「sitemap.xml」、
+            摘要是一堆 XML 的假文章（实测线上 110 张卡片 = 109 篇 .md + sitemap.xml）。
           {%- endcomment -%}
           {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
           {%- assign dated = "" | split: "|" -%}
@@ -254,7 +261,7 @@ layout: null
             {%- assign segs = p.path | split: "/" -%}
             {%- assign top = segs | first -%}
             {%- assign keep = true -%}
-            {%- if p.url == "/" or p.name == "index.html" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
+            {%- if p.url == "/" or p.name == "index.html" or p.name == "404.html" or p.name == "sitemap.xml" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
             {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
             {%- if keep -%}
               {%- if p.date -%}{%- assign dated = dated | push: p -%}{%- else -%}{%- assign undated = undated | push: p -%}{%- endif -%}

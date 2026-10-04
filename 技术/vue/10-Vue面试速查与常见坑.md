@@ -165,7 +165,7 @@ router.beforeEach((to, from, next) => {
 });
 
 // 7. 展开对象给 el-table 行加序号列（临时渲染技巧）
-{% raw %}// {{ scope.$index + 1 + (queryParams.pageNum - 1) * queryParams.pageSize }}{% endraw %}
+// {{ scope.$index + 1 + (queryParams.pageNum - 1) * queryParams.pageSize }}{% endraw %}
 ```
 
 ## C. 常见坑速查表（debug 时翻）

@@ -538,24 +538,41 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
     排序用 path 升序：文件名的序号前缀（00/01/…/16）在字符串序下
     就是章节序，序号补零到两位，所以不存在 10 排在 2 前面。
+
+    ⚠ 目录分组只对「顶层/系列/文件」三段路径成立（技术/spring/01-x.md）。
+    路径只有两段的文档 —— 农场日记/*.md、技术/README.md —— 曾经会把
+    「文件自身路径」当成分组键（series_dir = 农场日记/巨型南瓜.md），
+    于是面包屑显示成「巨型南瓜.md」、链接指向 #crop=巨型南瓜.md 这块
+    根本不存在的田（首页显示空田占位），上一章 / 下一章也全部消失。
+    现在两段路径改按「主标签」分组（与首页 primaryOf() 同一套口径）。
   {%- endcomment -%}
   {%- assign segs = page.path | split: '/' -%}
-  {%- assign series_dir = segs[0] -%}
-  {%- if segs.size > 1 -%}{%- assign series_dir = segs[0] | append: '/' | append: segs[1] -%}{%- endif -%}
+  {%- assign primary_tag = page.tags | first | default: '' -%}
+  {%- assign by_dir = false -%}
+  {%- if segs.size > 2 -%}{%- assign by_dir = true -%}{%- endif -%}
   {%- if page.series -%}
     {%- assign series_pages = site.pages | where: "series", page.series | sort: "path" -%}
     {%- assign series_title = page.series -%}
-  {%- else -%}
+  {%- elsif by_dir -%}
+    {%- assign series_dir = segs[0] | append: '/' | append: segs[1] -%}
     {%- assign series_pages = site.pages | where_exp: "p", "p.path contains series_dir" | sort: "path" -%}
     {%- assign series_title = site.series_titles[segs[1]] | default: segs[1] -%}
+  {%- else -%}
+    {%- assign series_pages = site.pages | where_exp: "p", "p.tags contains primary_tag" | sort: "path" -%}
+    {%- assign series_title = site.series_titles[primary_tag] | default: primary_tag -%}
   {%- endif -%}
-  {%- assign series_tag = segs[1] | downcase -%}
   {%- comment -%}
     面包屑链到首页的标签筛选，而不是目录地址：
     技术/spring/ 没有 index.html，直接链过去是 404（GitHub Pages 不做目录列表）。
     首页的 #crop=<tag> 是现成的深链，正好把那个系列筛出来。
+
+    用「主标签」而不是目录名生成深链：首页判定一篇属于哪块田，看的就是
+    tags 的第一个标签，所以 #crop=<主标签> 必然能筛到当前这篇（不会是空田），
+    而 #crop=<目录名> 在目录名 ≠ 标签名时会指向不存在的田。
     tag 一律小写，对齐 script.js 里 primaryOf() 的 toLowerCase()。
+    没有 tags 的文档干脆不渲染面包屑链接（series_tag 为空走另一分支）。
   {%- endcomment -%}
+  {%- assign series_tag = primary_tag | downcase -%}
   {%- assign prev_doc = nil -%}
   {%- assign next_doc = nil -%}
   {%- assign seen = false -%}
@@ -571,7 +588,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
   <header class="hud">
     <a class="hud-chip hud-home" href="./" data-url="{{ page.url }}">◂ 返回农场</a>
-    {%- if segs.size > 1 %}
+    {%- if series_tag != '' %}
     <a class="hud-chip hud-crumb" href="{{ '/' | relative_url }}#crop={{ series_tag }}" title="在首页筛选「{{ series_title }}」系列">{{ series_title }}</a>
     <span class="hud-chip hud-crumb-here">📄 {{ page.title | default: page.name }}</span>
     {%- else %}

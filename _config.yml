@@ -20,7 +20,26 @@ baseurl: "/Farm-Blog"                  # 站点路径前缀，根路径写 ""
 author: "Miki99"
 author_url: "https://github.com/miki99-duck"
 twitter_handle: "@miki99-duck"
-og_image: "/assets/og-image.svg"       # 社交分享卡片图
+og_image: "/assets/og-image.png"       # 社交分享卡片图（位图，见下）
+
+# ⚠ og:image 必须是 PNG/JPG，不能是 SVG。
+#   Twitter / Facebook / 微信 的爬虫都不渲染 SVG，指向 .svg 的分享卡片
+#   一律是「无图」状态（twitter:card=summary_large_image 也白写）。
+#   assets/og-image.png 是与同目录 og-image.svg 同构的 1200×630 位图
+#   （按 SVG 的图元重绘导出，尺寸与下面 og:image:width/height 对齐）。
+#   以后改图：改 .svg → 用同样的方式重新导出同名 .png，两处一起更新。
+
+# ============================================================
+#  不参与发布的文件
+#  Jekyll 会把「没有 front matter 的文件」原样拷进 _site，
+#  所以备份文件和本地脚本默认都会上线，必须显式排除。
+#  （exclude 是追加语义，Jekyll 自带的默认排除项仍然生效。）
+# ============================================================
+exclude:
+  - "git-proxy.cmd"            # 本机 git 代理包装脚本，含 127.0.0.1:7890
+  - "*.cmd"
+  - "技术/html_backup"         # 早期 HTML 备份：和 .md 正文重复，且无人链接
+  - "技术/html_backup/*"
 
 # ============================================================
 #  系列显示名（可选）
@@ -28,6 +47,12 @@ og_image: "/assets/og-image.svg"       # 社交分享卡片图
 #  但目录名直接显示会是小写英文（spring、threejs），不好看。
 #  这里给每个系列一个显示名；没登记的系列自动退化成目录名。
 #  键必须和 技术/ 下的目录名完全一致（区分大小写）。
+#
+#  两条查表路径（见 _layouts/default.html）：
+#    ① 三段路径（技术/spring/01-x.md）→ 查 segs[1]，即目录名；
+#    ② 两段路径（农场日记/巨型南瓜.md、技术/README.md）→ 查主标签，
+#       主标签是中文或大小写不一致时（Spring / Java / Kafka）查不到，
+#       直接显示标签本身，不影响可读性。
 # ============================================================
 series_titles:
   spring: "Spring"
@@ -39,6 +64,7 @@ series_titles:
   threejs: "Three.js"
   AI: "AI 应用开发"
   微服务: "微服务"
+  农场日记: "农场日记"
 
 keywords:
   - 星露谷物语

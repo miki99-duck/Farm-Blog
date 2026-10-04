@@ -1,0 +1,87 @@
+---
+# 404 页：GitHub Pages 在根目录发现 404.html 就会用它兜住所有找不到的地址。
+# layout: null 是必须的 —— 不写的话 jekyll-default-layout 会套上 default 布局，
+# 于是页面变成「一个内容为空的文档页」，木牌和目录栏都会出现。
+# listed: false 让它不进首页卡片列表；sitemap.xml 里也按文件名排除了它。
+layout: null
+listed: false
+permalink: /404.html
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2e1a0c">
+<title>这块地没种东西 · 星露谷农场日志</title>
+<!-- 复用首页那套样式与像素字体，404 页才不会看起来像另一个站点的 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
+<style>
+  /* 404 页专用：把内容压到一屏中间，别再拉出热键栏那套布局 */
+  .nf-wrap{ max-width:620px; margin:6vh auto 0; }
+  .nf-title{
+    margin:0 0 14px;
+    font-family:var(--pixel,'Press Start 2P','Microsoft YaHei',monospace);
+    font-size:15px; line-height:1.9; letter-spacing:1px;
+    color:var(--wood-900);
+  }
+  .nf-text{ margin:0 0 16px; font-size:13px; line-height:2; color:var(--ink-soft); }
+  .nf-text code{
+    padding:1px 6px;
+    font-family:var(--mono,'Cascadia Mono',Consolas,monospace); font-size:.9em;
+    color:var(--wood-800); background:var(--wood-100);
+    border:2px solid var(--wood-300); border-radius:3px;
+  }
+  .nf-crop{ font-size:44px; line-height:1; margin:0 0 10px; }
+  .nf-links{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 20px; }
+  .nf-links a{
+    padding:5px 11px;
+    font-size:12px; text-decoration:none;
+    color:var(--wood-700); background:#eed9ab;
+    border:2px solid var(--wood-300); border-radius:3px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+  }
+  .nf-links a:hover{ background:var(--paper-light); color:var(--wood-900); }
+  .nf-links a:focus-visible{ outline:3px solid var(--wood-900); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<div class="nf-wrap">
+
+  <div class="blog-sign">
+    <h1>星露谷农场日志</h1>
+    <p>STARDEW VALLEY · FARM BLOG</p>
+  </div>
+
+  <div class="sv-panel">
+    <p class="nf-crop" aria-hidden="true">🌾</p>
+    <h1 class="nf-title">这块地还没开垦</h1>
+    <p class="nf-text">
+      你要找的页面不在这儿 —— 可能是地址敲错了，也可能是这篇文档改过名字。<br>
+      回农场按 <code>/</code> 或 <code>Ctrl / ⌘ + K</code> 可以直接搜标题、标签和摘要。
+    </p>
+
+    <div class="nf-links" aria-label="常用系列">
+      <a href="{{ '/' | relative_url }}#crop=微服务">🧩 微服务</a>
+      <a href="{{ '/' | relative_url }}#crop=spring">🍃 Spring</a>
+      <a href="{{ '/' | relative_url }}#crop=java">☕ Java 并发</a>
+      <a href="{{ '/' | relative_url }}#crop=ai">🤖 AI 应用开发</a>
+    </div>
+
+    <a class="btn" href="{{ '/' | relative_url }}">◀ 返回农场</a>
+  </div>
+
+</div>
+
+<!-- 统计：和首页 / 文档页同一份脚本。404 也会被记下来，
+     这样「站内哪个链接断了」在 GoatCounter 后台能直接看到。 -->
+<script data-goatcounter="https://miki99-duck.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+</body>
+</html>
