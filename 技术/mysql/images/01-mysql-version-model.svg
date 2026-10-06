@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="430" viewBox="0 0 880 430">
+  <rect x="0" y="0" width="880" height="430" fill="#0d1117"/>
+  <defs>
+    <marker id="ar0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <!-- 标题 -->
+  <text x="22" y="36" fill="#e6edf3" font-size="15" font-weight="bold">MySQL 版本模型：9.7 是 9.x 唯一的 LTS</text>
+  <text x="22" y="58" fill="#8b949e" font-size="11.5">LTS 内部不再移除功能；创新版只支持到下一个创新版</text>
+  <!-- LTS 轨道 -->
+  <text x="22" y="100" fill="#3fb950" font-size="12" font-weight="bold">LTS 轨道</text>
+  <rect x="110" y="78" width="175" height="66" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="197.5" y="98.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">8.0 LTS</text>
+  <text x="197.5" y="110.875" fill="#8b949e" font-size="10.5" text-anchor="middle">2018-04 GA</text>
+  <text x="197.5" y="125.375" fill="#8b949e" font-size="10.5" text-anchor="middle">扩展支持已于 2026-04-30 结束</text>
+  <rect x="335" y="78" width="175" height="66" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="422.5" y="98.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">8.4 LTS</text>
+  <text x="422.5" y="110.875" fill="#8b949e" font-size="10.5" text-anchor="middle">2024-04 GA</text>
+  <text x="422.5" y="125.375" fill="#8b949e" font-size="10.5" text-anchor="middle">支持到 2032-04</text>
+  <rect x="560" y="78" width="200" height="66" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="660.0" y="98.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">9.7 LTS</text>
+  <text x="660.0" y="110.875" fill="#8b949e" font-size="10.5" text-anchor="middle">2026-04-21 GA</text>
+  <text x="660.0" y="125.375" fill="#8b949e" font-size="10.5" text-anchor="middle">首个 9.x LTS · 支持到 2034-04</text>
+  <line x1="288" y1="111" x2="331" y2="111" stroke="#3fb950" stroke-width="2" marker-end="url(#ar0)"/>
+  <text x="309.5" y="104.0" fill="#3fb950" font-size="10.5" text-anchor="middle">可升级</text>
+  <line x1="513" y1="111" x2="556" y2="111" stroke="#3fb950" stroke-width="2" marker-end="url(#ar0)"/>
+  <text x="534.5" y="104.0" fill="#3fb950" font-size="10.5" text-anchor="middle">可升级</text>
+  <!-- 不允许跳过 LTS -->
+  <line x1="150" y1="172" x2="660" y2="172" stroke="#f85149" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="405" y="166" fill="#f85149" font-size="11" text-anchor="middle">× 不能跳过 LTS（8.0 必须先升到 8.4）</text>
+  <!-- Innovation 轨道 -->
+  <text x="22" y="232" fill="#58a6ff" font-size="12" font-weight="bold">Innovation 轨道</text>
+  <rect x="118" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="166.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.0</text>
+  <text x="166.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">auth 插件移除</text>
+  <rect x="224" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="272.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.1</text>
+  <text x="272.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">—</text>
+  <rect x="330" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="378.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.2</text>
+  <text x="378.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">FLUSH 弃用</text>
+  <rect x="436" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="484.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.3</text>
+  <text x="484.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">日志变量移除</text>
+  <rect x="542" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="590.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.4</text>
+  <text x="590.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">temptable 移除</text>
+  <rect x="648" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="696.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.5</text>
+  <text x="696.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">默认值翻转</text>
+  <rect x="754" y="202" width="96" height="58" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="802.0" y="225.61" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">9.6</text>
+  <text x="802.0" y="238.21" fill="#8b949e" font-size="9.5" text-anchor="middle">MD5/SHA1 移组件</text>
+  <text x="118" y="286" fill="#8b949e" font-size="11">只支持到下一个创新版发布为止 → 9.6 的支持随 9.7 GA（2026-04-21）结束</text>
+  <!-- 日历版本号 -->
+  <text x="22" y="340" fill="#bc8cff" font-size="12" font-weight="bold">2026-06 起改用日历版本号 YY.M</text>
+  <rect x="300" y="318" width="130" height="62" rx="8" fill="#1c2129" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="365.0" y="337.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">26.7</text>
+  <text x="365.0" y="349.875" fill="#8b949e" font-size="9.5" text-anchor="middle">2026-07-28</text>
+  <text x="365.0" y="363.375" fill="#8b949e" font-size="9.5" text-anchor="middle">首个日历版本</text>
+  <rect x="450" y="318" width="130" height="62" rx="8" fill="#1c2129" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="515.0" y="337.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">26.10</text>
+  <text x="515.0" y="349.875" fill="#8b949e" font-size="9.5" text-anchor="middle">2026-09-18</text>
+  <text x="515.0" y="363.375" fill="#8b949e" font-size="9.5" text-anchor="middle">Early Access</text>
+  <rect x="600" y="318" width="140" height="62" rx="8" fill="#1c2129" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="670.0" y="337.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">27.1</text>
+  <text x="670.0" y="349.875" fill="#8b949e" font-size="9.5" text-anchor="middle">2027-01</text>
+  <text x="670.0" y="363.375" fill="#8b949e" font-size="9.5" text-anchor="middle">下一季度</text>
+  <text x="22" y="396" fill="#8b949e" font-size="11">→ 没有 MySQL 9.8，也没有 10.x；下一条 LTS 会以自己的 YY.M 冻结命名</text>
+</svg>

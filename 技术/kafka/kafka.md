@@ -2,6 +2,7 @@
 layout: default
 title: "Kafka 与 ZooKeeper 完全教程"
 date: 2024-10-15
+last_modified_at: 2026-09-22
 tags: [Kafka, Java]
 summary: "从「传菜窗口」这种大白话讲起，一路讲到副本机制、事务、KRaft 与 MirrorMaker2。33 章、183 段可直接复制的配置与代码。"
 description: "从大白话讲起的 Kafka 与 ZooKeeper 教程：集群搭建、客户端开发、副本与事务、监控运维与排错，33 章、183 段可复制代码。"

@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第6章 Spring 启动流程 refresh()"
 tags: [Spring]
 ---

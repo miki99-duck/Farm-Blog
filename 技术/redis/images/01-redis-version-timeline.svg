@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="470" viewBox="0 0 880 470">
+  <rect x="0" y="0" width="880" height="470" fill="#0d1117"/>
+  <!-- 标题 -->
+  <text x="22" y="36" fill="#e6edf3" font-size="15" font-weight="bold">Redis 8.x 时间线：8.0 → 8.10.2</text>
+  <text x="22" y="58" fill="#8b949e" font-size="11.5">偶数 minor、约半年一版；当前最新是 8.10.2（2026-09-17，安全版）</text>
+  <!-- 主时间轴 -->
+  <line x1="36" y1="100" x2="848" y2="100" stroke="#30363d" stroke-width="2"/>
+  <rect x="24" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="89.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.0</text>
+  <text x="89.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2025-05-02</text>
+  <text x="33" y="178" fill="#e6edf3" font-size="9.5">· One Redis 打包</text>
+  <text x="33" y="208" fill="#e6edf3" font-size="9.5">· 新 I/O 线程</text>
+  <text x="33" y="238" fill="#e6edf3" font-size="9.5">· Search 改名</text>
+  <text x="33" y="268" fill="#e6edf3" font-size="9.5">· 延迟 −87%</text>
+  <text x="33" y="298" fill="#e6edf3" font-size="9.5">· 查询 16×</text>
+  <circle cx="89" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="89" y1="100" x2="89" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="165" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="230.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.2</text>
+  <text x="230.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2025-08-04</text>
+  <text x="174" y="178" fill="#e6edf3" font-size="9.5">· VISMEMBER 加入</text>
+  <text x="174" y="208" fill="#e6edf3" font-size="9.5">· XDELEX/XACKDEL</text>
+  <text x="174" y="238" fill="#e6edf3" font-size="9.5">· SVS-VAMANA 索引</text>
+  <text x="174" y="268" fill="#e6edf3" font-size="9.5">· SLOT-STATS 上线</text>
+  <circle cx="230" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="230" y1="100" x2="230" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="306" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="371.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.4</text>
+  <text x="371.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2025-11-18</text>
+  <text x="315" y="178" fill="#e6edf3" font-size="9.5">· 原子槽迁移</text>
+  <text x="315" y="208" fill="#e6edf3" font-size="9.5">· FT.HYBRID</text>
+  <text x="315" y="238" fill="#e6edf3" font-size="9.5">· XREADGROUP CLAIM</text>
+  <text x="315" y="268" fill="#e6edf3" font-size="9.5">· I/O 吞吐 &gt;30%</text>
+  <circle cx="371" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="371" y1="100" x2="371" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="447" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="512.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.6</text>
+  <text x="512.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2026-02-10</text>
+  <text x="456" y="178" fill="#e6edf3" font-size="9.5">· 流幂等 IDMP</text>
+  <text x="456" y="208" fill="#e6edf3" font-size="9.5">· volatile-lrm</text>
+  <text x="456" y="238" fill="#e6edf3" font-size="9.5">· HOTKEYS 上线</text>
+  <text x="456" y="268" fill="#e6edf3" font-size="9.5">· 全量同步 +60%</text>
+  <circle cx="512" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="512" y1="100" x2="512" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="588" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="653.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.8</text>
+  <text x="653.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2026-05-25</text>
+  <text x="597" y="178" fill="#e6edf3" font-size="9.5">· Array 新类型</text>
+  <text x="597" y="208" fill="#e6edf3" font-size="9.5">· INCREX 限流</text>
+  <text x="597" y="238" fill="#e6edf3" font-size="9.5">· XNACK 上线</text>
+  <text x="597" y="268" fill="#e6edf3" font-size="9.5">· subkey 通知</text>
+  <text x="597" y="298" fill="#e6edf3" font-size="9.5">· MGET +68%</text>
+  <circle cx="653" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="653" y1="100" x2="653" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="729" y="122" width="130" height="210" rx="8" fill="#1c2129" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="794.0" y="145" fill="#e6edf3" font-size="15" font-weight="bold" text-anchor="middle">8.10</text>
+  <text x="794.0" y="159.25" fill="#8b949e" font-size="10.5" text-anchor="middle">2026-07-29</text>
+  <text x="738" y="178" fill="#e6edf3" font-size="9.5">· compact hash</text>
+  <text x="738" y="208" fill="#e6edf3" font-size="9.5">· HIMPORT 导入</text>
+  <text x="738" y="238" fill="#e6edf3" font-size="9.5">· XREAD MAXSIZE</text>
+  <text x="738" y="268" fill="#e6edf3" font-size="9.5">· Hash HSET +104%</text>
+  <circle cx="794" cy="100" r="5" fill="#58a6ff"/>
+  <line x1="794" y1="100" x2="794" y2="116" stroke="#30363d" stroke-width="1.5"/>
+  <!-- 当前最新 -->
+  <rect x="30" y="376" width="300" height="66" rx="8" fill="#1c2129" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="180.0" y="403.67" fill="#e6edf3" font-size="14" font-weight="bold" text-anchor="middle">8.10.2</text>
+  <text x="180.0" y="417.37" fill="#8b949e" font-size="10.5" text-anchor="middle">2026-09-17 标注 SECURITY</text>
+  <text x="340" y="396" fill="#8b949e" font-size="10.5">· cluster-bus-port-protected-mode（默认 no）：未启用 tls-cluster 时</text>
+  <text x="340" y="414" fill="#8b949e" font-size="10.5">  cluster bus 没有认证；同批修复 TLS CN 内嵌 NUL 的身份绕过等</text>
+  <text x="30" y="458" fill="#f0883e" font-size="10.5">许可：8.0 起 RSALv2 / SSPLv1 / AGPLv3 三选一（不是只有 AGPLv3）；7.2 及更早仍是 BSD-3-Clause。</text>
+</svg>

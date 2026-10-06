@@ -792,6 +792,59 @@ a:focus-visible,
   overflow:hidden;
 }
 
+/* ---------- 系列目录（服务端渲染的静态导航） ----------
+   菜园子的田块是脚本现生成的，HTML 里本来没有任何系列链接：
+   搜索引擎抓不到入口，关掉 JS 的用户也只能看到一片空草地。
+   这份列表是静态的，同时也是各系列落地页（技术/<系列>/）的主要内链来源。
+   配色沿用纸面 + 木框，跟田块区分开，但要一眼看出是「目录」而不是装饰。 */
+.series-nav{
+  margin:0 0 14px;
+  padding:12px 14px 14px;
+  background:var(--paper-light);
+  border:3px solid var(--wood-300);
+  border-radius:5px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), 3px 3px 0 rgba(0,0,0,.16);
+}
+
+.series-nav-title{
+  margin:0 0 9px;
+  font-size:12px;
+  color:var(--wood-700);
+}
+
+.series-nav-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+  gap:6px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+.series-nav-list a{
+  display:block;
+  padding:7px 10px;
+  font-size:12px;
+  line-height:1.5;
+  text-decoration:none;
+  color:var(--wood-700);
+  background:#eed9ab;
+  border:2px solid var(--wood-300);
+  border-radius:3px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+}
+
+.series-nav-list a:hover{
+  background:var(--paper-light);
+  color:var(--wood-900);
+  transform:translate(-1px,-1px);
+}
+
+.series-nav-list a:focus-visible{
+  outline:3px solid var(--wood-900);
+  outline-offset:2px;
+}
+
 .trial[hidden]{ display:none; }
 
 .trial summary{

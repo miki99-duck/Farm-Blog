@@ -28,6 +28,8 @@ listed: false
 ├── 微服务/              22 个文件  微服务四大难题 + 微服务组件系列（Gateway~K8s）
 ├── kafka/               1 个文件   Kafka 详解（166KB 大文档）
 ├── AI/                  13 个文件  AI 应用开发（LangChain 1.0 + 智谱 GLM）
+├── redis/               1 个文件   Redis 8.x 新特性剖析（数据结构 / 集群 / 运维）
+├── mysql/               1 个文件   MySQL 9.x/9.7 剖析（VECTOR / JS 存储程序 / 升级）
 └── html_backup/         备份
 ```
 
@@ -36,18 +38,25 @@ listed: false
 > 每个系列的所有 .md 都带 `tags: [系列名]`。第一个标签决定它归属首页菜园子的哪块田，
 > 在首页「菜园子」点对应田块即可按系列筛选。
 > ⚠ 新增系列时务必补 tags，否则整批文档会掉进「田头空地」，不进任何一块田。
+>
+> **每个系列目录下都有一个 `index.md` 落地页**（如 `技术/spring/index.md` → `/技术/spring/`）：
+> 它是该系列的服务端渲染目录页，也是搜索引擎从首页进入各系列的主要入口
+> （菜园子的田块是脚本现生成的，爬虫在首页 HTML 里看不到系列链接）。
+> 新增系列时记得照着已有的 `index.md` 建一个，并在首页 `index.html` 的「系列目录」里补一行。
 
-| 系列 | 目录 | tags 主标签 | 文件数 |
-|------|------|------------|--------|
-| Spring | spring/ | `[Spring]` | 16 |
-| CSS | css/ | `[css]` | 12 |
-| JavaScript | js/ | `[js]` | 11 |
-| Vue | vue/ | `[vue]` | 11 |
-| Three.js | threejs/ | `[threejs]` | 11 |
-| Java 并发 | java/ | `[Java]` | 8 |
-| 微服务 | 微服务/ | `[微服务]` | 22 |
-| Kafka | kafka/ | `[Kafka]` | 1 |
-| AI 应用开发 | AI/ | `[AI]` | 13 |
+| 系列 | 目录 | 落地页 | tags 主标签 | 文件数 |
+|------|------|--------|------------|--------|
+| Spring | spring/ | [目录](spring/) | `[Spring]` | 16 |
+| CSS | css/ | [目录](css/) | `[css]` | 12 |
+| JavaScript | js/ | [目录](js/) | `[js]` | 11 |
+| Vue | vue/ | [目录](vue/) | `[vue]` | 11 |
+| Three.js | threejs/ | [目录](threejs/) | `[threejs]` | 11 |
+| Java 并发 | java/ | [目录](java/) | `[Java]` | 8 |
+| 微服务 | 微服务/ | [目录](微服务/) | `[微服务]` | 22 |
+| Kafka | kafka/ | [目录](kafka/) | `[Kafka]` | 1 |
+| AI 应用开发 | AI/ | [目录](AI/) | `[AI]` | 13 |
+| Redis | redis/ | [目录](redis/) | `[Redis]` | 1 |
+| MySQL | mysql/ | [目录](mysql/) | `[MySQL]` | 1 |
 
 ### 1. Spring（spring/）★ 面试核心
 
@@ -170,6 +179,59 @@ LangChain AI 应用开发实战教程（智谱 GLM 版），全部基于 2025-10
 
 ## 更新记录
 
+- 2026-10-05：**新增 Redis / MySQL 两个系列**（各 1 篇剖析 + 1 个落地页）
+  ① `技术/redis/01-Redis-8.10-剖析-新数据结构与集群演进.md`：按版本讲清 8.0 → 8.10 的演进主线
+     （Vector Sets、Array、compact hash + `HIMPORT`、hash 字段 TTL 与 subkey 通知、流幂等
+     `IDMP` 与 `XNACK`、原子槽迁移的两阶段握手），附各版本官方性能数字与 15 条升级陷阱。
+     ※ 核对官方文档后纠正了三个常见说法：**最新版是 8.10.2**（不是 8.0/8.2）；许可是
+     **RSALv2 / SSPLv1 / AGPLv3 三选一**（不是"只有 AGPLv3"）；**hash 字段 TTL 是 7.4 的特性**
+     （不是 8.x），而流传的 `HSCANNOVALUES` 命令**并不存在**。
+  ② `技术/mysql/01-MySQL-9.7-剖析-LTS-VECTOR-升级暗礁.md`：**9.7 是 9.x 的第一个 LTS**，
+     也正是 9.0~9.6 所有"移除"落地的地方（LTS 内部之后不再移除）；含日历版本号 26.7/26.10、
+     Hypergraph 优化器进社区版、VECTOR 的真实边界（社区版不能建索引、也没有官方距离函数）、
+     企业版专属的 JavaScript 存储程序、以及 17 条会让启动失败或查询结果变化的升级暗礁。
+  ③ 新增一套系列要动的地方一次改齐（少一步就会掉进「田头空地」或在首页看不到入口）：
+     `script.js` 的 `TAG_META`/`FORMAL`、`_config.yml` 的 `series_titles`、
+     首页 `index.html` 的「系列目录」两行、本文件的目录总览与系列导航表。
+  ④ 两篇都只写**能在官方文档逐条核对**的内容；官方没写、或官方两处自相矛盾的点
+     （如「What Is New in MySQL 9.7」与 9.5 release notes 对"移除项"的说法不一致、
+     `search-workers` 默认值在配置文档与 whats-new 里冲突）在正文标 `[未确认]`，不猜。
+  ⑤ 配了 7 张架构图（Redis 4 张：版本时间线 / compact hash 内存结构 / 原子槽迁移两阶段 /
+     XNACK 的 PEL 排序；MySQL 3 张：LTS 与 Innovation 双轨 + 日历版本号 / VECTOR 能力边界 /
+     9.x 移除时间线），放在各自的 `images/` 下，正文用 `![图 x-y：…](images/xx.svg)` 引用。
+     ※ 这些图是脚本生成后直接提交的静态 SVG（本项目一贯零构建，图不当构建产物）；
+     要改就手改 SVG，注意两点：**`<svg>` 必须带 `xmlns`**（否则 `<img>` 加载渲染成空白，
+     `_config.yml` 里点过这个坑），以及**整图铺了一层深色底板**（`#0d1117`）——
+     因为图里有大量框外文字，浅色字只有放深底上才清楚，改配色时别只改框。
+- 2026-10-05：**给全部正文补上 date / last_modified_at，并把像素字体搬到本地**
+  ① 108 篇正文原来只有 4 篇带 `date`，于是 sitemap 的 lastmod 只能写构建时间、
+     JSON-LD 缺 datePublished、首页卡片一律显示「未标日期」。现在按 git 历史补齐：
+     `date` = 首次提交日期，`last_modified_at` = 最后一次提交日期（精确到天，
+     不加引号），sitemap 的 lastmod 与 JSON-LD 的 dateModified 都读后者。
+     ⚠ 副作用：首页排序按新日期重排，3 篇 2024 年的农场日记从最前挪到了最后。
+  ② 像素字体 Press Start 2P 改为自托管（`assets/fonts.css` + `assets/fonts/*.woff2`，
+     OFL 许可证随附）：去掉 fonts.googleapis.com 的两个 preconnect 和一个阻塞样式表，
+     全站再无第三方请求 —— Core Web Vitals 是排名因素，字体又是首屏文字必需的。
+- 2026-10-04：**SEO 整改**（详见 `_layouts/default.html` 顶部与各文件的注释）
+  ① 修 JSON-LD：原来把 jsonify 过滤器写在了引号里面（值外面还包了一层引号），
+     会输出成双双引号，109 个页面的结构化数据全是非法 JSON，搜索引擎整段丢弃
+     （已线上验证）。现在 jsonify 只用在「值」的位置，并补上 image /
+     datePublished / isPartOf 与 BreadcrumbList（首页 › 系列 › 本篇）。
+  ② 每页唯一 description：原来所有页面共用 `site.description` 同一句话，
+     现在优先 front matter，其次正文前 150 字（`escape_once` 防止引号截断属性）。
+  ③ 每页只留一个 h1：文档页木牌上的站名由 `h1` 改成 `div.sign-title`，
+     正文的章节标题成为唯一 h1（以前每页两个 h1，且一个是全站相同的站名）。
+  ④ 新增 9 个**系列落地页**（`技术/<系列>/index.md` → `/技术/<系列>/`）：
+     面包屑与内链改指真实 URL，首页新增服务端渲染的「系列目录」——
+     菜园子的田块是脚本生成的，爬虫在首页 HTML 里原本看不到任何系列入口。
+  ⑤ 首页文档列表不再写 `hidden`，改由脚本初始化时隐藏：无 JS / 只抓 HTML
+     也能看到全部 108 篇（以前等于从页面上消失）。
+  ⑥ 新增 `atom.xml` 订阅源 + `rel=alternate`（jekyll-feed 只认 `_posts`，用不了）。
+  ⑦ sitemap 的 `lastmod` 只在有真实 `date` 时输出：原来 105 篇每次构建都变成
+     「刚刚修改过」，搜索引擎对一贯不准的 lastmod 是整体忽略的。
+  ※ 以上两条改动本身也踩过一次坑：正文里直接写 Liquid 的插值和 raw 标记，
+    渲染时它们会被当成真标签执行／吞掉正文。写这类说明时按 _config.yml 末尾
+    的做法用 raw 包起来，或者像现在这样改成文字描述。
 - 2026-10-04：**修一批「收录口径 / 站内导航 / 分享卡片」的问题**（细节都写在对应文件的注释里）
   ① 文档页面包屑原来用「目录名」生成深链，只有两段路径的文档（`农场日记/*.md`、本文件）
     会把**文件名**当系列名：面包屑显示成「巨型南瓜.md」、链接指向 `#crop=巨型南瓜.md` 这块
@@ -183,8 +245,8 @@ LangChain AI 应用开发实战教程（智谱 GLM 版），全部基于 2025-10
     `git-proxy.cmd`、`技术/html_backup/` 不再进 `_site`。
   ⑤ 农场日记 3 篇原来各挂一个「收获 / 像素风 / 冒险」当主标签，于是散成三块只有 1 篇的试验田；
     现统一主标签为「农场日记」，原标签退到第二位只做装饰。
-  ⑥ 修掉 `技术/vue/10-Vue面试速查与常见坑.md` 里嵌套的 `{% raw %}` —— 外层 raw 块里又写了
-    一个 `{% raw %}`，它被当成正文原样渲染（线上那一段代码里能看到 `{% raw %}` 字样）。
+  ⑥ 修掉 `技术/vue/10-Vue面试速查与常见坑.md` 里嵌套的 raw 标记 —— 外层 raw 块里又写了
+    一个，于是它被当成正文原样渲染（线上那一段代码里能看到 raw 字样）。
 - 2026-09-22：新增 AI（13 文件）——LangChain 1.0 + 智谱 GLM 实战教程：Prompt/结构化输出/LCEL/RAG/Agent/LangGraph/生产化，含练习答案与名词速查表；源码在 F:\Demo\AI_project\ai教程-glm
   整批掉进首页「田头空地」；现全部补 `tags: [系列名]`，并在 script.js 的 TAG_META 里
   登记 JS / Vue / Three.js 三块新田的显示名与 emoji

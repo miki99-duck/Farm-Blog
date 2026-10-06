@@ -1,4 +1,6 @@
 ---
+date: 2026-09-22
+last_modified_at: 2026-09-22
 title: "第2章 线程安全三大问题与 volatile"
 tags: [Java]
 ---

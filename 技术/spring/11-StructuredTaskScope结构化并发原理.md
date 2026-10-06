@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第11章 结构化并发（StructuredTaskScope）原理"
 tags: [Spring]
 ---

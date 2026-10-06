@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第9章 Spring 最新版本新特性详解"
 tags: [Spring]
 ---

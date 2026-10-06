@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第13章 Spring Security 7 详解"
 tags: [Spring]
 ---

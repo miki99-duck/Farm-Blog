@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第2章 IoC 容器与 Bean 生命周期"
 tags: [Spring]
 ---

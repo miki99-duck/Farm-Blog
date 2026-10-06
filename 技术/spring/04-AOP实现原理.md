@@ -1,4 +1,6 @@
 ---
+date: 2026-09-20
+last_modified_at: 2026-09-20
 title: "第4章 AOP 实现原理"
 tags: [Spring]
 ---

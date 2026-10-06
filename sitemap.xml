@@ -12,27 +12,31 @@ layout: null
   </url>
   {%- comment -%}
     收录所有参与列表的文档页（与 index.html 的 skipdirs 保持一致）。
-    排除：资源目录、html_backup、目录索引 README、404 页、以及 sitemap.xml 自身
+    排除：资源目录、html_backup、目录索引 README、404 页、订阅源、以及 sitemap.xml 自身
     （它也是 site.pages 里的一页，不排除会把自己写进结果）。
-    404.html 必须排除，否则「不存在的地址」会被当成正常页面提交给搜索引擎。
+    404.html / atom.xml 必须排除，否则「不存在的地址」和订阅源会被当成正常页面提交。
+    这里按文件名硬排除，不读 front matter 的 sitemap: false —— 那是 jekyll-sitemap
+    插件的约定，本站用的是自己写的这份模板。
+    lastmod 优先 last_modified_at（最后修改），退回 date（首次提交），两个都没有就整条不输出 ——
+    搜索引擎对一贯不准的 lastmod 是整体忽略的，与其写个假的构建时间不如不给。
+    现在全站文章都有这两个字段：由 git 历史生成（首次提交 / 最后提交，精确到天）。
+    首页那条仍用 site.time，因为只要新增一篇文档首页就真的变了。
   {%- endcomment -%}
   {%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
   {%- for page in site.pages -%}
   {%- assign segs = page.path | split: "/" -%}
   {%- assign top = segs | first -%}
   {%- assign keep = true -%}
-  {%- if page.name == "index.html" or page.name == "sitemap.xml" or page.name == "README.md" or page.name == "404.html" -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if page.name == "index.html" or page.name == "sitemap.xml" or page.name == "atom.xml" or page.name == "README.md" or page.name == "404.html" -%}{%- assign keep = false -%}{%- endif -%}
   {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
   {%- if keep %}
   <url>
     <loc>{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}</loc>
-    {% if page.date %}
-    <lastmod>{{ page.date | date: "%Y-%m-%d" }}</lastmod>
-    {% else %}
-    <lastmod>{{ site.time | date: "%Y-%m-%d" }}</lastmod>
+    {% if page.last_modified_at or page.date %}
+    <lastmod>{{ page.last_modified_at | default: page.date | date: "%Y-%m-%d" }}</lastmod>
     {% endif %}
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>{% if page.hub %}0.9{% else %}0.8{% endif %}</priority>
   </url>
   {%- endif -%}
   {%- endfor %}

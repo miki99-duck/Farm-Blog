@@ -1,3 +1,76 @@
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════
+  同系列识别 / 上一章·下一章 / 面包屑 / SEO 元数据，统一在这里算完。
+  以前这段在 <body> 里，head 里的 <title> 之外的元数据拿不到它，
+  于是 JSON-LD 只能用站点级的 description（109 页一模一样）。
+  ══════════════════════════════════════════════════════════════
+{%- endcomment -%}
+{%- assign segs = page.path | split: '/' -%}
+{%- assign primary_tag = page.tags | first | default: '' -%}
+{%- assign by_dir = false -%}
+{%- if segs.size > 2 -%}{%- assign by_dir = true -%}{%- endif -%}
+{%- if page.series -%}
+  {%- assign series_pages = site.pages | where: "series", page.series | sort: "path" -%}
+  {%- assign series_title = page.series -%}
+{%- elsif by_dir -%}
+  {%- assign series_dir = segs[0] | append: '/' | append: segs[1] -%}
+  {%- assign series_pages = site.pages | where_exp: "p", "p.path contains series_dir" | sort: "path" -%}
+  {%- assign series_title = site.series_titles[segs[1]] | default: segs[1] -%}
+{%- else -%}
+  {%- assign series_pages = site.pages | where_exp: "p", "p.tags contains primary_tag" | sort: "path" -%}
+  {%- assign series_title = site.series_titles[primary_tag] | default: primary_tag -%}
+{%- endif -%}
+{%- assign series_tag = primary_tag | downcase -%}
+{%- assign prev_doc = nil -%}
+{%- assign next_doc = nil -%}
+{%- assign seen = false -%}
+{%- for p in series_pages -%}
+  {%- if p.path == page.path -%}
+    {%- assign seen = true -%}
+  {%- elsif seen -%}
+    {%- if next_doc == nil -%}{%- assign next_doc = p -%}{%- endif -%}
+  {%- else -%}
+    {%- assign prev_doc = p -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- comment -%}
+  系列落地页：技术/<系列>/index.md。存在就优先拿它做面包屑和内链目标，
+  不存在（农场日记、技术/README.md 这类）再退回首页的 #crop=<主标签> 深链。
+  为什么要有落地页：哈希 URL 不是独立页面，拿不到内链权重，也没法单独做标题；
+  而菜园子的田块是 JS 现生成的，爬虫在首页看不到任何系列入口。
+  页面自己就是落地页时（hub_url == page.url）不再自链。
+{%- endcomment -%}
+{%- assign hub_url = '' -%}
+{%- if by_dir -%}
+  {%- assign hub_rel = series_dir | append: '/index.md' -%}
+  {%- for p in site.pages -%}
+    {%- if p.path == hub_rel -%}
+      {%- assign hub_url = p.url -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- assign hub_in_crumb = false -%}
+{%- if by_dir and hub_url != '' and hub_url != page.url -%}{%- assign hub_in_crumb = true -%}{%- endif -%}
+{%- comment -%}
+  SEO 三件套：
+  ① canonical / og:url 用同一个变量，避免两处拼错不一致；
+  ② 每页唯一的 description —— 优先 front matter，其次正文前 150 字
+     （strip_html 后取，截断加省略号）。以前所有页面共用 site.description，
+     109 个页面同一句描述，搜索结果里等于没有描述；escape_once 是为了
+     正文里出现的半角引号不会把 content="" 属性截断；
+  ③ JSON-LD 见下面的 @graph，注意 jsonify 只能用在「值」的位置，
+     不能写成 "key": "{{ x | jsonify }}" —— 那样会输出成 ""值""，整段 JSON
+     非法，搜索引擎会直接丢弃（线上 109 页当时全是这个状态）。
+{%- endcomment -%}
+{%- assign canonical = site.url | append: site.baseurl | append: page.url | remove: 'index.html' -%}
+{%- assign home_abs = site.url | append: site.baseurl | append: '/' -%}
+{%- assign og_image_abs = site.url | append: site.baseurl | append: site.og_image -%}
+{%- assign hub_abs = site.url | append: site.baseurl | append: hub_url -%}
+{%- assign seo_desc = page.description | default: page.summary -%}
+{%- if seo_desc == nil or seo_desc == '' -%}
+  {%- assign seo_desc = content | strip_html | strip_newlines | replace: '  ', ' ' | strip | truncate: 150 -%}
+{%- endif -%}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,7 +78,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
 <title>{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}</title>
-<meta name="description" content="{{ page.description | default: site.description }}">
+<meta name="description" content="{{ seo_desc | escape_once }}">
 <meta name="keywords" content="{% if page.tags %}{% for tag in page.tags %}{{ tag }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endif %}, 星露谷农场日志, 技术笔记, 博客">
 <meta name="author" content="{{ site.author }}">
 <meta name="robots" content="index, follow">
@@ -14,19 +87,25 @@
 <meta name="apple-mobile-web-app-title" content="星露谷农场日志">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
 <!-- canonical URL -->
-<link rel="canonical" href="{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}">
+<link rel="canonical" href="{{ canonical }}">
+<!-- 订阅源：atom.xml 由本仓库自己生成（jekyll-feed 只认 _posts，
+     本站内容都在 site.pages，所以不能用它） -->
+<link rel="alternate" type="application/atom+xml" title="星露谷农场日志" href="{{ '/atom.xml' | relative_url }}">
 <!-- Open Graph -->
-<meta property="og:type" content="article">
+<meta property="og:type" content="{% if page.hub %}website{% else %}article{% endif %}">
 <meta property="og:title" content="{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}">
-<meta property="og:description" content="{{ page.description | default: site.description }}">
-<meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}">
-<meta property="og:image" content="{{ site.url }}{{ site.baseurl }}{{ site.og_image }}">
+<meta property="og:description" content="{{ seo_desc | escape_once }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:image" content="{{ og_image_abs }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="星露谷农场日志">
 <meta property="og:locale" content="zh_CN">
 {% if page.date %}
 <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+{% endif %}
+{% if hub_in_crumb %}
+<meta property="article:section" content="{{ series_title }}">
 {% endif %}
 {% if page.tags %}
 {% for tag in page.tags %}
@@ -37,42 +116,70 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="{{ site.twitter_handle }}">
 <meta name="twitter:title" content="{% if page.title %}{{ page.title }} · 星露谷农场日志{% else %}星露谷农场日志{% endif %}">
-<meta name="twitter:description" content="{{ page.description | default: site.description }}">
-<meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}{{ site.og_image }}">
-<!-- JSON-LD 结构化数据 -->
+<meta name="twitter:description" content="{{ seo_desc | escape_once }}">
+<meta name="twitter:image" content="{{ og_image_abs }}">
+<!-- JSON-LD 结构化数据：@graph 里是「文章/集合页 + 面包屑」两个独立对象，
+     每个分支自己带结尾逗号，这样任何条件分支下 JSON 都合法。
+     自查：把页面里的这段贴进任意 JSON 校验器，或
+       node -e "const h=require('fs').readFileSync(0,'utf8');JSON.parse(h.match(/application\/ld\+json\">([\s\S]*?)<\/script>/)[1])" -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "{{ page.title | default: site.title | jsonify }}",
-  "description": "{{ page.description | default: site.description | jsonify }}",
-  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}",
-  "mainEntityOfPage": "{{ site.url }}{{ site.baseurl }}{{ page.url | remove: 'index.html' }}",
-{% if page.date %}
-  "datePublished": "{{ page.date | date_to_xmlschema }}",
-{% endif %}
-{% if page.tags %}
-  "keywords": [
-{% for tag in page.tags %}
-    "{{ tag | jsonify }}"{% unless forloop.last %},{% endunless %}
-{% endfor %}
-  ],
-{% endif %}
-  "author": {
-    "@type": "Person",
-    "name": "{{ site.author | jsonify }}",
-    "url": "{{ site.author_url | jsonify }}"
-  },
-  "publisher": {
-    "@type": "Person",
-    "name": "{{ site.author | jsonify }}"
-  },
-  "inLanguage": "zh-CN"
+  "@graph": [
+{%- if page.hub %}
+    {
+      "@type": "CollectionPage",
+      "@id": {{ canonical | jsonify }},
+      "name": {{ page.title | jsonify }},
+      "description": {{ seo_desc | jsonify }},
+      "url": {{ canonical | jsonify }},
+      "inLanguage": "zh-CN",
+      "author": { "@type": "Person", "name": {{ site.author | jsonify }}, "url": {{ site.author_url | jsonify }} },
+      "isPartOf": { "@type": "WebSite", "name": {{ site.title | jsonify }}, "url": {{ home_abs | jsonify }} }
+    },
+{%- else %}
+    {
+      "@type": "Article",
+      "headline": {{ page.title | default: site.title | jsonify }},
+      "description": {{ seo_desc | jsonify }},
+      "url": {{ canonical | jsonify }},
+      "mainEntityOfPage": { "@type": "WebPage", "@id": {{ canonical | jsonify }} },
+      "image": [{{ og_image_abs | jsonify }}],
+      "inLanguage": "zh-CN",
+      "author": { "@type": "Person", "name": {{ site.author | jsonify }}, "url": {{ site.author_url | jsonify }} },
+      "publisher": { "@type": "Person", "name": {{ site.author | jsonify }} },
+      "isPartOf": { "@type": "WebSite", "name": {{ site.title | jsonify }}, "url": {{ home_abs | jsonify }} },
+{%- if page.date %}
+      "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+      "dateModified": {{ page.last_modified_at | default: page.date | date_to_xmlschema | jsonify }},
+{%- endif %}
+      "keywords": {{ page.tags | jsonify }}
+    },
+{%- endif %}
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": {{ site.title | jsonify }}, "item": {{ home_abs | jsonify }} }
+{%- if hub_in_crumb -%}
+,
+        { "@type": "ListItem", "position": 2, "name": {{ series_title | jsonify }}, "item": {{ hub_abs | jsonify }} },
+        { "@type": "ListItem", "position": 3, "name": {{ page.title | jsonify }}, "item": {{ canonical | jsonify }} }
+{%- else -%}
+,
+        { "@type": "ListItem", "position": 2, "name": {{ page.title | default: site.title | jsonify }}, "item": {{ canonical | jsonify }} }
+{%- endif %}
+      ]
+    }
+  ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- 像素字体自托管：以前这里是两个 preconnect + 一个 fonts.googleapis.com 的
+     阻塞样式表，是全站唯一的第三方请求。现在只有同源的 12KB woff2，
+     preload 让它在首屏文字渲染前就开始下载（crossorigin 必须写，
+     否则预加载和真正取字体是两次不同模式的请求，等于白下）。 -->
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="{{ '/assets/fonts/press-start-2p-latin.woff2' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/fonts.css' | relative_url }}">
 <!-- GoatCounter 全站统计：无 cookie、无 IP 存储，免费 ≤5000 页/月。
      首页 index.html 里也有一份同样的脚本，改的时候两边都要改 ——
      两边不一致会导致「首页访问不计、只有文档页计」这种半残统计。
@@ -216,7 +323,9 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
     linear-gradient(#8f5f33, #6b3f1d);
   box-shadow:inset 0 3px 0 rgba(255,220,160,.35), inset 0 -5px 0 rgba(0,0,0,.22), 0 6px 0 rgba(0,0,0,.3);
 }
-.blog-sign h1{
+/* 站名不是 h1（正文的 # 标题才是），但视觉不变 —— 两个选择器共用一套规则 */
+.blog-sign h1,
+.blog-sign .sign-title{
   margin:0; font-family:var(--pixel); font-size:17px; line-height:1.5;
   letter-spacing:2px; color:#ffe9b8;
   text-shadow:2px 2px 0 var(--wood-700), 4px 4px 0 rgba(0,0,0,.2);
@@ -448,6 +557,24 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .prose strong{ color:var(--wood-900); }
 .prose img{ max-width:100%; height:auto; }
 
+/* ---------- 系列落地页（技术/<系列>/index.md）的章节清单 ----------
+   这些页面是爬虫从首页进入各系列的入口：菜园子的田块是 JS 现生成的，
+   服务端渲染的 HTML 里本来一个系列链接都没有。 */
+.hub-list{ list-style:none; margin:18px 0 26px; padding:0; }
+.hub-item{
+  position:relative; margin:0 0 10px; padding:11px 14px;
+  background:var(--paper-light);
+  border:3px solid var(--wood-300); border-left:6px solid var(--wood-400); border-radius:4px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.55), 3px 3px 0 rgba(0,0,0,.14);
+}
+.hub-link{
+  display:inline-block; font-size:15px; font-weight:700; line-height:1.6;
+  color:var(--wood-900); text-decoration:none;
+}
+.hub-link:hover{ text-decoration:underline; }
+.hub-meta{ margin-left:8px; font-size:11px; color:var(--wood-500); }
+.hub-sum{ margin:5px 0 0; font-size:12.5px; line-height:1.7; color:var(--ink-soft); }
+
 /* 长文档顶部进度条 */
 .progress{
   position:fixed; left:0; top:0; height:4px; width:0;
@@ -500,7 +627,8 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   body{ padding:12px max(9px, env(safe-area-inset-right)) 46px max(9px, env(safe-area-inset-left)); font-size:15px; background-size:16px 16px; }
   .prose pre{ font-size:12px; padding:12px 12px; }
   .prose pre code{ font-size:12px; }
-  .blog-sign h1{ font-size:14px; }
+  .blog-sign h1,
+  .blog-sign .sign-title{ font-size:14px; }
   /* 手机上别挡住正文右下角的字，缩小并往角上收（叠加安全区） */
   #back-to-top{
     right:calc(12px + env(safe-area-inset-right));
@@ -526,70 +654,26 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 <div class="wrap">
 
   {%- comment -%}
-    按路径找出「同系列」的文档，用来做面包屑和上一章 / 下一章。
-    刻意用 path 而不是 dir —— Page#dir 是从已编码的 url 派生的，
-    中文目录会变成 %E6%8A%80%E6%9C%AF；page.path 拼的是原始 @dir。
-    （_config.yml 里也记着这条坑。）
-
-    分组键优先用 front matter 的 series，没有才退回目录名。
-    为什么需要这个：微服务/ 是扁平目录里塞了两个并行系列
-    （「微服务组件」17 篇 + 「四大难题」5 篇），只按目录分组会把
-    两者按文件名编号交错在一起，上一章 / 下一章会串到另一个系列去。
-
-    排序用 path 升序：文件名的序号前缀（00/01/…/16）在字符串序下
-    就是章节序，序号补零到两位，所以不存在 10 排在 2 前面。
-
-    ⚠ 目录分组只对「顶层/系列/文件」三段路径成立（技术/spring/01-x.md）。
-    路径只有两段的文档 —— 农场日记/*.md、技术/README.md —— 曾经会把
-    「文件自身路径」当成分组键（series_dir = 农场日记/巨型南瓜.md），
-    于是面包屑显示成「巨型南瓜.md」、链接指向 #crop=巨型南瓜.md 这块
-    根本不存在的田（首页显示空田占位），上一章 / 下一章也全部消失。
-    现在两段路径改按「主标签」分组（与首页 primaryOf() 同一套口径）。
+    系列识别（segs / series_pages / series_title / series_tag）、上一章·下一章、
+    hub_url、seo_desc、canonical 现在都在文件最上面统一算完 —— head 里的
+    JSON-LD、面包屑、上一章·下一章要用同一批变量，分两处算迟早漂移。
+    这里只负责渲染。
   {%- endcomment -%}
-  {%- assign segs = page.path | split: '/' -%}
-  {%- assign primary_tag = page.tags | first | default: '' -%}
-  {%- assign by_dir = false -%}
-  {%- if segs.size > 2 -%}{%- assign by_dir = true -%}{%- endif -%}
-  {%- if page.series -%}
-    {%- assign series_pages = site.pages | where: "series", page.series | sort: "path" -%}
-    {%- assign series_title = page.series -%}
-  {%- elsif by_dir -%}
-    {%- assign series_dir = segs[0] | append: '/' | append: segs[1] -%}
-    {%- assign series_pages = site.pages | where_exp: "p", "p.path contains series_dir" | sort: "path" -%}
-    {%- assign series_title = site.series_titles[segs[1]] | default: segs[1] -%}
-  {%- else -%}
-    {%- assign series_pages = site.pages | where_exp: "p", "p.tags contains primary_tag" | sort: "path" -%}
-    {%- assign series_title = site.series_titles[primary_tag] | default: primary_tag -%}
-  {%- endif -%}
-  {%- comment -%}
-    面包屑链到首页的标签筛选，而不是目录地址：
-    技术/spring/ 没有 index.html，直接链过去是 404（GitHub Pages 不做目录列表）。
-    首页的 #crop=<tag> 是现成的深链，正好把那个系列筛出来。
-
-    用「主标签」而不是目录名生成深链：首页判定一篇属于哪块田，看的就是
-    tags 的第一个标签，所以 #crop=<主标签> 必然能筛到当前这篇（不会是空田），
-    而 #crop=<目录名> 在目录名 ≠ 标签名时会指向不存在的田。
-    tag 一律小写，对齐 script.js 里 primaryOf() 的 toLowerCase()。
-    没有 tags 的文档干脆不渲染面包屑链接（series_tag 为空走另一分支）。
-  {%- endcomment -%}
-  {%- assign series_tag = primary_tag | downcase -%}
-  {%- assign prev_doc = nil -%}
-  {%- assign next_doc = nil -%}
-  {%- assign seen = false -%}
-  {%- for p in series_pages -%}
-    {%- if p.path == page.path -%}
-      {%- assign seen = true -%}
-    {%- elsif seen -%}
-      {%- if next_doc == nil -%}{%- assign next_doc = p -%}{%- endif -%}
-    {%- else -%}
-      {%- assign prev_doc = p -%}
-    {%- endif -%}
-  {%- endfor -%}
 
   <header class="hud">
     <a class="hud-chip hud-home" href="./" data-url="{{ page.url }}">◂ 返回农场</a>
-    {%- if series_tag != '' %}
+    {%- comment -%}
+      面包屑：有系列落地页就链落地页（真实 URL，能被单独收录），
+      没有（农场日记、技术/README.md）才退回首页的 #crop=<主标签> 深链。
+      深链用主标签而不是目录名：首页判定归属看的就是 tags 第一个标签，
+      所以它必然能筛到当前这篇，不会落到空田。
+    {%- endcomment -%}
+    {%- if hub_in_crumb %}
+    <a class="hud-chip hud-crumb" href="{{ hub_url | relative_url }}" title="进入「{{ series_title }}」系列目录">{{ series_title }}</a>
+    {%- elsif series_tag != '' %}
     <a class="hud-chip hud-crumb" href="{{ '/' | relative_url }}#crop={{ series_tag }}" title="在首页筛选「{{ series_title }}」系列">{{ series_title }}</a>
+    {%- endif %}
+    {%- if hub_in_crumb or series_tag != '' %}
     <span class="hud-chip hud-crumb-here">📄 {{ page.title | default: page.name }}</span>
     {%- else %}
     <span class="hud-chip">📄 {{ page.title | default: page.name }}</span>
@@ -597,7 +681,12 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   </header>
 
   <div class="blog-sign">
-    <h1>{{ site.title }}</h1>
+    {%- comment -%}
+      这里刻意用 div 而不是 h1：正文自己已经有一个 h1（.md 里的第一个 # 标题），
+      再加一个全站字字相同的站名 h1，等于每页两个 h1 且主标题被稀释。
+      样式靠 .sign-title 复用原来的 .blog-sign h1 规则。
+    {%- endcomment -%}
+    <div class="sign-title">{{ site.title }}</div>
     <p>STARDEW VALLEY · FARM DOCS</p>
   </div>
 
@@ -616,11 +705,13 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   {%- comment -%}
     上一章 / 下一章：同系列内按 path 排序的前后一篇。
     长系列（spring 16 篇、AI 13 篇）读完一篇不用退回首页重找。
-    数据全部来自上面的 series_pages，没有新增 Jekyll 数据源。
+    数据全部来自上面算好的 series_pages，没有新增 Jekyll 数据源。
     首末篇只有一个链接，不留空位。
+    系列落地页（page.hub）本身是目录，不参与前后篇。
     注意必须放在 .doc-layout 之外 —— 那个容器是两列 grid，
     多一个直接子元素会被当成第三列排到目录右边去。
   {%- endcomment -%}
+  {%- if page.hub -%}{%- assign prev_doc = nil -%}{%- assign next_doc = nil -%}{%- endif -%}
   {%- if prev_doc or next_doc %}
   <nav class="doc-nav" aria-label="同系列前后篇">
     {%- if prev_doc %}

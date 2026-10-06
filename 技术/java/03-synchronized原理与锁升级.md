@@ -1,4 +1,6 @@
 ---
+date: 2026-09-22
+last_modified_at: 2026-09-22
 title: "第3章 synchronized 原理与锁升级"
 tags: [Java]
 ---

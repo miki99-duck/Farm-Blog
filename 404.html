@@ -15,10 +15,12 @@ permalink: /404.html
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#2e1a0c">
 <title>这块地没种东西 · 星露谷农场日志</title>
-<!-- 复用首页那套样式与像素字体，404 页才不会看起来像另一个站点的 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- 复用首页那套样式与像素字体，404 页才不会看起来像另一个站点的。
+     字体同样是自托管的（见 assets/fonts.css）：404 页可能出现在任意深度的
+     地址上，所以这里的路径必须走 relative_url，不能用相对路径。 -->
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="{{ '/assets/fonts/press-start-2p-latin.woff2' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/fonts.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
 <style>
   /* 404 页专用：把内容压到一屏中间，别再拉出热键栏那套布局 */

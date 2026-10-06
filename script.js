@@ -197,6 +197,7 @@
     'threejs': { name:'Three.js', emoji:'🧊' },
     'ai':      { name:'AI',      emoji:'🤖' },
     'kafka':   { name:'Kafka',   emoji:'📨' },
+    'redis':   { name:'Redis',   emoji:'🧱' },
     'mysql':   { name:'MySQL',   emoji:'🐬' },
     'nginx':   { name:'Nginx',   emoji:'🌐' },
     '矿洞':    { name:'矿洞',    emoji:'⛏️' },
@@ -207,12 +208,16 @@
     '前端':    { name:'前端',    emoji:'🖥️' }
   };
   /* FORMAL 也要全小写，且必须与 TAG_META 的键、以及文档里 tags 的小写形式一致。
-     有内容的系列放前面；mysql / nginx 目前 0 篇，先留作占位田（会显示成灰的「尚未开垦」）。
+     有内容的系列放前面；nginx 目前 0 篇，先留作占位田（会显示成灰的「尚未开垦」）。
+     新增一套教程时：这里加标签名（全小写）、TAG_META 里配 name/emoji、
+     _config.yml 的 series_titles 里配系列显示名，再补一个 技术/<系列>/index.md
+     落地页和首页 index.html 的「系列目录」一行 —— 少一步就会掉进「田头空地」
+     或者在首页看不到入口（2026-09 已经踩过一次）。
      想调整哪几块进正式田，只改这个数组即可，顺序就是显示顺序。
      农场日记：3 篇日记原本各挂一个「收获 / 像素风 / 冒险」当主标签，于是散成
      三块只有 1 篇的试验田；现在统一把主标签换成「农场日记」合成一块正式田，
      原来的 收获 / 秋季 / 矿洞 / 冒险 / 像素风 退到 tags 第二位，只当装饰标签用。 */
-  var FORMAL = ['微服务', 'spring', 'java', 'css', 'js', 'vue', 'threejs', 'ai', '农场日记', 'mysql', 'nginx'];
+  var FORMAL = ['微服务', 'spring', 'java', 'css', 'js', 'vue', 'threejs', 'ai', 'redis', 'mysql', '农场日记', 'nginx'];
   var ALL_ITEM = { name:'全部收成', emoji:'📚' };
   var NONE_ITEM = { name:'田头空地', emoji:'❔' };
   var KEY_ALL = '__all__', KEY_NONE = '__none__';

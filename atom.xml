@@ -1,0 +1,57 @@
+---
+# Atom 订阅源。
+# ⚠ 为什么是 atom.xml 而不是 feed.xml：GitHub Pages 内建插件集里有 jekyll-feed，
+#    它也会生成一个 /feed.xml；两个页面写同一个目标文件会互相覆盖（还可能告警）。
+#    换个文件名就完全避开冲突，同时 <link rel="alternate"> 照常指向它。
+# 为什么不用 jekyll-feed 自身：它只遍历 _posts，而本站 108 篇内容全部是 site.pages
+#    （见 _config.yml 里「为什么首页列表刻意不用 where 过滤器」那段历史）。
+# 收录口径与首页 index.html 保持一致：排除首页自身、404、sitemap、README 索引页。
+layout: null
+listed: false
+sitemap: false
+---
+{%- assign skipdirs = "assets,audio,images,html_backup,music,node_modules,vendor,_layouts,_site,.git" | split: "," -%}
+{%- assign dated = "" | split: "|" -%}
+{%- assign undated = "" | split: "|" -%}
+{%- for p in site.pages -%}
+  {%- assign segs = p.path | split: "/" -%}
+  {%- assign top = segs | first -%}
+  {%- assign keep = true -%}
+  {%- if p.url == "/" or p.name == "index.html" or p.name == "404.html" or p.name == "sitemap.xml" or p.name == "README.md" or p.listed == false -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if segs.size > 1 and skipdirs contains top -%}{%- assign keep = false -%}{%- endif -%}
+  {%- if keep -%}
+    {%- if p.date -%}{%- assign dated = dated | push: p -%}{%- else -%}{%- assign undated = undated | push: p -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign dated = dated | sort: "date" | reverse -%}
+{%- assign undated = undated | sort: "path" -%}
+{%- assign docs = dated | concat: undated -%}
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>星露谷农场日志</title>
+  <subtitle>{{ site.description | xml_escape }}</subtitle>
+  <link href="{{ site.url }}{{ site.baseurl }}/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="{{ site.url }}{{ site.baseurl }}/" rel="alternate" type="text/html"/>
+  <id>{{ site.url }}{{ site.baseurl }}/</id>
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+  <author>
+    <name>{{ site.author | xml_escape }}</name>
+    <uri>{{ site.author_url }}</uri>
+  </author>
+  {%- comment -%}
+    只放最近 40 篇：本站多数文档没有 date，逐篇 updated 只能退化成构建时间，
+    全量 108 条会让阅读器天天显示「有更新」。40 条足够覆盖新增内容。
+  {%- endcomment -%}
+  {%- for d in docs limit: 40 %}
+  <entry>
+    <title type="text">{{ d.title | default: d.name | xml_escape }}</title>
+    <link href="{{ site.url }}{{ site.baseurl }}{{ d.url | remove: 'index.html' }}" rel="alternate" type="text/html"/>
+    <id>{{ site.url }}{{ site.baseurl }}{{ d.url | remove: 'index.html' }}</id>
+    <updated>{% if d.date %}{{ d.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}</updated>
+    <summary type="text">{{ d.summary | default: d.description | default: d.content | strip_html | strip_newlines | strip | truncate: 200 | xml_escape }}</summary>
+    {%- for tag in d.tags %}
+    <category term="{{ tag | xml_escape }}"/>
+    {%- endfor %}
+  </entry>
+  {%- endfor %}
+</feed>

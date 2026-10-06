@@ -64,6 +64,8 @@ series_titles:
   threejs: "Three.js"
   AI: "AI 应用开发"
   微服务: "微服务"
+  redis: "Redis"
+  mysql: "MySQL"
   农场日记: "农场日记"
 
 keywords:
@@ -148,10 +150,23 @@ kramdown:
 # 自查：Select-String -Path images\*.svg -Pattern '<svg' |
 #         Where-Object { $_.Line -notmatch 'xmlns' }
 #
-# ---- date 为什么不能加引号 ----
-# YAML 里裸写的 2024-10-15 解析成 Date 对象，加了引号就变成字符串。
+# ---- date / last_modified_at：格式与来源 ----
+# YAML 里裸写的 2026-09-22 解析成 Date 对象，加了引号就变成字符串。
 # Jekyll 的 sort 用 <=> 比较，两者混在一起会抛异常，直接导致整站构建失败。
-# 要么全部不加引号，要么全部加，别混。
+# 要么全部不加引号，要么全部加，别混 —— 本仓库统一「不加引号、只用年月日」。
+# ⚠ 也别和带时分的写法混用（2026-09-22 18:47:17 +0800 是 Time，跟 Date 比较同样会炸）。
+#
+# 两个字段的分工：
+#   date             = 首次提交日期（内容的「发表」时间，也是首页列表的排序键）
+#   last_modified_at = 最后一次提交日期（sitemap 的 lastmod、JSON-LD 的 dateModified）
+# 全站文章都有这两个字段，值由 git 历史生成，不是手写的：
+#   git log --reverse --diff-filter=A --format=%aI -- <文件>   # 取第一条 = date
+#   git log -1 --format=%aI -- <文件>                          # 取最新一条 = last_modified_at
+# 新增文档时不必手写；要么回头用同样的命令补，要么写一个你认可的真实日期。
+#
+# 已知的小瑕疵：同一批提交的文档日期完全相同（例如微服务 22 篇同属一次提交），
+# 并列项在首页的先后由 Jekyll 的 sort（非稳定排序）决定 —— 只影响并列区段内的顺序，
+# 不影响收录，也不影响任何一个链接。想彻底固定就得给每篇一个唯一时间戳，得不偿失。
 #
 # ---- 为什么首页列表刻意不用 where 过滤器 ----
 # Jekyll 3.10 的 where 会按 input.hash 记忆化结果：

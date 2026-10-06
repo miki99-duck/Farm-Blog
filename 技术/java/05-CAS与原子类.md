@@ -1,4 +1,6 @@
 ---
+date: 2026-09-22
+last_modified_at: 2026-09-22
 title: "第5章 CAS 与原子类"
 tags: [Java]
 ---
