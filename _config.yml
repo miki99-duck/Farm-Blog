@@ -150,6 +150,17 @@ kramdown:
 # 自查：Select-String -Path images\*.svg -Pattern '<svg' |
 #         Where-Object { $_.Line -notmatch 'xmlns' }
 #
+# ---- ⚠ 插图还要铺一层全画布深色底板（2026-10 统一） ----
+# 文档页正文底色是纸色（.prose = --paper #f8e8c0），而插图里的文字大多是
+# #e6edf3 / #8b949e 这类浅色 —— 画在透明底上只剩 1.03:1 对比度，等于看不见
+# （实测 48 张图里 41 张如此，每张图最先牺牲的都是标题）。
+# 所以每张图的 <svg> 之后、作为第一个子元素放：
+#   <rect x="0" y="0" width="宽" height="高" fill="#0d1117"/>
+# 例外：assets/og-image.svg 是分享卡片、本来就是亮色插画，不要加。
+# 两条自查一起跑（两条都为空才是对的）：
+#   Get-ChildItem 技术\*\images\*.svg | Where-Object { (Get-Content $_ -Raw) -notmatch 'xmlns' }
+#   Get-ChildItem 技术\*\images\*.svg | Where-Object { (Get-Content $_ -Raw) -notmatch '0d1117' }
+#
 # ---- date / last_modified_at：格式与来源 ----
 # YAML 里裸写的 2026-09-22 解析成 Date 对象，加了引号就变成字符串。
 # Jekyll 的 sort 用 <=> 比较，两者混在一起会抛异常，直接导致整站构建失败。

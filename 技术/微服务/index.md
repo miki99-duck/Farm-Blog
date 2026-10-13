@@ -5,6 +5,8 @@ description: "微服务系列目录：组件篇 17 讲（Gateway、Nacos、OpenF
 tags: [微服务]
 listed: false
 hub: true
+nav_title: "🧩 微服务组件与四大难题"
+nav_order: 3
 last_modified_at: 2026-10-05
 permalink: /技术/微服务/
 ---

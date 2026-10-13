@@ -5,6 +5,8 @@ description: "Three.js 系列目录：WebGL 与 Three.js 基础、几何体与�
 tags: [threejs]
 listed: false
 hub: true
+nav_title: "🧊 Three.js 3D 可视化"
+nav_order: 10
 last_modified_at: 2026-10-05
 permalink: /技术/threejs/
 ---

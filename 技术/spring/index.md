@@ -5,6 +5,8 @@ description: "Spring 系列目录：IoC 容器与 Bean 生命周期、AOP 实现
 tags: [Spring]
 listed: false
 hub: true
+nav_title: "🍃 Spring 面试核心原理"
+nav_order: 1
 last_modified_at: 2026-10-05
 permalink: /技术/spring/
 ---

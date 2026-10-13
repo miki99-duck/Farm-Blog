@@ -5,6 +5,8 @@ description: "MySQL 系列目录：9.7 作为 9.x 首个 LTS 的意义、Innovat
 tags: [MySQL]
 listed: false
 hub: true
+nav_title: "🐬 MySQL 9.x 深度剖析"
+nav_order: 6
 last_modified_at: 2026-10-05
 permalink: /技术/mysql/
 ---

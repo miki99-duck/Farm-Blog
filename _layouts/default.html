@@ -82,7 +82,7 @@
 <meta name="keywords" content="{% if page.tags %}{% for tag in page.tags %}{{ tag }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endif %}, 星露谷农场日志, 技术笔记, 博客">
 <meta name="author" content="{{ site.author }}">
 <meta name="robots" content="index, follow">
-<meta name="theme-color" content="#2e1a0c">
+<meta name="theme-color" content="#668b5a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="星露谷农场日志">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3E%3Crect%20width=%2716%27%20height=%2716%27%20fill=%27%235a9e3a%27/%3E%3Crect%20x=%277%27%20y=%271%27%20width=%272%27%20height=%272%27%20fill=%27%236a8a30%27/%3E%3Crect%20x=%273%27%20y=%273%27%20width=%2710%27%20height=%2710%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%272%27%20y=%275%27%20width=%2712%27%20height=%276%27%20fill=%27%23e8892b%27/%3E%3Crect%20x=%275%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3Crect%20x=%279%27%20y=%273%27%20width=%272%27%20height=%2710%27%20fill=%27%23c96a18%27/%3E%3C/svg%3E">
@@ -190,7 +190,12 @@
 <style>
 /* ============================================================
    文档阅读页 · 星露谷主题
-   —— 与博客首页同一套配色 token，但正文换成可读性优先的字形
+   —— 与博客首页同一套配色与结构 token（⚠ 两份 :root 必须同值），
+      但正文换成可读性优先的字形。
+   2026-10 与首页一起做「像素硬阴影扁平化」：
+   去掉「外描边 + 外圈暗环 + 内高光 + 内发光 + 硬投影」里的中间三层，
+   只留 3px 描边 + 一层 4px 硬投影；焦点环改用 outline 画，
+   不再借 box-shadow（旧版一 Tab，按钮/面板的投影会被焦点环覆盖掉、当场变扁）。
    ============================================================ */
 :root{
   --wood-900:#2e1a0c; --wood-800:#3d2413; --wood-700:#4a2c17;
@@ -199,8 +204,21 @@
   --paper:#f8e8c0; --paper-light:#fff6dd;
   --ink:#4a2c17; --ink-soft:#6b4a2a;
   --green-700:#2f5017; --gold:#ffd23f; --gold-deep:#e0a828;
-  --grass-500:#5a9e3a;
-  --pixel:'Press Start 2P','Zpix','Microsoft YaHei',monospace;
+  --grass-500:#5f8552;
+
+  /* ---------- 结构 token（与 style.css 同值，改一处必须改两处） ---------- */
+  --bd-w:2px;
+  --bd:var(--bd-w) solid var(--wood-900);
+  --bd-paper:3px solid var(--wood-700);
+  --bd-soft:var(--bd-w) solid var(--wood-300);
+  --r-1:4px; --r-2:6px; --r-3:10px;
+  --sh-1:0 2px 0 var(--wood-900);
+  --sh-2:0 4px 0 var(--wood-900);
+  --sh-3:0 6px 0 var(--wood-900);
+  --focus-on-paper:var(--wood-900);
+  --focus-on-dark:var(--paper-light);
+
+  --pixel:'Press Start 2P','Zpix','Microsoft YaHei','PingFang SC',monospace;
   --read:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
   --mono:'JetBrains Mono','Cascadia Mono',Consolas,'SFMono-Regular','Courier New',monospace;
 }
@@ -216,48 +234,54 @@ body{
   font-size:15.5px;
   line-height:1.95;
   color:var(--ink);
+  /* 与首页同一套底色（改的时候两边都要改，见 style.css 里那段说明）：
+     16px 草地点阵 + 三层竖向渐变，不再是 22px 棋盘。 */
   background-color:var(--grass-500);
-  background-image:repeating-conic-gradient(#5a9e3a 0% 25%, #4f8f31 0% 50%);
-  background-size:22px 22px;
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.055) 1px, rgba(255,255,255,0) 1.6px),
+    linear-gradient(180deg, #668b5a 0%, #58814d 52%, #456a3d 100%);
+  background-size:16px 16px, auto;
 }
 
 a{ color:var(--wood-700); }
 a:hover{ color:var(--wood-600); }
 
+/* ---------- 键盘焦点环（与首页同一套：纸面深环 / 深底浅环） ---------- */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible{
+  outline:3px solid var(--focus-on-paper);
+  outline-offset:3px;
+}
+
 .skip{
   position:absolute; left:-9999px;
   padding:10px 14px;
   background:var(--paper-light);
-  border:3px solid var(--wood-700);
-  font-family:var(--pixel); font-size:11px; color:var(--ink);
+  border:3px solid var(--wood-900);
+  font-family:var(--pixel); font-size:12px; color:var(--ink);
   text-decoration:none; z-index:99;
 }
 .skip:focus{ left:12px; top:12px; }
 
-a:focus-visible,
-button:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:3px;
-  box-shadow:0 0 0 7px var(--wood-900);
-}
-
 .wrap{ max-width:1180px; margin:0 auto; }
 
-/* ---------- 顶部 HUD ---------- */
+/* ---------- 顶部 HUD（与首页同款：纯色深木 + 一层硬投影） ---------- */
 .hud{
   display:flex; flex-wrap:wrap; align-items:center; gap:10px;
   padding:10px 14px; margin-bottom:16px;
-  border:4px solid var(--wood-800); border-radius:6px;
-  background:linear-gradient(#7b4a24, #57331a);
-  box-shadow:inset 0 3px 0 rgba(255,220,160,.25), inset 0 -4px 0 rgba(0,0,0,.3), 0 6px 0 rgba(0,0,0,.3);
-  color:#ffe9b8; font-family:var(--pixel); font-size:11px;
+  border:3px solid var(--wood-900); border-radius:var(--r-2);
+  background:var(--wood-800);
+  box-shadow:var(--sh-2);
+  color:#ffe9b8; font-family:var(--pixel); font-size:12px;
 }
 .hud-chip{
   display:inline-flex; align-items:center; gap:7px;
-  padding:6px 11px; border:2px solid rgba(255,220,160,.28); border-radius:4px;
-  background:rgba(0,0,0,.22); color:#ffe9b8; text-decoration:none;
+  padding:6px 11px; border:var(--bd-w) solid rgba(255,220,160,.28); border-radius:var(--r-1);
+  background:rgba(0,0,0,.26); color:#ffe9b8; text-decoration:none;
 }
 a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
+.hud :focus-visible{ outline-color:var(--focus-on-dark); outline-offset:0; }
 
 /* 面包屑：系列名可点是链接（回首页筛该系列），当前篇名不可点。
    两者之间用一个细箭头暗示层级。 */
@@ -288,23 +312,31 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   padding:14px 16px;
   text-decoration:none;
   background-color:var(--paper);
-  border:3px solid var(--wood-300); border-radius:5px;
-  box-shadow:0 0 0 3px var(--wood-700), inset 0 0 0 2px var(--paper-light), 5px 6px 0 rgba(0,0,0,.26);
-  transition:transform .15s ease, background-color .15s ease;
+  border:var(--bd-paper); border-radius:var(--r-2);
+  box-shadow:
+    inset 0 0 0 3px var(--paper-light),
+    var(--sh-2);
+  transition:transform .14s ease, box-shadow .14s ease, background-color .14s ease;
 }
-.doc-nav-link:hover{ background-color:var(--paper-light); transform:translate(-2px,-2px); }
-.doc-nav-link:focus-visible{ outline:3px solid var(--wood-900); outline-offset:3px; }
+.doc-nav-link:hover{
+  background-color:var(--paper-light);
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 0 0 3px var(--paper-light),
+    var(--sh-3);
+}
 .doc-nav-prev{ text-align:left; }
 .doc-nav-next{ text-align:right; }
 /* 只有一个时让它占满整行，不要半宽悬在左边 */
 .doc-nav-link:only-child{ grid-column:1 / -1; }
 .doc-nav-dir{
-  font-family:var(--pixel); font-size:10px; letter-spacing:1px;
-  color:var(--wood-500);
+  font-family:var(--pixel); font-size:12px; letter-spacing:1px;
+  color:var(--wood-600);
 }
 .doc-nav-title{
   font-size:14px; font-weight:700; line-height:1.5;
   color:var(--ink);
+  text-wrap:pretty;
 }
 
 @media (max-width:560px){
@@ -314,14 +346,17 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   .hud-crumb-here{ max-width:60vw; }
 }
 
-/* ---------- 木牌 ---------- */
+/* ---------- 木牌（全站最响的一块面，唯一保留木纹渐变） ---------- */
 .blog-sign{
-  padding:15px 20px 13px; margin-bottom:20px; text-align:center;
-  border:4px solid var(--wood-700); border-radius:6px;
+  padding:15px 20px 14px; margin-bottom:20px; text-align:center;
+  border:3px solid var(--wood-900); border-radius:var(--r-2);
   background:
     repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 2px, transparent 2px 46px),
     linear-gradient(#8f5f33, #6b3f1d);
-  box-shadow:inset 0 3px 0 rgba(255,220,160,.35), inset 0 -5px 0 rgba(0,0,0,.22), 0 6px 0 rgba(0,0,0,.3);
+  box-shadow:
+    inset 0 3px 0 rgba(255,220,160,.28),
+    inset 0 -4px 0 rgba(0,0,0,.22),
+    var(--sh-3);
 }
 /* 站名不是 h1（正文的 # 标题才是），但视觉不变 —— 两个选择器共用一套规则 */
 .blog-sign h1,
@@ -330,7 +365,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   letter-spacing:2px; color:#ffe9b8;
   text-shadow:2px 2px 0 var(--wood-700), 4px 4px 0 rgba(0,0,0,.2);
 }
-.blog-sign p{ margin:8px 0 0; font-family:var(--pixel); font-size:9px; letter-spacing:2px; color:#fff6dd; }
+.blog-sign p{ margin:8px 0 0; font-family:var(--pixel); font-size:12px; letter-spacing:2px; color:#fff6dd; }
 
 /* ---------- 双栏：目录 + 正文 ---------- */
 .doc-layout{ display:grid; grid-template-columns:290px 1fr; gap:20px; align-items:start; }
@@ -339,14 +374,16 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   position:sticky; top:18px;
   max-height:calc(100vh - 36px);
   display:flex; flex-direction:column;
-  border:4px solid var(--wood-300); border-radius:5px;
+  border:var(--bd-paper); border-radius:var(--r-2);
   background-color:var(--paper);
-  box-shadow:0 0 0 4px var(--wood-700), inset 0 0 0 3px var(--paper-light), 6px 8px 0 rgba(0,0,0,.28);
+  box-shadow:
+    inset 0 0 0 3px var(--paper-light),
+    var(--sh-2);
 }
 .toc-title{
   margin:0; padding:13px 15px 11px;
   font-family:var(--pixel); font-size:12px; letter-spacing:1px; color:var(--ink);
-  border-bottom:3px dashed rgba(180,120,74,.45);
+  border-bottom:var(--bd-w) dashed rgba(180,120,74,.45);
 }
 /* 手机上的折叠控件：整条标题可点，右侧加一个箭头。
    桌面端不用它（.toc-toggle 只在窄屏出现）。 */
@@ -356,23 +393,23 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   padding:13px 15px 11px;
   font-family:var(--pixel); font-size:12px; letter-spacing:1px; color:var(--ink);
   text-align:left;
-  background:none; border:0; border-bottom:3px dashed rgba(180,120,74,.45);
+  background:none; border:0; border-bottom:var(--bd-w) dashed rgba(180,120,74,.45);
   cursor:pointer;
   align-items:center; justify-content:space-between; gap:10px;
 }
 .toc-toggle::after{
   content:"▾";
-  font-size:11px; color:var(--wood-500);
+  font-size:12px; color:var(--wood-600);
   transition:transform .15s ease;
 }
 .toc-toggle[aria-expanded="false"]::after{ transform:rotate(-90deg); }
-.toc-toggle:focus-visible{ outline:3px solid var(--wood-900); outline-offset:-3px; }
+.toc-toggle:focus-visible{ outline-color:var(--wood-900); outline-offset:-3px; }
 .toc-body{ overflow-y:auto; padding:10px 12px 14px; }
 .toc ol{ list-style:none; margin:0; padding:0; }
-.toc-sub{ margin:3px 0 7px 10px; padding-left:8px !important; border-left:2px solid rgba(180,120,74,.35); }
+.toc-sub{ margin:3px 0 7px 10px; padding-left:8px !important; border-left:var(--bd-w) solid rgba(180,120,74,.35); }
 .toc li{ margin:0; }
 .toc a{
-  display:block; padding:4px 7px; border-radius:3px;
+  display:block; padding:4px 7px; border-radius:var(--r-1);
   font-size:12.5px; line-height:1.55; text-decoration:none;
   color:var(--ink-soft); border-left:3px solid transparent;
 }
@@ -380,23 +417,21 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .toc-3 > a{ font-size:12px; }
 .toc a:hover{ background:rgba(201,156,94,.25); }
 .toc a.active{
-  background:rgba(255,210,63,.28);
+  background:rgba(255,210,63,.32);
   border-left-color:var(--gold-deep);
   color:var(--wood-900);
 }
-.toc a:focus-visible{ outline:3px solid var(--wood-900); outline-offset:-3px; box-shadow:none; }
+.toc a:focus-visible{ outline-color:var(--wood-900); outline-offset:-2px; }
 
 /* ---------- 正文面板 ---------- */
 .prose{
   padding:26px 30px 34px;
   background-color:var(--paper);
-  background-image:repeating-linear-gradient(0deg, rgba(180,140,80,.07) 0 2px, transparent 2px 6px);
-  border:4px solid var(--wood-300); border-radius:5px;
+  background-image:repeating-linear-gradient(0deg, rgba(180,140,80,.05) 0 2px, transparent 2px 6px);
+  border:var(--bd-paper); border-radius:var(--r-3);
   box-shadow:
-    0 0 0 4px var(--wood-700),
     inset 0 0 0 3px var(--paper-light),
-    inset 0 0 22px rgba(180,120,74,.22),
-    6px 8px 0 rgba(0,0,0,.28);
+    var(--sh-2);
   min-width:0;
 }
 
@@ -404,18 +439,24 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   margin:0 0 22px; padding-bottom:14px;
   font-family:var(--pixel); font-size:22px; line-height:1.6; letter-spacing:1px;
   color:var(--wood-900); border-bottom:4px dashed rgba(180,120,74,.5);
+  text-wrap:balance;
 }
+/* h2 从「一整条木牌按钮」改成「木条 + 左侧色块」：
+   每节标题都做成和按钮一样的立体木牌，会让正文里出现 10 个假按钮。 */
 .prose h2{
   margin:44px 0 16px; padding:9px 13px;
   font-family:var(--pixel); font-size:16px; line-height:1.7; letter-spacing:1px;
-  color:#ffe9b8; border-radius:4px;
-  background:linear-gradient(#8f5f33, #6b3f1d);
-  box-shadow:inset 0 3px 0 rgba(255,220,160,.3), inset 0 -4px 0 rgba(0,0,0,.2), 0 4px 0 rgba(0,0,0,.25);
+  color:#ffe9b8; border-radius:var(--r-1);
+  background:var(--wood-600);
+  border-left:6px solid var(--gold-deep);
+  box-shadow:var(--sh-1);
+  text-wrap:balance;
 }
 .prose h3{
   margin:32px 0 12px; padding-left:12px;
   font-size:18px; font-weight:700; line-height:1.6; color:var(--wood-900);
   border-left:6px solid var(--wood-400);
+  text-wrap:balance;
 }
 .prose h4{
   margin:24px 0 10px; font-size:16px; color:var(--wood-700);
@@ -424,7 +465,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 
 .prose h1,.prose h2,.prose h3,.prose h4{ scroll-margin-top:18px; }
 
-.prose p{ margin:0 0 15px; color:var(--wood-800); }
+.prose p{ margin:0 0 15px; color:var(--wood-800); text-wrap:pretty; }
 
 .prose ul,.prose ol{ margin:0 0 16px; padding-left:1.5em; }
 .prose li{ margin:5px 0; }
@@ -434,8 +475,8 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .prose blockquote{
   margin:18px 0; padding:14px 18px;
   background:var(--paper-light);
-  border:3px solid var(--wood-300); border-left:7px solid var(--wood-400); border-radius:4px;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.55), 4px 4px 0 rgba(0,0,0,.16);
+  border:var(--bd-soft); border-left:7px solid var(--wood-400); border-radius:var(--r-1);
+  box-shadow:var(--sh-1);
   color:var(--wood-700);
 }
 .prose blockquote > :last-child{ margin-bottom:0; }
@@ -451,18 +492,18 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   font-family:var(--mono); font-size:.88em;
   color:var(--wood-800);
   background:var(--wood-100);
-  border:2px solid var(--wood-300); border-radius:3px;
+  border:var(--bd-soft); border-radius:var(--r-1);
   word-break:break-word;
 }
 
-/* 代码块：深色木底 */
+/* 代码块：深色木底（正文里最重的一块面，保留深底以形成节奏对比） */
 .prose pre{
   position:relative;
   margin:16px 0 20px; padding:15px 17px;
   overflow-x:auto;
   background:#2b1a0d;
-  border:3px solid var(--wood-400); border-radius:4px;
-  box-shadow:inset 0 0 0 2px rgba(0,0,0,.35), 4px 5px 0 rgba(0,0,0,.26);
+  border:var(--bd); border-radius:var(--r-2);
+  box-shadow:var(--sh-1);
   font-size:13px; line-height:1.72;
   -webkit-overflow-scrolling:touch;
 }
@@ -484,10 +525,10 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   float:right;
   margin:-6px -8px 0 10px;
   padding:4px 10px;
-  font-family:var(--read); font-size:11px; line-height:1.6;
+  font-family:var(--read); font-size:12px; line-height:1.6;
   color:#ffe9b8;
   background:rgba(0,0,0,.45);
-  border:2px solid rgba(255,220,160,.35); border-radius:3px;
+  border:var(--bd-w) solid rgba(255,220,160,.35); border-radius:var(--r-1);
   cursor:pointer;
   opacity:.5;
   transition:opacity .15s ease, background .15s ease;
@@ -496,9 +537,8 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .copy-code:focus-visible{ opacity:1; }
 .copy-code:hover{ background:rgba(0,0,0,.7); }
 .copy-code:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:2px;
-  box-shadow:none;
+  outline-color:var(--focus-on-dark);
+  outline-offset:0;
 }
 .copy-code.is-done{
   color:var(--wood-900);
@@ -532,10 +572,10 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 }
 .prose th,.prose td{
   padding:8px 11px; text-align:left; vertical-align:top;
-  border:2px solid var(--wood-300);
+  border:var(--bd-soft);
 }
 .prose th{
-  background:linear-gradient(#6b3f1d, #4a2c17);
+  background:var(--wood-700);
   color:#ffe9b8; font-weight:700; white-space:nowrap;
 }
 .prose tbody tr:nth-child(even){ background:rgba(201,156,94,.16); }
@@ -546,16 +586,16 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   content:''; position:absolute; left:0; top:.42em;
   width:13px; height:13px;
   background:var(--paper-light);
-  border:2px solid var(--wood-500); border-radius:2px;
+  border:var(--bd-w) solid var(--wood-500); border-radius:2px;
 }
 .prose li.task-done::after{
   content:'✔'; position:absolute; left:2px; top:-1px;
   font-size:12px; color:var(--green-700);
 }
-.prose li.task-done{ color:var(--wood-500); }
+.prose li.task-done{ color:var(--wood-600); }
 
 .prose strong{ color:var(--wood-900); }
-.prose img{ max-width:100%; height:auto; }
+.prose img{ max-width:100%; height:auto; outline:1px solid rgba(46,26,12,.14); }
 
 /* ---------- 系列落地页（技术/<系列>/index.md）的章节清单 ----------
    这些页面是爬虫从首页进入各系列的入口：菜园子的田块是 JS 现生成的，
@@ -564,21 +604,21 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .hub-item{
   position:relative; margin:0 0 10px; padding:11px 14px;
   background:var(--paper-light);
-  border:3px solid var(--wood-300); border-left:6px solid var(--wood-400); border-radius:4px;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.55), 3px 3px 0 rgba(0,0,0,.14);
+  border:var(--bd-soft); border-left:6px solid var(--wood-400); border-radius:var(--r-1);
+  box-shadow:var(--sh-1);
 }
 .hub-link{
   display:inline-block; font-size:15px; font-weight:700; line-height:1.6;
   color:var(--wood-900); text-decoration:none;
 }
 .hub-link:hover{ text-decoration:underline; }
-.hub-meta{ margin-left:8px; font-size:11px; color:var(--wood-500); }
+.hub-meta{ margin-left:8px; font-size:12px; color:var(--wood-600); }
 .hub-sum{ margin:5px 0 0; font-size:12.5px; line-height:1.7; color:var(--ink-soft); }
 
 /* 长文档顶部进度条 */
 .progress{
   position:fixed; left:0; top:0; height:4px; width:0;
-  background:linear-gradient(90deg, var(--gold-deep), var(--gold));
+  background:var(--gold-deep);
   z-index:50;
 }
 
@@ -592,19 +632,15 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   width:42px; height:42px; padding:0;
   display:flex; align-items:center; justify-content:center;
   background:var(--wood-200); color:var(--wood-900);
-  border:3px solid var(--wood-300); border-radius:6px;
+  border:3px solid var(--wood-900); border-radius:var(--r-2);
   cursor:pointer;
-  box-shadow:0 0 0 3px var(--wood-700), 0 4px 0 rgba(0,0,0,.28);
-  transition:transform .15s ease, background .15s ease;
+  box-shadow:var(--sh-2);
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
 }
 #back-to-top[hidden]{ display:none; }
-#back-to-top:hover{ background:var(--wood-100); transform:translateY(-2px); }
-#back-to-top:active{ transform:translateY(0); }
-#back-to-top:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:3px;
-  box-shadow:0 0 0 7px var(--wood-900);
-}
+#back-to-top:hover{ background:var(--wood-100); transform:translateY(-2px); box-shadow:var(--sh-3); }
+#back-to-top:active{ transform:translateY(1px); box-shadow:var(--sh-1); }
+#back-to-top:focus-visible{ outline-color:var(--focus-on-dark); outline-offset:0; }
 #back-to-top svg{ width:18px; height:18px; }
 
 /* ---------- 响应式 ---------- */
@@ -624,11 +660,11 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 }
 
 @media (max-width:560px){
-  body{ padding:12px max(9px, env(safe-area-inset-right)) 46px max(9px, env(safe-area-inset-left)); font-size:15px; background-size:16px 16px; }
+  body{ padding:12px max(9px, env(safe-area-inset-right)) 46px max(9px, env(safe-area-inset-left)); font-size:15px; background-size:14px 14px, auto; }
   .prose pre{ font-size:12px; padding:12px 12px; }
   .prose pre code{ font-size:12px; }
   .blog-sign h1,
-  .blog-sign .sign-title{ font-size:14px; }
+  .blog-sign .sign-title{ font-size:14px; letter-spacing:0; }
   /* 手机上别挡住正文右下角的字，缩小并往角上收（叠加安全区） */
   #back-to-top{
     right:calc(12px + env(safe-area-inset-right));
@@ -643,6 +679,9 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
     animation-duration:.001ms !important;
     transition-duration:.001ms !important;
   }
+  .doc-nav-link:hover,
+  #back-to-top:hover,
+  #back-to-top:active{ transform:none; }
 }
 </style>
 </head>

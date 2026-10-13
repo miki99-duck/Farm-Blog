@@ -5,6 +5,8 @@ description: "JavaScript 系列目录：变量类型与作用域、函数与 thi
 tags: [js]
 listed: false
 hub: true
+nav_title: "📜 JavaScript 教程（后端版）"
+nav_order: 8
 last_modified_at: 2026-10-05
 permalink: /技术/js/
 ---

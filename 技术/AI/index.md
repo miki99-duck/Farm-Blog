@@ -5,6 +5,8 @@ description: "AI 应用开发系列目录：环境准备与第一次对话、Pro
 tags: [AI]
 listed: false
 hub: true
+nav_title: "🤖 AI 应用开发（LangChain）"
+nav_order: 4
 last_modified_at: 2026-10-05
 permalink: /技术/AI/
 ---

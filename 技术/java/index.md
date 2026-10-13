@@ -5,6 +5,8 @@ description: "Java 并发系列目录：多线程基础与线程六状态、线�
 tags: [Java]
 listed: false
 hub: true
+nav_title: "☕ Java 并发与锁原理"
+nav_order: 2
 last_modified_at: 2026-10-05
 permalink: /技术/java/
 ---

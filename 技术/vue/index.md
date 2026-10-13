@@ -5,6 +5,8 @@ description: "Vue 系列目录：模板语法与响应式、组件 props 与事�
 tags: [vue]
 listed: false
 hub: true
+nav_title: "🟩 Vue 教程（RuoYi 实战）"
+nav_order: 9
 last_modified_at: 2026-10-05
 permalink: /技术/vue/
 ---

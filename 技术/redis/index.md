@@ -5,6 +5,8 @@ description: "Redis 系列目录：8.0 到 8.10 的演进主线，Vector Sets �
 tags: [Redis]
 listed: false
 hub: true
+nav_title: "🧱 Redis 8.x 新特性"
+nav_order: 5
 last_modified_at: 2026-10-05
 permalink: /技术/redis/
 ---

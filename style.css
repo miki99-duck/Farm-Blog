@@ -1,8 +1,29 @@
 /* ============================================================
    星露谷物语博客主题  ·  Stardew Valley Blog Theme
+   ============================================================
+   2026-10 改版：「像素硬阴影扁平化」
+   ────────────────────────────────────────────
+   问题（都是量出来的，不是感觉）：
+   ① 每个面都要吃五层装饰：外描边 4px + 外圈 box-shadow 0 0 0 4px + 内圈 3px 高光
+      + 内发光 + 6px 硬投影。同一种「拟物」在三层嵌套里重复三遍，
+      HUD / 木牌 / 搜索栏 / 面板 / 按钮长得一模一样，没有层级。
+   ② 底色棋盘（repeating-conic-gradient, 22px）盖满整屏，占可视面积 ~34%，
+      和面板抢注意力；长时间阅读累。
+   ③ 字号全挤在 10–15px 之间（plot-count 甚至 10px），中文在这个尺度上不可读。
+   ④ 焦点环用 box-shadow 画，聚焦时会把组件自己的硬投影「冲掉」——
+      键盘用户一 Tab，按钮就变扁。
+   ⑤ 对比度实测：面包屑 #3f6b1f 在草地底上 1.49:1、#6b3f1d 2.11:1，
+      田块篇数金色 4.27:1（都要 4.5:1）。
+   ⑥ 桌面端右栏只有 247px 内容、左栏 796px —— 549px 空洞；
+      移动端 11 块田单列 1618px，滑到手指疼。
+
+   改法：把「拟物五层」压成「2px 描边 + 一层硬投影」的像素扁平；
+   投影不模糊、不渐变，是像素游戏本来就有的方块投影，所以既更平，又没丢像素味。
+   色板一个不改（正文插图里的 SVG 用的是同一批字面色），只加结构 token。
    ============================================================ */
 
 :root{
+  /* ---------- 色板：原样保留 ---------- */
   --wood-900:#2e1a0c;
   --wood-800:#3d2413;
   --wood-700:#4a2c17;
@@ -20,12 +41,47 @@
   --green-600:#3f6b1f;
   --green-500:#5d8f2a;
   --green-400:#8bc34a;
-  --grass-500:#5a9e3a;
-  --grass-600:#4f8f31;
+  --grass-500:#5f8552;
+  --grass-600:#4b6f42;
   --gold:#ffd23f;
   --gold-deep:#e0a828;
   --red:#d94f3d;
   --blue:#5b9bd5;
+
+  /* ---------- 结构 token（2026-10 新增） ----------
+     全站的面板 / 按钮 / 田块都从下面这几个槽位取值，不再各自写死一套装饰。
+     嵌套圆角用「外 = 内 + 内边距」，所以三档都成对出现。 */
+  --bd-w:2px;                                  /* 主描边宽度 */
+  --bd:var(--bd-w) solid var(--wood-900);      /* 深底主描边 */
+  --bd-paper:3px solid var(--wood-700);        /* 纸面主描边 */
+  --bd-soft:var(--bd-w) solid var(--wood-300); /* 纸面上的次级描边（标签、内联代码） */
+  --r-1:4px;                                   /* 标签 / 小控件 */
+  --r-2:6px;                                   /* 面板 / 按钮 / 田块 */
+  --r-3:10px;                                  /* 大容器（页面级） */
+  --sh-1:0 2px 0 var(--wood-900);              /* 像素硬投影：无模糊、无渐变 */
+  --sh-2:0 4px 0 var(--wood-900);
+  --sh-3:0 6px 0 var(--wood-900);
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+  /* 字号：界面文字下限 12px（中文 11px 以下可读性骤降） */
+  --fs-hud:12px; --fs-xs:12px; --fs-sm:13px; --fs-md:15px; --fs-lg:18px; --fs-xl:23px;
+
+  /* ---------- 两种焦点环颜色 ----------
+     键盘焦点环只用一个 outline，不再借 box-shadow —— 借了就会把组件自己的
+     硬投影覆盖掉（旧版一 Tab 按钮就变扁）。
+     颜色按「环紧挨着什么颜色」来选，保证 3:1 以上：
+       --focus-on-paper = 深木色环，用在纸面控件上（vs 纸底 14.8:1）
+       --focus-on-dark  = 米白环，用在木/土/绿这些深底控件上（vs 木底 9.3:1、vs 土底 5.2:1）
+     outline-offset 也分两档：纸面留 3px（环旁边是纸，够亮），
+     深底控件贴边 0（环旁边就是自己的深色描边，反差最大）。 */
+  --focus-on-paper:var(--wood-900);
+  --focus-on-dark:var(--paper-light);
+
+  /* 字体三档。_layouts/default.html 的 :root 里也有一份同名 token ——
+     两份必须同值；这里补齐是为了让首页样式也能直接引用，
+     而不是靠 var(--read, 兜底串) 撑着（兜底一删就静默换字形）。 */
+  --pixel:'Press Start 2P','Zpix','Microsoft YaHei','PingFang SC',monospace;
+  --read:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+  --mono:'JetBrains Mono','Cascadia Mono',Consolas,'SFMono-Regular','Courier New',monospace;
 }
 
 *{ box-sizing:border-box; }
@@ -38,13 +94,21 @@ body{
   /* 全面屏左右两侧的安全区（横屏时刘海会盖住内容） */
   padding:26px max(16px, env(safe-area-inset-right)) 60px max(16px, env(safe-area-inset-left));
   color:var(--ink);
-  font-family:'Press Start 2P','Zpix','Microsoft YaHei','PingFang SC',monospace;
-  font-size:13px;
+  font-family:var(--pixel);
+  font-size:var(--fs-sm);
   line-height:1.6;
+  /* 底色：2026-10 第二次调整。
+     上一版把高饱和棋盘降到 1.8% 透明度，但它仍然是 22px 的方格子，
+     铺满整屏后是高频噪声（实测和面板抢注意力）。
+     现在换成 16px 的「草地点阵」——1px 亮点 + 三层竖向渐变，
+     密度和对比都低于面板 3.5:1 的边界，眼睛先看到面板、后看到草地。
+     ⚠ background-size 是两个值（点阵 + 渐变）。窄屏那条只写一个值时，
+     点阵会重复、渐变也被压成 16px 重复 → 出现横条，所以窄屏必须写「16px 16px, auto」。 */
   background-color:var(--grass-500);
   background-image:
-    repeating-conic-gradient(#5a9e3a 0% 25%, #4f8f31 0% 50%);
-  background-size:22px 22px;
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.055) 1px, rgba(255,255,255,0) 1.6px),
+    linear-gradient(180deg, #668b5a 0%, #58814d 52%, #456a3d 100%);
+  background-size:16px 16px, auto;
   -webkit-font-smoothing:none;
 }
 
@@ -60,21 +124,58 @@ button, summary, .plot, .slot{
 
 svg{ shape-rendering:crispEdges; display:block; }
 
-/* ---------- 通用面板（星露谷对话框风格） ---------- */
+/* ============================================================
+   键盘焦点环（全站唯一一处定义）
+   ============================================================
+   纸面上的控件用深环、深底控件用米白环，见 :root 里两档颜色的说明。
+   这里不用 box-shadow 画环，所以不会和组件的硬投影打架。 */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible{
+  outline:3px solid var(--focus-on-paper);
+  outline-offset:3px;
+}
+
+/* 深底控件：环色换成米白、偏移贴到 0（环外侧就是自己的深色描边，反差最大）。
+   ⚠ .series-nav 不在这组里 —— 它是纸色面板，里面的 summary 要深色环。 */
+.hud :focus-visible,
+.search-bar :focus-visible,
+.blog-sign :focus-visible,
+.hotbar :focus-visible,
+.plot:focus-visible,
+.crop-banner :focus-visible,
+.btn:focus-visible,
+.pager-btn:focus-visible,
+.slot:focus-visible,
+#back-to-top:focus-visible{
+  outline-color:var(--focus-on-dark);
+  outline-offset:0;
+}
+
+/* 试验田是深木条（纸色 → 2026-10 改深）：旧版是 rgba(0,0,0,.18) 压在纸底上，
+   实际底色 #cbbf9e，而文字是 #ffe9b8 —— 实测 1.53:1，等于看不见字。 */
+.trial{ background:var(--wood-700); }
+
+/* ---------- 通用面板（星露谷对话框风格 → 扁平版） ----------
+   旧版：4px 外描边 + 外层 4px 暗环 + 内层 3px 高光 + 内发光 + 6px/8px 硬投影。
+   新版：3px 暗描边 + 内层 3px 高光 + 一层 4px 硬投影。
+   内层那圈高光是 Stardew 面板的招牌，留着；其余三层装饰去掉。 */
 .sv-panel{
   position:relative;
-  padding:20px;
+  padding:var(--sp-5);
   background-color:var(--paper);
   background-image:
-    repeating-linear-gradient(0deg, rgba(180,140,80,.07) 0 2px, transparent 2px 6px);
-  border:4px solid var(--wood-300);
-  border-radius:5px;
+    repeating-linear-gradient(0deg, rgba(180,140,80,.05) 0 2px, transparent 2px 6px);
+  border:var(--bd-paper);
+  border-radius:var(--r-3);
   box-shadow:
-    0 0 0 4px var(--wood-700),
     inset 0 0 0 3px var(--paper-light),
-    inset 0 0 22px rgba(180,120,74,.22),
-    6px 8px 0 rgba(0,0,0,.28);
+    var(--sh-2);
 }
+
+/* 键盘焦点进到面板内的控件时，环是深木色（纸底 14.8:1） */
 
 /* ---------- 页面容器 ---------- */
 .game-wrap{
@@ -84,30 +185,29 @@ svg{ shape-rendering:crispEdges; display:block; }
 
 /* ============================================================
    顶部 HUD
-   ============================================================ */
+   ============================================================
+   层级：木牌（木牌渐变，最响）> HUD（纯色深木）> 搜索栏（纯色次深）。
+   旧版这三条用的是同一个渐变，所以看不出主次。 */
 .hud{
   display:flex;
   flex-wrap:wrap;
   justify-content:space-between;
   align-items:center;
-  gap:10px;
+  gap:var(--sp-2);
   padding:10px 14px;
-  margin-bottom:18px;
-  border:4px solid var(--wood-800);
-  border-radius:6px;
-  background:linear-gradient(#7b4a24, #57331a);
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.25),
-    inset 0 -4px 0 rgba(0,0,0,.3),
-    0 6px 0 rgba(0,0,0,.3);
+  margin-bottom:var(--sp-4);
+  border:3px solid var(--wood-900);
+  border-radius:var(--r-2);
+  background:var(--wood-800);
+  box-shadow:var(--sh-2);
   color:#ffe9b8;
-  font-size:12px;
+  font-size:var(--fs-hud);
 }
 
 .hud-group{
   display:flex;
   flex-wrap:wrap;
-  gap:8px;
+  gap:var(--sp-2);
 }
 
 .hud-chip{
@@ -115,11 +215,12 @@ svg{ shape-rendering:crispEdges; display:block; }
   align-items:center;
   gap:7px;
   padding:5px 10px;
-  background:rgba(0,0,0,.22);
-  border:2px solid rgba(255,220,160,.28);
-  border-radius:4px;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.08);
+  background:rgba(0,0,0,.26);
+  border:var(--bd-w) solid rgba(255,220,160,.28);
+  border-radius:var(--r-1);
   white-space:nowrap;
+  /* 时间 / 金币 / 访客数是动态数字，等宽数字避免每秒跳动时整条 HUD 抖 */
+  font-variant-numeric:tabular-nums;
 }
 
 .gold-chip{
@@ -158,42 +259,48 @@ svg{ shape-rendering:crispEdges; display:block; }
 }
 
 /* ============================================================
-   木牌标题
-   ============================================================ */
+   木牌标题（全站最响的一块面）
+   ============================================================
+   唯一保留木纹渐变的地方 —— 这是品牌招牌，其它面都退成纯色。
+   字号从 22px 提到 23px 并收紧字距，中文标题在像素字体链里回落到
+   雅黑，22–23px 之间只差 1px，但配合下面 10px→12px 的副标题，
+   主副层级从 2:1 拉开到 2.1:1 且副标题终于能看清。 */
 .blog-sign{
-  padding:18px 20px 15px;
-  margin-bottom:20px;
+  padding:18px 20px 16px;
+  margin-bottom:var(--sp-4);
   text-align:center;
-  border:4px solid var(--wood-700);
-  border-radius:6px;
+  border:3px solid var(--wood-900);
+  border-radius:var(--r-2);
   background:
     repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 2px, transparent 2px 46px),
     linear-gradient(#8f5f33, #6b3f1d);
   box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.35),
-    inset 0 -5px 0 rgba(0,0,0,.22),
-    0 6px 0 rgba(0,0,0,.3);
+    inset 0 3px 0 rgba(255,220,160,.28),
+    inset 0 -4px 0 rgba(0,0,0,.22),
+    var(--sh-3);
 }
 
-.blog-sign h1{
+.blog-sign h1,
+.blog-sign .sign-title{
   margin:0;
-  font-size:22px;
-  line-height:1.4;
-  letter-spacing:2px;
+  font-size:var(--fs-xl);
+  line-height:1.45;
+  letter-spacing:1px;
   color:#ffe9b8;
   text-shadow:2px 2px 0 var(--wood-700), 4px 4px 0 rgba(0,0,0,.2);
+  text-wrap:balance;
 }
 
 .blog-sign p{
-  margin:9px 0 0;
-  font-size:10px;
+  margin:10px 0 0;
+  font-size:var(--fs-xs);
   letter-spacing:2px;
   color:#fff6dd;
 }
 
 /* ============================================================
    站内搜索
-   96 篇文档靠逛菜园子找不到东西，这里给一个即时过滤入口。
+   108 篇文档靠逛菜园子找不到东西，这里给一个即时过滤入口。
    过滤在本地做（索引来自已渲染的卡片），所以没有网络等待。
    ============================================================ */
 .search-bar{
@@ -201,15 +308,12 @@ svg{ shape-rendering:crispEdges; display:block; }
   display:flex;
   align-items:center;
   gap:10px;
-  margin:0 0 18px;
+  margin:0 0 var(--sp-4);
   padding:10px 14px;
-  border:4px solid var(--wood-800);
-  border-radius:6px;
-  background:linear-gradient(#7b4a24, #57331a);
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.25),
-    inset 0 -4px 0 rgba(0,0,0,.3),
-    0 6px 0 rgba(0,0,0,.3);
+  border:3px solid var(--wood-900);
+  border-radius:var(--r-2);
+  background:var(--wood-600);
+  box-shadow:var(--sh-2);
 }
 
 /* 视觉上隐藏但仍给屏幕阅读器 —— 输入框不能没有 label */
@@ -228,21 +332,21 @@ svg{ shape-rendering:crispEdges; display:block; }
   flex:1;
   min-width:0;
   padding:9px 12px;
-  font-family:var(--read, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif);
+  font-family:var(--read);
   font-size:14px;
   color:var(--ink);
   background:var(--paper-light);
-  border:3px solid var(--wood-300);
-  border-radius:4px;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), inset 0 3px 0 rgba(0,0,0,.1);
+  border:var(--bd-soft);
+  border-radius:var(--r-1);
   -webkit-appearance:none;
   appearance:none;
+  -webkit-font-smoothing:antialiased;
 }
-.search-input::placeholder{ color:var(--wood-500); opacity:1; }
+.search-input::placeholder{ color:var(--wood-600); opacity:1; }
+/* 输入框是深色条上的纸色控件：环贴边用米白，紧挨着它的深木描边 → 反差最大 */
 .search-input:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:2px;
-  box-shadow:0 0 0 6px var(--wood-900);
+  outline-color:var(--focus-on-dark);
+  outline-offset:0;
 }
 /* 去掉 Safari/Chrome 给 type=search 自带的那个小叉，我们用自家的清除按钮 */
 .search-input::-webkit-search-cancel-button,
@@ -252,38 +356,40 @@ svg{ shape-rendering:crispEdges; display:block; }
 .search-kbd{
   flex:none;
   padding:3px 7px;
-  font-family:var(--read, monospace);
-  font-size:11px;
+  font-family:var(--read);
+  font-size:var(--fs-xs);
   color:#ffe9b8;
-  background:rgba(0,0,0,.28);
-  border:2px solid rgba(255,220,160,.3);
-  border-radius:3px;
+  background:rgba(0,0,0,.3);
+  border:var(--bd-w) solid rgba(255,220,160,.3);
+  border-radius:var(--r-1);
 }
 .search-bar.is-focused .search-kbd{ opacity:.35; }
 
 .search-clear{
+  position:relative;
   flex:none;
-  width:30px; height:30px;
+  width:32px; height:32px;
   padding:0;
-  font-family:inherit; font-size:13px; line-height:1;
+  font-family:inherit; font-size:var(--fs-sm); line-height:1;
   color:#ffe9b8;
-  background:rgba(0,0,0,.28);
-  border:2px solid rgba(255,220,160,.3);
-  border-radius:4px;
+  background:rgba(0,0,0,.3);
+  border:var(--bd-w) solid rgba(255,220,160,.3);
+  border-radius:var(--r-1);
   cursor:pointer;
+}
+/* 视觉 32px，热区补到 40×40（拇指按键的最小面积），不与旁边元素的热区重叠 */
+.search-clear::after{
+  content:"";
+  position:absolute;
+  inset:-4px;
 }
 .search-clear:hover{ background:rgba(0,0,0,.5); color:var(--gold); }
 .search-clear[hidden]{ display:none; }
-.search-clear:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:2px;
-  box-shadow:0 0 0 6px var(--wood-900);
-}
 
 /* 结果条数：有内容才占位，避免空着一条横线 */
 .search-status{
   margin:0;
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:var(--gold);
   white-space:nowrap;
 }
@@ -302,7 +408,7 @@ mark{
 }
 
 @media (max-width:560px){
-  .search-bar{ flex-wrap:wrap; gap:8px; padding:9px 10px; }
+  .search-bar{ flex-wrap:wrap; gap:var(--sp-2); padding:9px 10px; }
   .search-input{ font-size:16px; }   /* <16px 时 iOS 会自动放大页面 */
   .search-kbd{ display:none; }       /* 手机上没物理键盘，提示无意义 */
   .search-status{ width:100%; text-align:right; }
@@ -317,13 +423,13 @@ mark{
 .main-col{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:var(--sp-4);
 }
 
 .side-col{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:var(--sp-4);
 }
 
 /* display:flex 会覆盖 [hidden]，必须显式补回 */
@@ -336,19 +442,25 @@ mark{
   /* 纯文字卡片：标题与日期同行，标签与按钮收进底栏 */
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:7px;
   padding:16px 18px;
-  transition:transform .15s ease;
   /* 标题链接要铺满整张卡片（见下方 ::after），得有个定位祖先。
      .sv-panel 虽已是 relative，但显式写一遍，卡片样式不依赖面板样式 */
   position:relative;
+  /* 只动 transform / box-shadow：两者都能被 GPU 合成，hover 不掉帧。
+     旧版还顺手 translate(-2px,-2px) 往左上抬，而硬投影是往右下投的，
+     方向相反看着像抖了一下；新版只往上抬。 */
+  transition:transform .14s ease, box-shadow .14s ease;
 }
 
 /* .post 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，必须显式补回 */
 .post[hidden]{ display:none; }
 
 .post:hover{
-  transform:translate(-2px,-2px);
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 0 0 3px var(--paper-light),
+    var(--sh-3);
 }
 
 /* ---------- 整卡可点：标题里的链接铺满卡片 ----------
@@ -381,29 +493,39 @@ mark{
 
 .post-title{
   margin:0;
-  font-size:15px;
-  line-height:1.4;
+  font-size:var(--fs-md);
+  line-height:1.45;
   color:var(--ink);
   text-shadow:1px 1px 0 rgba(255,255,255,.7);
+  text-wrap:pretty;
 }
 
 .post-time{
   flex:none;
-  font-size:10px;
-  color:var(--wood-500);
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
   white-space:nowrap;
+  font-variant-numeric:tabular-nums;
 }
 
 /* 摘要最多 2 行，长文档不会把卡片撑高 */
 .post-text{
   margin:0;
-  font-size:12px;
+  /* 摘要是「正文」而不是「界面文字」：用阅读字体，与文档页的正文保持一致。
+     像素字体只留给标题/按钮/HUD 这类短界面文字，避免一行里英文走像素、
+     中文回落雅黑那种两种字形混排。 */
+  font-family:var(--read);
+  font-size:var(--fs-sm);
   line-height:1.8;
   color:var(--ink-soft);
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
+  /* 列表视图是整行宽（1060px），不限宽度的话一行能排 100 多个汉字。
+     74ch 是阅读字体的舒适上限，超出部分仍会换行，不裁字。 */
+  max-width:74ch;
+  -webkit-font-smoothing:antialiased;
 }
 
 /* 底栏：标签靠左，字数 + 按钮靠右 */
@@ -414,7 +536,7 @@ mark{
   justify-content:space-between;
   gap:10px;
   padding-top:9px;
-  border-top:3px dashed rgba(180,120,74,.4);
+  border-top:var(--bd-w) dashed rgba(180,120,74,.4);
 }
 
 .post-tags{
@@ -432,23 +554,23 @@ mark{
 .tag{
   display:inline-block;
   padding:3px 9px;
-  font-size:10px;
+  font-size:var(--fs-xs);
   color:var(--wood-600);
   background:#eed9ab;
-  border:2px solid var(--wood-300);
-  border-radius:3px;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+  border:var(--bd-soft);
+  border-radius:var(--r-1);
 }
 
 .post-meta{
-  font-size:10px;
-  color:var(--wood-500);
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
+  font-variant-numeric:tabular-nums;
 }
 
 /* 还没有文档时的占位提示 */
 .empty-tip{
   margin:0;
-  font-size:12px;
+  font-size:var(--fs-xs);
   line-height:2;
   color:var(--ink-soft);
   text-align:center;
@@ -460,60 +582,43 @@ mark{
 .empty-filter code{
   padding:1px 5px;
   font-family:inherit;
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:var(--green-700);
   background:rgba(63,107,31,.1);
-  border:2px solid rgba(63,107,31,.3);
-  border-radius:3px;
+  border:var(--bd-w) solid rgba(63,107,31,.3);
+  border-radius:var(--r-1);
 }
 
-/* ---------- 像素按钮 ---------- */
+/* ---------- 像素按钮 ----------
+   招牌交互：0 4px 0 的方块投影 + 悬停再抬 2px（投影跟着变长到 6px）
+   + 按下把投影吃掉、按钮落回去。不用 transition:all，只动
+   transform / box-shadow 两个属性。 */
 .btn{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:9px 16px;
+  padding:9px 15px;
   font-family:inherit;
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:#fff6dd;
   text-decoration:none;
-  background:linear-gradient(#4f7a1e, #3a5f1a);
-  border:3px solid var(--green-700);
-  border-radius:4px;
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.32),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 4px 0 var(--green-700),
-    0 6px 0 rgba(0,0,0,.28);
-  text-shadow:1px 1px 0 rgba(0,0,0,.4);
+  background:var(--green-600);
+  border:var(--bd);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-2);
   cursor:pointer;
-  transition:transform .08s ease, box-shadow .08s ease;
+  transition:transform .1s ease, box-shadow .1s ease, background .1s ease;
 }
 
 .btn:hover{
+  background:var(--green-500);
   transform:translateY(-2px);
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.32),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 6px 0 var(--green-700),
-    0 8px 0 rgba(0,0,0,.28);
+  box-shadow:var(--sh-3);
 }
 
 .btn:active{
-  transform:translateY(3px);
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.2),
-    inset 0 -2px 0 rgba(0,0,0,.25),
-    0 1px 0 var(--green-700);
-}
-
-/* ---------- 键盘焦点（双色焦点环，草地/纸面底都可见） ---------- */
-a:focus-visible,
-.btn:focus-visible,
-.music-btn:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:3px;
-  box-shadow:0 0 0 7px var(--wood-900);
+  transform:translateY(2px);
+  box-shadow:var(--sh-1);
 }
 
 /* ============================================================
@@ -532,11 +637,9 @@ a:focus-visible,
   display:grid;
   place-items:center;
   background:linear-gradient(#9ed0ef, #d6ecf9);
-  border:4px solid var(--wood-500);
-  border-radius:4px;
-  box-shadow:
-    0 0 0 3px var(--wood-700),
-    inset 0 0 0 2px var(--paper-light);
+  border:3px solid var(--wood-500);
+  border-radius:var(--r-2);
+  box-shadow:inset 0 0 0 3px var(--paper-light);
 }
 
 .avatar-frame svg{
@@ -546,14 +649,14 @@ a:focus-visible,
 
 .profile-info h3{
   margin:0 0 4px;
-  font-size:15px;
+  font-size:var(--fs-md);
   color:var(--ink);
 }
 
 .farm-name{
   margin:0 0 8px;
-  font-size:10px;
-  color:var(--wood-500);
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
 }
 
 .hearts{
@@ -565,7 +668,6 @@ a:focus-visible,
   width:16px;
   height:14px;
   color:var(--red);
-  filter:drop-shadow(1px 1px 0 rgba(0,0,0,.28));
 }
 
 .heart.empty{
@@ -574,7 +676,7 @@ a:focus-visible,
 
 .profile-bio{
   margin:0;
-  font-size:11px;
+  font-size:var(--fs-xs);
   line-height:1.9;
   color:var(--ink-soft);
 }
@@ -586,16 +688,18 @@ a:focus-visible,
   display:flex;
   align-items:center;
   gap:10px;
-  margin:0 0 16px;
-  font-size:13px;
+  margin:0 0 var(--sp-4);
+  font-size:var(--fs-sm);
   color:var(--ink);
 }
 
+/* 田垄分隔线：全站统一的「一垄一垄」虚线，用在所有小标题右边。
+   做成 8px 实 / 6px 空的重复渐变，比 border-style:dashed 的节奏更稳。 */
 .panel-title::after{
   content:"";
   flex:1;
   height:3px;
-  background:repeating-linear-gradient(90deg, #c9a06a 0 6px, transparent 6px 12px);
+  background:repeating-linear-gradient(90deg, #c9a06a 0 8px, transparent 8px 14px);
 }
 
 .skill{
@@ -611,47 +715,80 @@ a:focus-visible,
   justify-content:space-between;
   align-items:baseline;
   margin-bottom:5px;
-  font-size:10px;
+  font-size:var(--fs-xs);
   color:var(--ink-soft);
 }
 
 .skill-head .lv{
-  color:var(--wood-500);
+  color:var(--wood-600);
+  font-variant-numeric:tabular-nums;
 }
 
 .bar{
   height:14px;
   padding:2px;
   background:var(--wood-800);
-  border:2px solid var(--wood-800);
-  border-radius:2px;
-  box-shadow:inset 0 2px 0 rgba(0,0,0,.35);
+  border:var(--bd-w) solid var(--wood-800);
+  border-radius:var(--r-1);
 }
 
 .bar-fill{
   height:100%;
-  background:linear-gradient(#9bd14a, #5d8f2a);
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.35),
-    inset 0 -2px 0 rgba(0,0,0,.2);
-  border-radius:1px;
+  background:var(--green-400);
+  border-radius:2px;
 }
+
+/* ---------- 侧栏技能面板（2026-10 起默认收起） ----------
+   纯装饰：Lv 数字写死，不反映任何真实数据。桌面端 320px 侧栏是黄金位置，
+   展开着白占一屏高度，所以折起来；上面那张名片保留（那是身份）。
+   和「系列目录」一样用 <details>，无 JS 也能开合，状态不持久化。 */
+.skill-box{ padding:0; }
+
+.skill-box > .skill-summary{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:16px 20px;
+  cursor:pointer;
+  list-style:none;
+}
+
+.skill-box > .skill-summary::-webkit-details-marker{ display:none; }
+
+/* 里面的虚线由 .panel-title::after 自己画，这里只让它撑满剩余宽度 */
+.skill-summary > .panel-title{ flex:1; margin:0; }
+
+.skill-box > .skill-summary::after{
+  content:"▾";
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
+  transition:transform .15s ease;
+}
+.skill-box:not([open]) > .skill-summary::after{ transform:rotate(-90deg); }
+.skill-box[open] > .skill-summary{ border-bottom:var(--bd-w) dashed rgba(180,120,74,.45); }
+
+.skill-body{ padding:16px 20px 18px; }
 
 /* ============================================================
    菜园子 + 侧边栏（同一行）
-   左列 720px 放菜园子；右列 320px 放侧边栏，两者顶对齐。
+   左列放菜园子；右列 320px 放侧边栏，两者顶对齐。
    点田块 → .garden-view 隐藏、.list-section 显示，占同一格；
    侧栏始终在右列不动。
    ============================================================ */
 .fullpage{
   display:grid;
   grid-template-columns:minmax(0,720px) 320px;
-  gap:20px;
+  gap:var(--sp-4);
   align-items:start;
 }
 
+/* 侧栏比左列矮得多（实测 247px vs 796px）。粘住它，
+   滚动菜园子时名片一直可见，右边那块空白就不会像「忘了填」。
+   窄屏（≤880px）侧栏落到菜园子下面，sticky 反而碍事，那里再关掉。 */
 .fullpage > .side-col{
   align-self:start;
+  position:sticky;
+  top:16px;
 }
 
 /* 点田块进列表 → 侧栏隐藏，列表撑满整行 */
@@ -669,26 +806,40 @@ a:focus-visible,
   align-self:start;
 }
 
+/* 菜园子这块面板换成「田间规划图」底：32px 方格。
+   比纸纹更贴题，也给田块的网格一个对齐参照（田块本身也是 4 列网格）。 */
+.garden-view > .sv-panel{
+  background-image:
+    linear-gradient(rgba(120,90,50,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,90,50,.07) 1px, transparent 1px);
+  background-size:32px 32px;
+}
+
 .garden-head{
   display:flex;
   align-items:baseline;
   justify-content:space-between;
   flex-wrap:wrap;
-  gap:12px;
+  gap:var(--sp-3);
   margin-bottom:14px;
 }
 
 .garden-hint{
   margin:0;
-  font-size:10px;
+  font-size:var(--fs-xs);
   color:var(--ink-soft);
 }
 
-/* 田块网格：一块田 = 一个标签 */
+/* 田块网格：一块田 = 一个标签。
+   auto-fill + minmax(150px) 是量出来的：田块里最长的一行文字是
+   「22 篇 · 成熟度 22 度」（10px 像素字体，实测 ~130px），
+   加左右各 8px 内边距与 2px 描边，150px 是它不折行的下限。
+   好处是 720px 容器自动排 4 列，420px 手机自动排 2 列
+   —— 旧版手机写死单列，11 块田要滑 1618px。 */
 .garden{
   display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:12px;
+  grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+  gap:var(--sp-3);
   margin:0 0 14px;
 }
 
@@ -696,40 +847,73 @@ a:focus-visible,
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:4px;
-  padding:12px 8px 10px;
+  gap:5px;
+  padding:12px 8px 11px;
   cursor:pointer;
   text-align:center;
-  /* 土壤纹理：水平垄沟 + 土色渐变，和草地棋盘形成「田/路」对比 */
+  /* 土壤纹理：水平垄沟 + 土色渐变，和草地底形成「田/路」对比 */
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 2px, transparent 2px 9px),
     linear-gradient(#8a5526, #5d3418);
-  border:3px solid var(--wood-700);
-  border-radius:5px;
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.22),
-    inset 0 -4px 0 rgba(0,0,0,.28),
-    4px 5px 0 rgba(0,0,0,.28);
-  transition:transform .15s ease;
+  border:var(--bd);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-2);
+  transition:transform .14s ease, box-shadow .14s ease;
+  /* 入场错峰：田块是「一片地被翻出来」的感觉，只给这一处加入场动画，
+     12 块依次落位 0–140ms。纯 transform+opacity，prefers-reduced-motion 下全局关掉。 */
+  animation:plotRise .3s cubic-bezier(.2,0,0,1) backwards;
+}
+.plot:nth-child(1){ animation-delay:0ms; }
+.plot:nth-child(2){ animation-delay:22ms; }
+.plot:nth-child(3){ animation-delay:44ms; }
+.plot:nth-child(4){ animation-delay:66ms; }
+.plot:nth-child(5){ animation-delay:88ms; }
+.plot:nth-child(6){ animation-delay:110ms; }
+.plot:nth-child(7){ animation-delay:132ms; }
+.plot:nth-child(8){ animation-delay:154ms; }
+.plot:nth-child(9){ animation-delay:176ms; }
+.plot:nth-child(10){ animation-delay:198ms; }
+.plot:nth-child(11){ animation-delay:220ms; }
+.plot:nth-child(n+12){ animation-delay:240ms; }
+
+@keyframes plotRise{
+  from{ opacity:0; transform:translateY(6px); }
+  to{ opacity:1; transform:translateY(0); }
 }
 
-.plot:hover{ transform:translate(-2px,-2px); }
+.plot:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--sh-3);
+}
+
+.plot:hover .plot-crop{ transform:translateY(-2px); }
 
 .plot-crop{
   font-size:26px;
   line-height:1.2;
-  filter:drop-shadow(1px 1px 0 rgba(0,0,0,.35));
+  transition:transform .14s ease;
 }
 
 .plot-name{
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:#ffe9b8;
   text-shadow:1px 1px 0 rgba(0,0,0,.5);
+  text-wrap:balance;
 }
 
+/* 田块篇数：10px 不是 12px —— 数字走像素字体，位宽比中文宽得多，
+   12px 时「22 篇 · 成熟度 22 度」会在 150px 的田块里折行、把田块撑高。
+   这里显式 nowrap 兜底，宁可省略也不换行（换行会让同一行田块的基线全乱）。
+   颜色从 --gold 换成 #ffe9b8：金色在土壤渐变最亮的那一头只有 4.27:1，
+   换成米白后 5.16:1，过 AA。 */
 .plot-count{
-  font-size:9px;
-  color:var(--gold);
+  max-width:100%;
+  font-size:10px;
+  color:#ffe9b8;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-variant-numeric:tabular-nums;
 }
 
 /* 生长阶段：5 格进度，篇数越多越满 */
@@ -738,37 +922,37 @@ a:focus-visible,
 .pip{
   width:9px;
   height:9px;
-  border:2px solid rgba(0,0,0,.35);
+  border:var(--bd-w) solid rgba(0,0,0,.35);
   border-radius:2px;
   background:rgba(0,0,0,.25);
 }
 
 .pip.on{
   background:var(--gold);
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.4);
+  border-color:rgba(0,0,0,.45);
 }
 
 .stage{
-  font-size:9px;
-  color:#ffdca0;
+  font-size:var(--fs-xs);
+  color:#ffe0b0;
   letter-spacing:1px;
 }
 
 /* 试验田里的单篇地块：小一号，省略进度格 */
-.plot.tiny{ padding:9px 6px 8px; }
+.plot.tiny{ padding:10px 6px 9px; }
 .plot.tiny .plot-crop{ font-size:20px; }
-.plot.tiny .plot-name{ font-size:10px; }
+.plot.tiny .plot-name{ font-size:var(--fs-xs); }
 
 /* 空田：0 篇，灰化且不可点 */
 .plot.fallow{
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 2px, transparent 2px 9px),
     linear-gradient(#7a6a52, #5d4f3c);
-  border-color:var(--wood-800);
+  border-color:var(--wood-900);
   cursor:default;
 }
 
-.plot.fallow:hover{ transform:none; }
+.plot.fallow:hover{ transform:none; box-shadow:var(--sh-2); }
 .plot.fallow .plot-crop{ filter:grayscale(1) opacity(.55); }
 
 /* 特殊地块：全部收成 / 田头空地 */
@@ -776,39 +960,68 @@ a:focus-visible,
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
     linear-gradient(#6b7a4a, #4a5634);
-  border-color:#3d4a26;
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.22),
-    inset 0 -4px 0 rgba(0,0,0,.28),
-    4px 5px 0 rgba(0,0,0,.25);
+  border-color:var(--wood-900);
 }
 
-/* 试验田：可折叠 */
+/* 试验田：可折叠。底色由下面那条深木条规则统一给（写在焦点环那一组旁边） */
 .trial{
   margin:0 0 14px;
-  border:3px solid var(--wood-700);
-  border-radius:5px;
-  background:rgba(0,0,0,.18);
+  border:var(--bd);
+  border-radius:var(--r-2);
   overflow:hidden;
 }
 
-/* ---------- 系列目录（服务端渲染的静态导航） ----------
+/* ---------- 系列目录（服务端渲染的静态导航，2026-10 起可折叠） ----------
    菜园子的田块是脚本现生成的，HTML 里本来没有任何系列链接：
    搜索引擎抓不到入口，关掉 JS 的用户也只能看到一片空草地。
-   这份列表是静态的，同时也是各系列落地页（技术/<系列>/）的主要内链来源。
-   配色沿用纸面 + 木框，跟田块区分开，但要一眼看出是「目录」而不是装饰。 */
+   这份列表是静态的（列表项由各落地页现场生成），也是各系列落地页的主要内链来源。
+
+   为什么包进 <details> 默认收起：田块与这份目录指向同一批系列，桌面端两份并排太吵；
+   收起后首屏留给田块，链接仍在服务端 HTML 里（爬虫/无 JS 用户展开即可）。
+   padding 从容器挪到 summary 与内层 nav，否则收起时也会留一圈空白。 */
 .series-nav{
   margin:0 0 14px;
-  padding:12px 14px 14px;
+  padding:0;
   background:var(--paper-light);
-  border:3px solid var(--wood-300);
-  border-radius:5px;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), 3px 3px 0 rgba(0,0,0,.16);
+  border:var(--bd-soft);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-1);
 }
 
+.series-nav-summary{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 14px;
+  cursor:pointer;
+  list-style:none;
+  font-size:var(--fs-xs);
+  color:var(--wood-700);
+}
+
+/* 去掉 WebKit 自带的三角形，用自家的 ▾（收起时转 -90°，与试验田一套） */
+.series-nav-summary::-webkit-details-marker{ display:none; }
+.series-nav-summary::after{
+  content:"▾";
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
+  transition:transform .15s ease;
+}
+.series-nav:not([open]) .series-nav-summary::after{ transform:rotate(-90deg); }
+.series-nav[open] .series-nav-summary{ border-bottom:var(--bd-w) dashed rgba(180,120,74,.45); }
+
+.series-nav-hint{
+  flex:1;
+  text-align:right;
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
+}
+
+.series-nav nav{ padding:12px 14px 14px; }
+
 .series-nav-title{
-  margin:0 0 9px;
-  font-size:12px;
+  margin:0;
+  font-size:var(--fs-xs);
   color:var(--wood-700);
 }
 
@@ -823,26 +1036,21 @@ a:focus-visible,
 
 .series-nav-list a{
   display:block;
-  padding:7px 10px;
-  font-size:12px;
+  padding:8px 10px;
+  font-size:var(--fs-xs);
   line-height:1.5;
   text-decoration:none;
   color:var(--wood-700);
   background:#eed9ab;
-  border:2px solid var(--wood-300);
-  border-radius:3px;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+  border:var(--bd-soft);
+  border-radius:var(--r-1);
+  transition:transform .12s ease, background .12s ease;
 }
 
 .series-nav-list a:hover{
   background:var(--paper-light);
   color:var(--wood-900);
-  transform:translate(-1px,-1px);
-}
-
-.series-nav-list a:focus-visible{
-  outline:3px solid var(--wood-900);
-  outline-offset:2px;
+  transform:translateY(-1px);
 }
 
 .trial[hidden]{ display:none; }
@@ -852,9 +1060,9 @@ a:focus-visible,
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:10px 14px;
+  padding:11px 14px;
   cursor:pointer;
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:#ffe9b8;
   text-shadow:1px 1px 0 rgba(0,0,0,.5);
   list-style:none;
@@ -864,7 +1072,7 @@ a:focus-visible,
 
 .trial summary::after{
   content:"▾";
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:var(--gold);
   transition:transform .15s ease;
 }
@@ -872,45 +1080,54 @@ a:focus-visible,
 .trial:not([open]) summary::after{ transform:rotate(-90deg); }
 
 .trial-count{
-  font-size:9px;
+  font-size:var(--fs-xs);
   color:var(--gold);
   text-shadow:none;
+  font-variant-numeric:tabular-nums;
 }
 
 .trial .garden{ margin:0 12px 12px; }
 
 /* ============================================================
    作物横幅（点田块后显示在列表上方）
-   .layout 常驻不隐藏，侧边栏始终可见；只切菜园子面板和这一块。
    ============================================================ */
 /* .list-section = 作物横幅 + 文档列表，默认隐藏，点田块才显示；
    它和 .garden-view 占 .fullpage 的同一个左列格子，侧栏不受影响 */
 .list-section{ display:block; }
 .list-section[hidden]{ display:none; }
 
-.list-head{ margin:0 0 16px; }
+.list-head{ margin:0 0 var(--sp-4); }
 
+/* 面包屑：2026-10 修对比度。
+   旧版链接用 --green-600 画在草地底上，实测 1.49:1（要 4.5:1）——
+   绿字压绿底，等于看不见。现在整条面包屑坐在自己的纸色胶囊上，
+   前景色全部回到深木系，最低 6.98:1。 */
 .breadcrumb{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
-  gap:8px;
-  margin:0 0 12px;
-  font-size:11px;
-  color:var(--wood-600);
+  gap:var(--sp-2);
+  margin:0 0 var(--sp-3);
+  padding:6px 12px;
+  font-size:var(--fs-xs);
+  color:var(--wood-700);
+  background:var(--paper-light);
+  border:var(--bd-soft);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-1);
 }
-
-.breadcrumb a{
-  color:var(--green-600);
-  text-decoration:none;
-  border-bottom:2px dotted rgba(63,107,31,.5);
-}
-
-.breadcrumb a:hover{ color:var(--green-700); }
-
-.breadcrumb .sep{ color:var(--wood-300); }
 
 .breadcrumb .back-btn{ margin-left:auto; }
+
+.breadcrumb a{
+  color:var(--green-700);
+  text-decoration:none;
+  border-bottom:var(--bd-w) dotted rgba(47,80,23,.5);
+}
+
+.breadcrumb a:hover{ color:var(--wood-900); }
+
+.breadcrumb .sep{ color:var(--wood-500); }
 
 .crop-banner{
   display:grid;
@@ -921,35 +1138,32 @@ a:focus-visible,
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
     linear-gradient(#8a5526, #5d3418);
-  border:3px solid var(--wood-700);
-  border-radius:5px;
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.22),
-    inset 0 -4px 0 rgba(0,0,0,.28),
-    4px 5px 0 rgba(0,0,0,.25);
+  border:var(--bd);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-2);
 }
 
 .banner-crop{
   font-size:34px;
-  filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4));
 }
 
 .banner-name{
-  font-size:14px;
+  font-size:var(--fs-md);
   color:#ffe9b8;
   text-shadow:2px 2px 0 rgba(0,0,0,.4);
 }
 
 .banner-sub{
   margin-top:4px;
-  font-size:9px;
-  color:#ffdca0;
+  font-size:var(--fs-xs);
+  color:#ffe0b0;
 }
 
 .banner-meta{
-  font-size:10px;
-  color:var(--gold);
+  font-size:var(--fs-xs);
+  color:#ffe9b8;
   text-align:right;
+  font-variant-numeric:tabular-nums;
 }
 
 .banner-bar{
@@ -958,51 +1172,24 @@ a:focus-visible,
   height:12px;
   margin-top:6px;
   background:rgba(0,0,0,.3);
-  border:2px solid rgba(0,0,0,.4);
-  border-radius:3px;
+  border:var(--bd-w) solid rgba(0,0,0,.4);
+  border-radius:var(--r-1);
   overflow:hidden;
 }
 
 .banner-bar span{
   display:block;
   height:100%;
-  background:linear-gradient(#ffe07a, var(--gold-deep));
+  background:var(--gold);
 }
 
 /* 木质按钮（返回菜园子） */
 .btn.wood{
-  background:linear-gradient(#8b5a2b, #6b3f1d);
-  border-color:var(--wood-700);
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.28),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 4px 0 var(--wood-700),
-    0 6px 0 rgba(0,0,0,.28);
+  background:var(--wood-500);
+  border-color:var(--wood-900);
 }
 
-.btn.wood:hover{
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.28),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 6px 0 var(--wood-700),
-    0 8px 0 rgba(0,0,0,.28);
-}
-
-.btn.wood:active{
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.18),
-    inset 0 -2px 0 rgba(0,0,0,.25),
-    0 1px 0 var(--wood-700);
-}
-
-/* 田块是 div[role=button]，焦点环要显式声明；放在最后压过选中态 */
-.plot:focus-visible,
-.trial summary:focus-visible,
-.pager-btn:focus-visible{
-  outline:3px solid var(--paper-light);
-  outline-offset:2px;
-  box-shadow:0 0 0 6px var(--wood-900);
-}
+.btn.wood:hover{ background:var(--wood-400); }
 
 /* ============================================================
    底部物品栏
@@ -1012,14 +1199,12 @@ a:focus-visible,
   flex-wrap:wrap;
   justify-content:center;
   gap:5px;
-  margin-top:24px;
+  margin-top:var(--sp-5);
   padding:10px;
-  background:rgba(61,36,19,.88);
-  border:4px solid var(--wood-800);
-  border-radius:6px;
-  box-shadow:
-    0 6px 0 rgba(0,0,0,.3),
-    inset 0 2px 0 rgba(255,220,160,.15);
+  background:var(--wood-800);
+  border:3px solid var(--wood-900);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-2);
 }
 
 .slot{
@@ -1030,31 +1215,28 @@ a:focus-visible,
   place-items:center;
   background:#f2dcae;
   border:3px solid var(--wood-500);
-  border-radius:3px;
-  box-shadow:
-    inset 0 0 0 2px #ffeec6,
-    inset 0 -3px 0 rgba(0,0,0,.12);
+  border-radius:var(--r-1);
+  cursor:pointer;
 }
 
+/* 选中的农具：静态金环 + 一层硬投影。
+   旧版是 0 0 14px 的模糊外发光 + 1.6s 呼吸动画 —— 模糊光和像素风冲突，
+   而且 12 个格子里有东西一直在闪。选中态本来就该是「压了一块金边」，
+   不需要动。 */
 .slot.active{
+  border-color:var(--gold-deep);
   box-shadow:
-    inset 0 0 0 2px #ffeec6,
     0 0 0 3px var(--gold),
-    0 0 14px rgba(255,210,63,.85);
-  animation:slotPulse 1.6s ease-in-out infinite;
-}
-
-@keyframes slotPulse{
-  0%,100%{ box-shadow:inset 0 0 0 2px #ffeec6, 0 0 0 3px var(--gold), 0 0 10px rgba(255,210,63,.7); }
-  50%    { box-shadow:inset 0 0 0 2px #ffeec6, 0 0 0 3px var(--gold), 0 0 20px rgba(255,210,63,1); }
+    var(--sh-1);
 }
 
 .slot .num{
   position:absolute;
   top:1px;
   left:4px;
-  font-size:8px;
+  font-size:10px;
   color:var(--wood-600);
+  font-variant-numeric:tabular-nums;
 }
 
 .slot svg{
@@ -1071,34 +1253,38 @@ a:focus-visible,
   .side-col{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-    gap:20px;
+    gap:var(--sp-4);
+    /* 窄屏侧栏在菜园子下面，sticky 会让它跟着滚出可视区，关掉 */
+    position:static;
   }
-  /* 田块收成 2 列，避免单块太窄 */
-  .garden{ grid-template-columns:repeat(2, 1fr); }
+  /* 田块列数交给 auto-fill 自己算，这里不再写死 2 列 */
 }
 
 @media (max-width:560px){
   body{
     padding:14px max(9px, env(safe-area-inset-right)) 40px max(9px, env(safe-area-inset-left));
-    font-size:12px;
-    background-size:16px 16px;
+    font-size:var(--fs-xs);
+    /* 只写一个值会让点阵重复、把渐变压成 16px 重复出现横条，必须带第二个 auto */
+    background-size:14px 14px, auto;
   }
   .sv-panel{ padding:15px; }
-  .blog-sign h1{ font-size:16px; letter-spacing:1px; }
-  .blog-sign p{ font-size:9px; letter-spacing:1px; }
+  .blog-sign h1,
+  .blog-sign .sign-title{ font-size:var(--fs-lg); letter-spacing:0; }
+  .blog-sign p{ font-size:10px; letter-spacing:1px; }
   /* 手机上菜园子独占一行，侧栏整块排到下面 */
   .fullpage{ grid-template-columns:1fr; }
-  /* 手机上一列田块，横幅收成两行 */
-  .garden{ grid-template-columns:1fr; gap:9px; }
-  .plot{ padding:10px 8px 8px; }
+  /* 手机两列田块：11 块田从 1618px 缩到约 830px，少滑一半。
+     320px 窄屏放不下两列时 auto-fill 自动退回单列。 */
+  .garden{ gap:10px; }
+  .plot{ padding:11px 8px 10px; }
   .plot-crop{ font-size:22px; }
   .crop-banner{ grid-template-columns:40px 1fr; }
   .banner-crop{ font-size:26px; }
   .banner-meta{ grid-column:1 / -1; text-align:left; }
-  .breadcrumb .back-btn{ margin-left:0; width:100%; justify-content:center; }
+  .breadcrumb .back-btn{ margin-left:0; }
   .post-title{ font-size:14px; }
-  .post-text{ font-size:11px; line-height:1.8; }
-  .hud{ font-size:10px; padding:8px 10px; }
+  .post-text{ font-size:var(--fs-xs); }
+  .hud{ font-size:var(--fs-xs); padding:8px 10px; }
   .hud-chip{ padding:4px 7px; }
   .ico{ width:13px; height:13px; }
   .avatar-frame{ width:64px; height:64px; }
@@ -1119,7 +1305,8 @@ a:focus-visible,
 
 /* ============================================================
    减少动态效果
-   ============================================================ */
+   ============================================================
+   入场动画、悬停位移、按压缩放全部关掉；动画不是信息，去掉不影响任何功能。 */
 @media (prefers-reduced-motion:reduce){
   html{ scroll-behavior:auto; }
 
@@ -1132,14 +1319,15 @@ a:focus-visible,
     scroll-behavior:auto !important;
   }
 
-  /* 关掉闪烁后仍保留「选中」的静态高亮 */
-  .slot.active{ animation:none; }
+  /* 关掉入场动画后田块直接显示，不要停在 keyframes 的起始帧 */
+  .plot{ animation:none; }
 
   .post:hover,
   .plot:hover,
   .btn:hover,
   .pager-btn:hover:not(:disabled),
-  .pager-btn:active:not(:disabled){ transform:none; }
+  .pager-btn:active:not(:disabled),
+  .series-nav-list a:hover{ transform:none; }
 }
 
 
@@ -1167,46 +1355,36 @@ a:focus-visible,
 .pager-btn{
   padding:8px 13px;
   font-family:inherit;
-  font-size:11px;
+  font-size:var(--fs-xs);
   color:#fff6dd;
-  background:linear-gradient(#4f7a1e, #3a5f1a);
-  border:3px solid var(--green-700);
-  border-radius:4px;
-  box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.32),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 4px 0 var(--green-700),
-    0 6px 0 rgba(0,0,0,.28);
-  text-shadow:1px 1px 0 rgba(0,0,0,.4);
+  background:var(--green-600);
+  border:var(--bd);
+  border-radius:var(--r-2);
+  box-shadow:var(--sh-1);
   cursor:pointer;
-  transition:transform .08s ease;
+  transition:transform .1s ease, box-shadow .1s ease, background .1s ease;
 }
 
-.pager-btn:hover:not(:disabled){ transform:translateY(-2px); }
-.pager-btn:active:not(:disabled){ transform:translateY(3px); }
+.pager-btn:hover:not(:disabled){ background:var(--green-500); transform:translateY(-2px); box-shadow:var(--sh-2); }
+.pager-btn:active:not(:disabled){ transform:translateY(1px); box-shadow:none; }
 .pager-btn:disabled{ opacity:.45; cursor:default; }
 
-.pager-num{ min-width:40px; }
+.pager-num{ min-width:40px; font-variant-numeric:tabular-nums; }
 
 .pager-num.is-current{
-  background:linear-gradient(#8f5f33, #6b3f1d);
-  border-color:var(--wood-700);
-  box-shadow:
-    inset 0 3px 0 rgba(255,220,160,.35),
-    inset 0 -3px 0 rgba(0,0,0,.22),
-    0 4px 0 var(--wood-700),
-    0 6px 0 rgba(0,0,0,.28);
+  background:var(--wood-500);
+  border-color:var(--wood-900);
 }
 
 .pager-info{
   display:table;
   margin:10px auto 0;
   padding:5px 12px;
-  font-size:10px;
+  font-size:var(--fs-xs);
   color:var(--ink-soft);
   background:var(--paper);
-  border:2px solid var(--wood-300);
-  border-radius:3px;
+  border:var(--bd-soft);
+  border-radius:var(--r-1);
 }
 
 /* ============================================================
@@ -1217,30 +1395,31 @@ a:focus-visible,
   right:calc(20px + env(safe-area-inset-right));
   bottom:calc(20px + env(safe-area-inset-bottom));
   z-index:90;
-  width:40px;
-  height:40px;
+  width:42px;
+  height:42px;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:0;
-  border:3px solid var(--wood-300);
-  border-radius:6px;
+  border:3px solid var(--wood-900);
+  border-radius:var(--r-2);
   background:var(--wood-200);
   color:var(--wood-900);
   cursor:pointer;
-  box-shadow:0 2px 8px rgba(46,26,12,.25);
-  transition:transform .15s ease, background .15s ease, color .15s ease;
+  box-shadow:var(--sh-2);
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
 }
 /* display:flex 会覆盖 UA 的 [hidden]{display:none}，必须显式补回，
    否则按钮一进页面就常驻右下角（本应滚动 300px 后才出现） */
 #back-to-top[hidden]{ display:none; }
 #back-to-top:hover{
   background:var(--wood-100);
-  color:var(--wood-900);
   transform:translateY(-2px);
+  box-shadow:var(--sh-3);
 }
 #back-to-top:active{
-  transform:translateY(0);
+  transform:translateY(1px);
+  box-shadow:var(--sh-1);
 }
 #back-to-top svg{
   width:18px;

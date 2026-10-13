@@ -12,7 +12,7 @@ layout: null
 <meta name="keywords" content="星露谷物语,Stardew Valley,游戏博客,技术笔记,微服务,Spring Boot,Java,程序员日记,像素风格博客">
 <meta name="author" content="Miki99">
 <meta name="robots" content="index, follow">
-<meta name="theme-color" content="#2e1a0c">
+<meta name="theme-color" content="#668b5a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="星露谷农场日志">
@@ -220,24 +220,33 @@ layout: null
              服务端渲染出来的 HTML 里没有任何系列入口 —— 搜索引擎抓不到
              通往各系列的链接，关掉 JS 也只能看到一片空草地。
              这里是一份真链接，指向各系列的落地页 技术/<系列>/（见 技术/*/index.md）。
-             ⚠ 新增系列时这里要补一行，顺手点一下确认不是 404。 -->
-        <nav class="series-nav" aria-label="技术系列目录">
-          <h3 class="series-nav-title">📚 系列目录</h3>
-          <ul class="series-nav-list">
-            <li><a href="技术/spring/">🍃 Spring 面试核心原理</a></li>
-            <li><a href="技术/java/">☕ Java 并发与锁原理</a></li>
-            <li><a href="技术/微服务/">🧩 微服务组件与四大难题</a></li>
-            <li><a href="技术/AI/">🤖 AI 应用开发（LangChain）</a></li>
-            <li><a href="技术/css/">🖌️ CSS 教程（后端版）</a></li>
-            <li><a href="技术/js/">📜 JavaScript 教程（后端版）</a></li>
-            <li><a href="技术/vue/">🟩 Vue 教程（RuoYi 实战）</a></li>
-            <li><a href="技术/threejs/">🧊 Three.js 3D 可视化</a></li>
-            <li><a href="技术/kafka/">📨 Kafka 与 ZooKeeper</a></li>
-            <li><a href="技术/redis/">🧱 Redis 新特性剖析</a></li>
-            <li><a href="技术/mysql/">🐬 MySQL 9.x 剖析</a></li>
-            <li><a href="技术/README.html">🗂️ 技术知识库总索引</a></li>
-          </ul>
-        </nav>
+             ⚠ 新增系列时**不用再手改这里**：列表是从 site.pages 里 hub: true 的页面
+             现场生成的（按 nav_order 排，显示名取 nav_title），建一个
+             技术/<系列>/index.md 就会自动出现在下面。 -->
+
+        <!-- 列表由落地页现场生成；唯一手写的是最后那条总索引。
+             2026-10 起包进 <details> 默认收起：桌面端田块与这份目录指向同一批系列，
+             两份导航并排太吵，收起后首屏留给田块。链接仍在服务端 HTML 里，
+             爬虫与无 JS 用户照常可用（原生 <details> 展开）。 -->
+        {%- assign hub_count = 0 -%}
+        {%- for p in site.pages -%}{%- if p.hub -%}{%- assign hub_count = hub_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+        {%- assign ordered_pages = site.pages | sort: "nav_order" -%}
+        <details class="series-nav" id="series-nav">
+          <summary class="series-nav-summary">
+            <span class="series-nav-title">📚 系列目录</span>
+            <span class="series-nav-hint">{{ hub_count }} 个系列 · 点开看落地页</span>
+          </summary>
+          <nav aria-label="技术系列目录">
+            <ul class="series-nav-list">
+              {%- for p in ordered_pages -%}
+                {%- if p.hub -%}
+              <li><a href="{{ p.url | relative_url }}">{{ p.nav_title | default: p.title }}</a></li>
+                {%- endif -%}
+              {%- endfor -%}
+              <li><a href="{{ '/技术/README.html' | relative_url }}">🗂️ 技术知识库总索引</a></li>
+            </ul>
+          </nav>
+        </details>
       </div>
     </section>
 
@@ -420,9 +429,14 @@ layout: null
         </p>
       </div>
 
-      <!-- 技能面板 -->
-      <div class="sv-panel">
-        <h3 class="panel-title">技能</h3>
+      <!-- 技能面板：纯装饰（Lv 数字是写死的），默认收起。
+           桌面端 320px 侧栏是黄金位置，展开着白占一屏高度；名片留着（那是身份），
+           技能条折起来。用 <details> 做，无 JS 也能开合；状态不持久化，刷新即收起。 -->
+      <details class="sv-panel skill-box">
+        <summary class="skill-summary">
+          <h3 class="panel-title">⚒️ 技能</h3>
+        </summary>
+        <div class="skill-body">
 
         <div class="skill">
           <div class="skill-head"><span>🌾 农耕</span><span class="lv">Lv.8</span></div>
@@ -448,7 +462,9 @@ layout: null
           <div class="skill-head"><span>⚔️ 战斗</span><span class="lv">Lv.3</span></div>
           <div class="bar"><div class="bar-fill" style="width:30%"></div></div>
         </div>
-      </div>
+
+        </div>
+      </details>
     </aside>
   </div>
   <!-- ==================== 底部物品栏：农具 ====================

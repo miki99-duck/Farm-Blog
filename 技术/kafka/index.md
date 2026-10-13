@@ -5,6 +5,8 @@ description: "Kafka 完全教程：核心概念与架构、生产者与消费者
 tags: [Kafka]
 listed: false
 hub: true
+nav_title: "📨 Kafka 与 ZooKeeper"
+nav_order: 11
 last_modified_at: 2026-10-05
 permalink: /技术/kafka/
 ---

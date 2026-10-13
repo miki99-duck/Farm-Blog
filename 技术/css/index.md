@@ -5,6 +5,8 @@ description: "CSS 系列目录：选择器优先级与层叠、盒模型与单�
 tags: [css]
 listed: false
 hub: true
+nav_title: "🖌️ CSS 教程（后端版）"
+nav_order: 7
 last_modified_at: 2026-10-05
 permalink: /技术/css/
 ---
