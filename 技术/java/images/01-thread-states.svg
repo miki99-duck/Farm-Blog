@@ -1,65 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="380" viewBox="0 0 920 380">
-  <rect x="0" y="0" width="920" height="380" fill="#0d1117"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="700" viewBox="0 0 920 700" xml:space="preserve">
+  <rect x="0" y="0" width="920" height="700" fill="#0d1117"/>
   <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <marker id="ar0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
     </marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d29922"/>
+    </marker>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f85149"/>
+    </marker>
   </defs>
-
-  <text x="460" y="30" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">Thread 六状态模型（java.lang.Thread.State）</text>
-  <text x="460" y="50" text-anchor="middle" fill="#8b949e" font-size="11">new Thread 后还没 start() = NEW，永远进不了 RUNNABLE</text>
-
-  <!-- NEW -->
-  <rect x="30" y="110" width="150" height="56" rx="8" fill="rgba(139,148,158,.10)" stroke="#8b949e"/>
-  <text x="105" y="134" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">NEW 新建</text>
-  <text x="105" y="152" text-anchor="middle" fill="#8b949e" font-size="10">new Thread()</text>
-
-  <!-- RUNNABLE -->
-  <rect x="250" y="110" width="170" height="56" rx="8" fill="rgba(63,185,80,.12)" stroke="#3fb950"/>
-  <text x="335" y="134" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">RUNNABLE 可运行</text>
-  <text x="335" y="152" text-anchor="middle" fill="#8b949e" font-size="10">已 start，等 CPU 或正在跑</text>
-
-  <!-- BLOCKED -->
-  <rect x="500" y="70" width="170" height="50" rx="8" fill="rgba(248,81,73,.10)" stroke="#f85149"/>
-  <text x="585" y="90" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">BLOCKED 阻塞</text>
-  <text x="585" y="107" text-anchor="middle" fill="#8b949e" font-size="10">抢 synchronized 锁失败</text>
-
-  <!-- WAITING -->
-  <rect x="500" y="140" width="170" height="50" rx="8" fill="rgba(210,153,34,.10)" stroke="#d29922"/>
-  <text x="585" y="160" text-anchor="middle" fill="#d29922" font-size="12" font-weight="bold">WAITING 等待</text>
-  <text x="585" y="177" text-anchor="middle" fill="#8b949e" font-size="10">wait() / join() 无限期</text>
-
-  <!-- TIMED_WAITING -->
-  <rect x="500" y="210" width="170" height="50" rx="8" fill="rgba(210,153,34,.10)" stroke="#d29922"/>
-  <text x="585" y="230" text-anchor="middle" fill="#d29922" font-size="12" font-weight="bold">TIMED_WAITING</text>
-  <text x="585" y="247" text-anchor="middle" fill="#8b949e" font-size="10">sleep(n) / wait(n) 有时限</text>
-
-  <!-- TERMINATED -->
-  <rect x="740" y="140" width="150" height="50" rx="8" fill="rgba(139,148,158,.10)" stroke="#8b949e"/>
-  <text x="815" y="160" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">TERMINATED 终止</text>
-  <text x="815" y="177" text-anchor="middle" fill="#8b949e" font-size="10">run() 执行完毕</text>
-
-  <!-- 箭头 -->
-  <line x1="180" y1="138" x2="248" y2="138" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
-  <text x="214" y="130" text-anchor="middle" fill="#8b949e" font-size="10">start()</text>
-
-  <line x1="420" y1="120" x2="498" y2="96" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="420" y1="140" x2="498" y2="163" stroke="#d29922" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="420" y1="156" x2="498" y2="233" stroke="#d29922" stroke-width="1.5" marker-end="url(#arr)"/>
-
-  <!-- 三个状态回到 RUNNABLE -->
-  <line x1="585" y1="120" x2="470" y2="164" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="585" y1="190" x2="470" y2="164" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="585" y1="260" x2="470" y2="164" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arr)"/>
-  <text x="475" y="292" fill="#3fb950" font-size="10.5">→ 回到 RUNNABLE：抢到锁 / notify / 时间到</text>
-
-  <line x1="420" y1="158" x2="738" y2="164" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
-  <text x="580" y="285" fill="#8b949e" font-size="10.5">run() 结束 → TERMINATED（终态，不能复活）</text>
-
-  <!-- 底部速查 -->
-  <rect x="30" y="318" width="860" height="46" rx="8" fill="#161b22" stroke="#30363d"/>
-  <text x="46" y="337" fill="#58a6ff" font-size="11" font-weight="bold">速查：</text>
-  <text x="98" y="337" fill="#e6edf3" font-size="11">sleep → TIMED_WAITING ｜ join → WAITING ｜ wait() → WAITING ｜ wait(n) → TIMED_WAITING ｜ synchronized 没抢到锁 → BLOCKED</text>
-  <text x="46" y="355" fill="#8b949e" font-size="10.5">注意：start() 之后不能调 sleep 前的逻辑；RUNNABLE 里既包括"等待 CPU 时间片"也包括"正在执行"</text>
+  <!-- 标题 -->
+  <text x="460.0" y="30" fill="#e6edf3" font-size="15.5" font-weight="bold" text-anchor="middle">Thread.State 六状态流转（java.lang.Thread.State）</text>
+  <text x="460.0" y="52" fill="#8b949e" font-size="11" text-anchor="middle">序号对应图下的说明；「回 RUNNABLE」有两条路：经过 BLOCKED 的说明它要重新抢监视器锁</text>
+  <!-- 主链路 -->
+  <rect x="40" y="104" width="152" height="58" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="116.0" y="125.75" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">NEW 新建</text>
+  <text x="116.0" y="140.0" fill="#8b949e" font-size="10.5" text-anchor="middle">new Thread() 之后</text>
+  <rect x="330" y="96" width="200" height="78" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="430.0" y="120.0" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">RUNNABLE 可运行</text>
+  <text x="430.0" y="134.25" fill="#8b949e" font-size="10.5" text-anchor="middle">正在跑 / 就绪等 CPU</text>
+  <text x="430.0" y="149.75" fill="#8b949e" font-size="10.5" text-anchor="middle">卡在 I/O 也算 RUNNABLE</text>
+  <rect x="730" y="104" width="160" height="58" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="810.0" y="125.75" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">TERMINATED 终止</text>
+  <text x="810.0" y="140.0" fill="#8b949e" font-size="10.5" text-anchor="middle">终态，不能复活</text>
+  <line x1="192" y1="133" x2="326" y2="133" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ar1)"/>
+  <circle cx="259" cy="133" r="9.5" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="259" y="136.78" fill="#8b949e" font-size="10.5" font-weight="bold" text-anchor="middle">1</text>
+  <text x="259" y="155" fill="#8b949e" font-size="10.5" text-anchor="middle">start()</text>
+  <line x1="534" y1="133" x2="726" y2="133" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ar1)"/>
+  <circle cx="630" cy="133" r="9.5" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="630" y="136.78" fill="#8b949e" font-size="10.5" font-weight="bold" text-anchor="middle">10</text>
+  <text x="630" y="155" fill="#8b949e" font-size="10.5" text-anchor="middle">run() 返回 / 抛未捕获异常</text>
+  <!-- 三种「不占 CPU」的状态 -->
+  <text x="290" y="224" fill="#8b949e" font-size="10.5">非 RUNNABLE 的三种状态：都不占 CPU，区别只在「等什么、谁唤醒」</text>
+  <rect x="290" y="236" width="240" height="62" rx="8" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+  <text x="410.0" y="259.75" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">WAITING 无限期等待</text>
+  <text x="410.0" y="274.0" fill="#8b949e" font-size="10.5" text-anchor="middle">wait() / join() / park()</text>
+  <rect x="290" y="336" width="240" height="62" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+  <text x="410.0" y="359.75" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">BLOCKED 阻塞</text>
+  <text x="410.0" y="374.0" fill="#8b949e" font-size="10.5" text-anchor="middle">抢 synchronized 监视器锁</text>
+  <rect x="290" y="436" width="240" height="62" rx="8" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+  <text x="410.0" y="459.75" fill="#e6edf3" font-size="12.5" font-weight="bold" text-anchor="middle">TIMED_WAITING 限时等待</text>
+  <text x="410.0" y="474.0" fill="#8b949e" font-size="10.5" text-anchor="middle">sleep(n) / wait(n) / parkNanos(n)</text>
+  <!-- 进入：左侧总线，从 RUNNABLE 出去 -->
+  <line x1="380" y1="174" x2="380" y2="196" stroke="#d29922" stroke-width="1.8"/>
+  <line x1="380" y1="196" x2="240" y2="196" stroke="#d29922" stroke-width="1.8"/>
+  <line x1="240" y1="196" x2="240" y2="466" stroke="#d29922" stroke-width="1.8"/>
+  <line x1="240" y1="267" x2="286" y2="267" stroke="#d29922" stroke-width="1.8" marker-end="url(#ar2)"/>
+  <circle cx="263" cy="267" r="9" fill="#0d1117" stroke="#d29922" stroke-width="1.5"/>
+  <text x="263" y="270.78" fill="#d29922" font-size="10.5" font-weight="bold" text-anchor="middle">4</text>
+  <line x1="240" y1="367" x2="286" y2="367" stroke="#f85149" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <circle cx="263" cy="367" r="9" fill="#0d1117" stroke="#f85149" stroke-width="1.5"/>
+  <text x="263" y="370.78" fill="#f85149" font-size="10.5" font-weight="bold" text-anchor="middle">2</text>
+  <line x1="240" y1="467" x2="286" y2="467" stroke="#d29922" stroke-width="1.8" marker-end="url(#ar2)"/>
+  <circle cx="263" cy="467" r="9" fill="#0d1117" stroke="#d29922" stroke-width="1.5"/>
+  <text x="263" y="470.78" fill="#d29922" font-size="10.5" font-weight="bold" text-anchor="middle">5</text>
+  <!-- 回 BLOCKED：notify 唤醒后要重新抢锁 -->
+  <line x1="350" y1="298" x2="350" y2="334" stroke="#f85149" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <circle cx="350" cy="316" r="9" fill="#0d1117" stroke="#f85149" stroke-width="1.5"/>
+  <text x="350" y="319.78" fill="#f85149" font-size="10.5" font-weight="bold" text-anchor="middle">6</text>
+  <line x1="470" y1="436" x2="470" y2="400" stroke="#f85149" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <circle cx="470" cy="418" r="9" fill="#0d1117" stroke="#f85149" stroke-width="1.5"/>
+  <text x="470" y="421.78" fill="#f85149" font-size="10.5" font-weight="bold" text-anchor="middle">8</text>
+  <!-- 回 RUNNABLE：右侧总线（不需要抢锁的直接汇入） -->
+  <line x1="534" y1="267" x2="618" y2="267" stroke="#3fb950" stroke-width="1.5"/>
+  <circle cx="576" cy="267" r="9" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="576" y="270.78" fill="#3fb950" font-size="10.5" font-weight="bold" text-anchor="middle">7</text>
+  <line x1="534" y1="367" x2="618" y2="367" stroke="#3fb950" stroke-width="1.5"/>
+  <circle cx="576" cy="367" r="9" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="576" y="370.78" fill="#3fb950" font-size="10.5" font-weight="bold" text-anchor="middle">3</text>
+  <line x1="534" y1="467" x2="618" y2="467" stroke="#3fb950" stroke-width="1.5"/>
+  <circle cx="576" cy="467" r="9" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="576" y="470.78" fill="#3fb950" font-size="10.5" font-weight="bold" text-anchor="middle">9</text>
+  <line x1="618" y1="467" x2="618" y2="196" stroke="#3fb950" stroke-width="1.8"/>
+  <line x1="618" y1="196" x2="480" y2="196" stroke="#3fb950" stroke-width="1.8"/>
+  <line x1="480" y1="196" x2="480" y2="174" stroke="#3fb950" stroke-width="1.8" marker-end="url(#ar0)"/>
+  <!-- 图例 -->
+  <rect x="30" y="524" width="860" height="146" rx="8" fill="#161b22" stroke="#21262d" stroke-width="1.5"/>
+  <text x="48" y="552" fill="#e6edf3" font-size="11">1  NEW → RUNNABLE：start()</text>
+  <text x="48" y="575" fill="#e6edf3" font-size="11">2  RUNNABLE → BLOCKED：抢锁失败</text>
+  <text x="48" y="598" fill="#e6edf3" font-size="11">3  BLOCKED → RUNNABLE：抢到锁</text>
+  <text x="48" y="621" fill="#e6edf3" font-size="11">4  RUNNABLE → WAITING：wait / join / park</text>
+  <text x="48" y="644" fill="#e6edf3" font-size="11">5  RUNNABLE → TIMED_WAITING：sleep(n) / wait(n)</text>
+  <text x="478" y="552" fill="#e6edf3" font-size="11">6  WAITING → BLOCKED：notify 唤醒后要重抢锁</text>
+  <text x="478" y="575" fill="#e6edf3" font-size="11">7  WAITING → RUNNABLE：unpark（不用抢锁）</text>
+  <text x="478" y="598" fill="#e6edf3" font-size="11">8  TIMED_WAITING → BLOCKED：wait(n) 超时/被唤醒</text>
+  <text x="478" y="621" fill="#e6edf3" font-size="11">9  TIMED_WAITING → RUNNABLE：sleep / parkNanos 超时</text>
+  <text x="478" y="644" fill="#e6edf3" font-size="11">10 RUNNABLE → TERMINATED：run() 返回或抛异常</text>
+  <text x="460" y="688" fill="#d29922" font-size="11" text-anchor="middle">★ 6 和 8 的存在，就是「wait 被唤醒后不是直接 RUNNABLE」的证据：先转 BLOCKED，抢到监视器锁才回到 RUNNABLE</text>
 </svg>

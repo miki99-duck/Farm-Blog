@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="410" viewBox="0 0 920 410" xml:space="preserve">
+  <rect x="0" y="0" width="920" height="410" fill="#0d1117"/>
+  <!-- 标题 -->
+  <text x="460.0" y="30" fill="#e6edf3" font-size="15.5" font-weight="bold" text-anchor="middle">一条 Java 线程占什么：私有的是栈，共享的是堆</text>
+  <text x="460.0" y="52" fill="#8b949e" font-size="11" text-anchor="middle">HotSpot 里 Java 线程 = 一个 OS 内核线程（1:1）；Thread 对象只是 JVM 侧的把手</text>
+  <!-- 线程私有 -->
+  <rect x="30" y="80" width="430" height="152" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="40" y="102.5" fill="#e6edf3" font-size="12.5" font-weight="bold">线程私有：每个线程各一份</text>
+  <text x="40" y="116.75" fill="#8b949e" font-size="10.5">· 虚拟机栈：栈帧 = 局部变量表 + 操作数栈 + 返回地址</text>
+  <text x="40" y="132.25" fill="#8b949e" font-size="10.5">· 程序计数器 PC / 本地方法栈</text>
+  <text x="40" y="147.75" fill="#8b949e" font-size="10.5">· ThreadLocalMap：挂在 Thread 对象上的那个 map</text>
+  <text x="40" y="163.25" fill="#8b949e" font-size="10.5">· TLAB：堆上的「线程私有分配缓冲」，只为少抢地址指针</text>
+  <text x="40" y="178.75" fill="#8b949e" font-size="10.5">· parkBlocker / blocker：LockSupport 与中断用的字段</text>
+  <!-- 共享 -->
+  <rect x="490" y="80" width="400" height="152" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="500" y="102.5" fill="#e6edf3" font-size="12.5" font-weight="bold">所有线程共享：加锁的物理来源</text>
+  <text x="500" y="116.75" fill="#8b949e" font-size="10.5">· 堆：对象实例、数组（含 TLAB 所在的那块堆）</text>
+  <text x="500" y="132.25" fill="#8b949e" font-size="10.5">· 方法区 / 元空间：类元信息、静态变量</text>
+  <text x="500" y="147.75" fill="#8b949e" font-size="10.5">· 运行时常量池、字符串常量池（JDK 7+ 在堆里）</text>
+  <text x="500" y="163.25" fill="#8b949e" font-size="10.5">· 代码缓存：JIT 编译出来的机器码</text>
+  <text x="500" y="178.75" fill="#8b949e" font-size="10.5">· 凡是「两个线程能同时读到同一块可变内存」，就必须有</text>
+  <text x="500" y="194.25" fill="#8b949e" font-size="10.5">  可见性 / 原子性 / 有序性的约定（第 2 章）</text>
+  <!-- 实测 -->
+  <rect x="30" y="258" width="860" height="120" rx="8" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+  <text x="40" y="280.5" fill="#e6edf3" font-size="12.5" font-weight="bold">本机实测（JDK 17.0.14 / Windows x64）：栈有多大，能递归多深</text>
+  <text x="40" y="294.75" fill="#8b949e" font-size="10.5">· -XX:+PrintFlagsFinal 显示 ThreadStackSize = 0（表示用平台默认；Linux/x64 的默认是 1MB）</text>
+  <text x="40" y="310.25" fill="#8b949e" font-size="10.5">· 递归到 StackOverflowError：默认 → 35508 层；-Xss256k → 3989 层；-Xss4m → 227087 层</text>
+  <text x="40" y="325.75" fill="#8b949e" font-size="10.5">· 所以「开 1 万个线程」不是免费：1 万 × 1MB 地址空间，且每个线程都有独立的栈、PC、TLAB</text>
+  <text x="40" y="341.25" fill="#8b949e" font-size="10.5">· 单核上多线程没有并行收益，只有切换成本；上下文切换就是把 PC / 寄存器 换掉（微秒级）</text>
+</svg>
