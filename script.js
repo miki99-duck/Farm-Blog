@@ -507,6 +507,182 @@
         ? idx.length + ' 篇命中'
         : (searchInput && searchInput.value ? '没有匹配的文档' : '');
     }
+
+    /* 篇目录必须放在最后建：上面刚算完 el.hidden，
+       建目录时要靠它判断哪些条目在当前页（不在当前页的压暗一档）。 */
+    buildRail(idx);
+    syncRail();
+  }
+
+  /* ---------- 篇目录（列表视图左列） ----------
+     为什么要有：一块田最多 22 篇、每页只显示 10 篇 —— 想找第三页的第 4 篇，
+     旧版只能一页页翻着找。目录列的是**当前筛选结果的全部篇目**（不只当前页），
+     点哪一篇就翻到它所在的那一页、滚到那张卡，并给它一圈金色描边。
+     索引来源和搜索索引一样：从已渲染的卡片上摘标题，不新增 Jekyll 数据源。
+
+     为什么条目是 <button> 而不是 <a href="#id">：本页的 location.hash 归
+     深链机制独占（#crop= / #all / #q=，#untagged），任何 hash 变化都会触发
+     window 的 hashchange → applyHash()。用锚点会改 hash，一改就被当成
+     「无法识别的深链」弹回菜园子。用按钮就没有这个问题。 */
+  var tocCol = document.getElementById('toc-col');
+  var tocRailList = document.getElementById('toc-rail-list');
+  var tocRailBody = document.getElementById('toc-rail-body');
+  var tocRailMeta = document.getElementById('toc-rail-meta');
+  var tocRailCount = document.getElementById('toc-rail-count');
+  var tocRailToggle = document.getElementById('toc-rail-toggle');
+  var railOrder = [];      /* 目录序号 -> posts 下标 */
+  var railLinks = [];      /* 目录序号 -> 条目按钮 */
+  var railActive = -1;
+  var railVisible = [];    /* 当前落在观察带里的目录序号（用来取最靠前的那篇） */
+  var railObserver = null;
+  var railLockUntil = 0;   /* 点目录跳转后的一小段锁定，见观察器里的说明 */
+
+  /* 目录只在「列表/搜索视图」且有条目时出现。
+     两个条件分别由 show* 系列和 render() 改写，所以两处都要调它。 */
+  function syncRail() {
+    if (!tocCol) { return; }
+    var inList = !!listSection && !listSection.hidden;
+    var hasItems = !!tocRailList && tocRailList.childElementCount > 0;
+    tocCol.hidden = !(inList && hasItems);
+  }
+
+  function setRailActive(order) {
+    if (order === railActive) { return; }
+    if (railLinks[railActive]) {
+      railLinks[railActive].classList.remove('active');
+      railLinks[railActive].removeAttribute('aria-current');
+    }
+    railActive = order;
+    if (railLinks[order]) {
+      railLinks[order].classList.add('active');
+      railLinks[order].setAttribute('aria-current', 'true');
+      keepRailInView(railLinks[order]);
+    }
+  }
+
+  /* 22 条目录比竖屏高，当前篇目的高亮可能落在目录自己的滚动视野之外 ——
+     把它拉回来。只改 .toc-rail-body 的 scrollTop，不碰页面滚动位置：
+     用 scrollIntoView 会连带把整个窗口也滚一下，这里不需要。
+     顺带说明为什么不用 offsetTop 算：.toc-rail 是 position:sticky，
+     它是 offsetParent，offsetTop 会多算一个表头的高度，直接用矩形比较更省心。 */
+  function keepRailInView(item) {
+    var body = tocRailBody;
+    if (!body || body.scrollHeight <= body.clientHeight + 1) { return; }
+    var ir = item.getBoundingClientRect();
+    var br = body.getBoundingClientRect();
+    if (ir.top < br.top) { body.scrollTop -= (br.top - ir.top); }
+    else if (ir.bottom > br.bottom) { body.scrollTop += (ir.bottom - br.bottom); }
+  }
+
+  function buildRail(idx) {
+    if (!tocRailList) { return; }
+    railOrder = idx.slice();
+    railLinks = [];
+    railActive = -1;
+    railVisible = [];
+    tocRailList.textContent = '';
+
+    /* 表头：这块地叫什么、一共几篇 */
+    var who = searchQuery ? '搜索「' + searchLabel + '」' : metaOf(active).name;
+    if (tocRailMeta) { tocRailMeta.textContent = who + ' · ' + idx.length + ' 篇'; }
+    if (tocRailCount) { tocRailCount.textContent = ' · ' + idx.length + ' 篇'; }
+
+    /* 切页要重挂观察器：只观察当前页真正显示的那几张卡 */
+    if (railObserver) { railObserver.disconnect(); railObserver = null; }
+
+    for (var order = 0; order < idx.length; order++) {
+      var el = posts[idx[order]];
+      var titleEl = el.querySelector('.post-title');
+      var title = titleEl ? titleEl.textContent.trim() : '';
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'toc-rail-item';
+      item.setAttribute('data-order', String(order));
+      /* 兜底：卡片没有标题时也给个占位，别在目录里留一个点不出来的空行 */
+      item.textContent = title || '（无标题）';
+
+      /* 不在当前页的条目：压暗一档 + 说明点它会翻页，先给个预期 */
+      var itemPage = Math.floor(order / PER_PAGE) + 1;
+      if (itemPage !== page) {
+        item.classList.add('is-other-page');
+        item.title = '第 ' + itemPage + ' 页 · 点击跳到这篇';
+      }
+
+      var li = document.createElement('li');
+      li.appendChild(item);
+      tocRailList.appendChild(li);
+      railLinks.push(item);
+    }
+
+    if ('IntersectionObserver' in window && idx.length) {
+      /* 高亮规则：取「当前落在观察带里最靠前的那一篇」，不是「最后触发事件的那一篇」。
+         后者在光滑滚动中会输错 —— 上一条还没滚出去、下一条已经滚进来时，
+         事件顺序不保证，高亮会跳到下面那篇。 */
+      railObserver = new IntersectionObserver(function (entries) {
+        /* 先无条件把「谁在带里」这本账记准，锁定期间也不停 ——
+           否则锁定结束后这本账是缺的，要等下一次相交变化才补得回来。 */
+        for (var k = 0; k < entries.length; k++) {
+          var at = railOrder.indexOf(posts.indexOf(entries[k].target));
+          var pos = railVisible.indexOf(at);
+          if (entries[k].isIntersecting) {
+            if (at !== -1 && pos === -1) { railVisible.push(at); }
+          } else if (pos !== -1) {
+            railVisible.splice(pos, 1);
+          }
+        }
+        /* 跳转锁定：点了「第 22 篇」时，如果文档已经到底，它根本贴不到视口顶，
+           滚动高亮就会落到它上面那一篇上 —— 用户点了 A，亮的却是 B。
+           所以跳转后 800ms 内不改高亮（这段刚好覆盖 smooth 滚动的时长），
+           把高亮钉在用户点的那一条；用户自己再滚一下才会重新接管。 */
+        if (Date.now() < railLockUntil) { return; }
+        var best = -1;
+        for (var v = 0; v < railVisible.length; v++) {
+          if (best === -1 || railVisible[v] < best) { best = railVisible[v]; }
+        }
+        if (best !== -1) { setRailActive(best); }
+      }, { rootMargin: '-12% 0px -70% 0px', threshold: 0 });
+      for (var j = 0; j < idx.length; j++) {
+        if (!posts[idx[j]].hidden) { railObserver.observe(posts[idx[j]]); }
+      }
+    }
+  }
+
+  /* 点目录 → 翻到那一页 → 滚到那张卡 → 金圈闪一下。
+     分页是前端做的，所以「跳转」= 改 page 再 render，而不是跳 URL。 */
+  if (tocRailList) {
+    tocRailList.addEventListener('click', function (e) {
+      var item = e.target && e.target.closest ? e.target.closest('.toc-rail-item') : null;
+      if (!item) { return; }
+      var order = parseInt(item.getAttribute('data-order'), 10);
+      if (isNaN(order) || order < 0 || order >= railOrder.length) { return; }
+
+      var el = posts[railOrder[order]];
+      var wantPage = Math.floor(order / PER_PAGE) + 1;
+      if (wantPage !== page) { page = wantPage; render(); }
+
+      /* render() 重建了目录、清了 active，所以这里重新标一次，
+         并把高亮钉住 800ms —— 这一段刚好盖住下面的 smooth 滚动。 */
+      railLockUntil = Date.now() + 800;
+      setRailActive(order);
+      if (el.hidden) { el.hidden = false; }   /* 兜底：分页算歪了也别跳到空白 */
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('is-hit');
+      window.setTimeout(function () { el.classList.remove('is-hit'); }, 1400);
+    });
+  }
+
+  /* 窄屏把目录折起来 —— 和文档页的 .toc-toggle 一个套路：
+     宽屏常显（按钮 display:none），窄屏默认收起，点了才展开。 */
+  if (tocRailToggle && tocCol) {
+    var railNarrow = window.matchMedia && window.matchMedia('(max-width: 880px)');
+    if (railNarrow && railNarrow.matches) {
+      tocCol.classList.add('is-collapsed');
+      tocRailToggle.setAttribute('aria-expanded', 'false');
+    }
+    tocRailToggle.addEventListener('click', function () {
+      var collapsed = tocCol.classList.toggle('is-collapsed');
+      tocRailToggle.setAttribute('aria-expanded', String(!collapsed));
+    });
   }
 
   /* ---------- 视图切换 ---------- */
@@ -523,6 +699,7 @@
     if (fullpage) { fullpage.classList.remove('no-sidebar'); }
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
     window.scrollTo(0, 0);
+    syncRail();
   }
 
   function showCrop(key) {
@@ -557,6 +734,7 @@
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    syncRail();
   }
 
   /* ---------- 搜索视图 ----------
@@ -578,6 +756,7 @@
     var hash = '#q=' + encodeURIComponent(text);
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
     /* 刻意不 scrollIntoView：用户正在输入，抢滚动会很干扰 */
+    syncRail();
   }
 
   /* 清空输入框（不触发 hashchange，避免和 showSearch 互相递归） */
@@ -712,6 +891,7 @@
     render();
     /* 清掉无法识别的 hash（如 #foo），避免地址栏和视图不一致 */
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
+    syncRail();
   } else if (typeof initial === 'object') {
     if (searchInput) { searchInput.value = initial.q; }
     showSearch(initial.q);

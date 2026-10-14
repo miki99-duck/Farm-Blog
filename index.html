@@ -250,6 +250,34 @@ layout: null
       </div>
     </section>
 
+    <!-- ==================== 篇目录（列表视图左列） ====================
+         点田块进列表后，左侧给一份**本片地的全部篇目**，省得一路下滑找。
+         为什么需要它：一块田最多 22 篇、每页只显示 10 篇 —— 想找第三页的第 4 篇，
+         旧版只能一页页翻着看。
+
+         内容由 script.js 从已渲染的卡片现场摘标题生成（和搜索索引同源），
+         不新增 Jekyll 数据源，所以新丢一个 .md 进来就自动出现在目录里。
+         条目是 <button> 而不是 <a>：它做的是「翻到第 N 页 + 滚到那张卡」，
+         不是导航到别的 URL。用 <a href="#..."> 会改 location.hash，
+         而本页的 hash 归 script.js 的深链机制独占（#crop= / #all / #q=），
+         一点就会被 applyHash 当成无效深链弹回菜园子。
+
+         默认 hidden（菜园子视图不需要它），切进列表/搜索视图时脚本才显示；
+         窄屏（≤880px）它变成列表上方一条可折叠的横条，见 .toc-rail-toggle。 -->
+    <aside class="toc-col" id="toc-col" hidden>
+      <nav class="toc-rail" aria-labelledby="toc-rail-title">
+        <h2 class="toc-rail-title" id="toc-rail-title">篇目录</h2>
+        <button type="button" class="toc-rail-toggle" id="toc-rail-toggle"
+                aria-expanded="true" aria-controls="toc-rail-body">
+          <span>篇目录<span class="toc-rail-count" id="toc-rail-count"></span></span>
+        </button>
+        <p class="toc-rail-meta" id="toc-rail-meta"></p>
+        <div class="toc-rail-body" id="toc-rail-body">
+          <ol class="toc-rail-list" id="toc-rail-list"></ol>
+        </div>
+      </nav>
+    </aside>
+
     <!-- ==================== 作物横幅 + 文档列表（默认隐藏，点田块才显示） ====================
           默认停在菜园子；点一块田 → 隐藏菜园子、显示这里并按主标签过滤列表；
           返回 / Esc → 恢复菜园子、列表回到全部。深链：#crop=spring / #all / #untagged。

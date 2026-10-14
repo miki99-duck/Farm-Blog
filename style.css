@@ -447,6 +447,9 @@ mark{
   /* 标题链接要铺满整张卡片（见下方 ::after），得有个定位祖先。
      .sv-panel 虽已是 relative，但显式写一遍，卡片样式不依赖面板样式 */
   position:relative;
+  /* 从「篇目录」跳过来时是 scrollIntoView(block:'start')，留一点上边距，
+     否则卡片会紧贴视口顶边像是被切掉了 */
+  scroll-margin-top:var(--sp-4);
   /* 只动 transform / box-shadow：两者都能被 GPU 合成，hover 不掉帧。
      旧版还顺手 translate(-2px,-2px) 往左上抬，而硬投影是往右下投的，
      方向相反看着像抖了一下；新版只往上抬。 */
@@ -522,9 +525,9 @@ mark{
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
-  /* 列表视图是整行宽（1060px），不限宽度的话一行能排 100 多个汉字。
-     74ch 是阅读字体的舒适上限，超出部分仍会换行，不裁字。 */
-  max-width:74ch;
+  /* 这里原先有一条 max-width:74ch，是为了解决「列表视图整行 1060px、一行排 100 多个汉字」。
+     2026-10 加上「篇目录」之后列表列已经收到 784px（正文约 748px ≈ 57 个汉字一行），
+     再压 74ch 反而让摘要在卡片里只占一半、右边缘参差不齐，所以去掉。 */
   -webkit-font-smoothing:antialiased;
 }
 
@@ -772,8 +775,13 @@ mark{
 /* ============================================================
    菜园子 + 侧边栏（同一行）
    左列放菜园子；右列 320px 放侧边栏，两者顶对齐。
-   点田块 → .garden-view 隐藏、.list-section 显示，占同一格；
+   点田块 → .garden-view 隐藏、.toc-col/.list-section 显示；
    侧栏始终在右列不动。
+
+   ⚠ 四个子元素（.garden-view / .toc-col / .list-section / .side-col）
+   一律靠 auto-placement 落格，不写死 grid-column：[hidden] 会把它们真正
+   移出网格，剩下谁在、谁就依次落到 (1,1)、(1,2)。写死列号的话，
+   窄屏单列布局里 .list-section{grid-column:2} 会凭空造出第二列把页面撑宽。
    ============================================================ */
 .fullpage{
   display:grid;
@@ -791,10 +799,124 @@ mark{
   top:16px;
 }
 
-/* 点田块进列表 → 侧栏隐藏，列表撑满整行 */
+/* 点田块进列表 → 侧栏换成「篇目录」，左窄右宽。
+   260px 是量出来的：12.5px 正文一行放得下 18 个汉字，
+   最长的那几个标题（「微服务难题三：缓存一致性的 5 个方案对比」）恰好两行封顶。 */
 .fullpage.no-sidebar{
-  grid-template-columns:minmax(0,1fr);
+  grid-template-columns:260px minmax(0,1fr);
 }
+
+/* ============================================================
+   篇目录（列表视图左列）
+   ============================================================
+   点田块进列表后，左列给一份本片地的**全部**篇目（不只当前这一页）：
+   一块田最多 22 篇、每页只显示 10 篇，旧版想找第三页的第 4 篇只能一页页翻。
+   条目由 script.js 从已渲染的卡片上摘标题生成，所以任何 .md 丢进仓库都自动入列。
+
+   长相刻意和文档页的 .toc 同源（纸面板、12.5px、当前项金色底 + 左金条）：
+   全站「目录」只留一套认知，读者在文章列表和文章正文里看到的是同一个东西。 */
+.toc-col{
+  /* 撑满整行高度，里面的 nav 才能一路 sticky 跟着滚（同文档页 .toc 的做法） */
+  align-self:stretch;
+  min-width:0;
+}
+
+/* 点田块前它是 hidden 的，UA 的 [hidden]{display:none} 直接生效即可 */
+.toc-col[hidden]{ display:none; }
+
+.toc-rail{
+  position:sticky;
+  top:16px;
+  display:flex;
+  flex-direction:column;
+  /* 22 条目录在矮视口里放不下，限高后内部滚动，而不是把整页拉长 */
+  max-height:calc(100vh - 32px);
+  background-color:var(--paper);
+  border:var(--bd-paper);
+  border-radius:var(--r-3);
+  box-shadow:
+    inset 0 0 0 3px var(--paper-light),
+    var(--sh-2);
+}
+
+.toc-rail-title{
+  margin:0;
+  padding:13px 15px 9px;
+  font-size:var(--fs-xs);
+  color:var(--ink);
+}
+
+.toc-rail-meta{
+  margin:0;
+  padding:0 15px 11px;
+  font-size:var(--fs-xs);
+  color:var(--wood-600);
+  border-bottom:var(--bd-w) dashed rgba(180,120,74,.45);
+  font-variant-numeric:tabular-nums;
+}
+
+/* 宽屏常显标题，折叠按钮不出现；窄屏反过来（见 ≤880px 那条） */
+.toc-rail-toggle{ display:none; }
+
+.toc-rail-body{
+  overflow-y:auto;
+  /* 目录滚到底后不要连锁把整页带着滚 */
+  overscroll-behavior:contain;
+  padding:8px 10px 12px;
+}
+
+.toc-rail-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.toc-rail-list li{ margin:0; }
+
+.toc-rail-item{
+  display:-webkit-box;
+  -webkit-line-clamp:2;      /* 长标题最多两行：22 条目录的高度才可控 */
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  width:100%;
+  padding:6px 8px;
+  font-family:inherit;
+  font-size:12.5px;
+  line-height:1.55;
+  text-align:left;
+  color:var(--ink-soft);
+  background:none;
+  border:0;
+  border-left:3px solid transparent;
+  border-radius:var(--r-1);
+  cursor:pointer;
+  transition:background .12s ease, color .12s ease;
+}
+
+.toc-rail-item:hover{
+  background:rgba(201,156,94,.25);
+  color:var(--wood-900);
+}
+
+/* 当前在读的那一篇（滚动高亮，由 IntersectionObserver 切换） */
+.toc-rail-item.active{
+  background:rgba(255,210,63,.32);
+  border-left-color:var(--gold-deep);
+  color:var(--wood-900);
+  font-weight:700;
+}
+
+/* 不在当前页的篇目压暗一档：点它会翻页，先给个预期 */
+.toc-rail-item.is-other-page{ opacity:.6; }
+.toc-rail-item.is-other-page:hover,
+.toc-rail-item.is-other-page:focus-visible{ opacity:1; }
+
+/* 条目铺满列宽，用外扩的焦点环会被面板裁掉，改成贴边 */
+.toc-rail-item:focus-visible{ outline-offset:-2px; }
+
+/* 从目录跳到某篇时，给那张卡一圈金边闪一下 —— 用静态类而不是动画，
+   开了「减少动态效果」的用户也能得到同样的定位反馈。 */
+.post.is-hit{ outline:3px solid var(--gold); outline-offset:3px; }
 
 /* ============================================================
    菜园子（文档入口：一块田 = 一个标签，点进去看那片地的文章）
@@ -1250,6 +1372,9 @@ mark{
 @media (max-width:880px){
   /* 菜园子与侧栏堆叠，侧栏里的名片/技能并排铺 */
   .fullpage{ grid-template-columns:1fr; }
+  /* ⚠ 必须显式写这一条：.fullpage.no-sidebar（0,2,0）比 .fullpage（0,1,0）权重高，
+     不覆盖的话列表视图在窄屏会保留 260px 的左列，正文被挤成一条。 */
+  .fullpage.no-sidebar{ grid-template-columns:1fr; }
   .side-col{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
@@ -1258,6 +1383,43 @@ mark{
     position:static;
   }
   /* 田块列数交给 auto-fill 自己算，这里不再写死 2 列 */
+
+  /* ---------- 篇目录改成列表上方一条可折叠横条 ----------
+     窄屏没有「左列」，但手机恰恰是最需要跳转的地方（22 篇要滑很久）。
+     所以不隐藏，改成横条：默认收起，点一下展开，展开后限高 45vh 内部滚动。 */
+  .toc-col{ align-self:start; }
+  .toc-rail{
+    position:static;
+    max-height:none;
+  }
+  .toc-rail-title,
+  .toc-rail-meta{ display:none; }
+  .toc-rail-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    padding:12px 15px;
+    font-family:inherit;
+    font-size:var(--fs-xs);
+    color:var(--ink);
+    text-align:left;
+    background:none;
+    border:0;
+    border-bottom:var(--bd-w) dashed rgba(180,120,74,.45);
+    cursor:pointer;
+  }
+  .toc-rail-toggle::after{
+    content:"▾";
+    color:var(--wood-600);
+    transition:transform .15s ease;
+  }
+  .toc-rail-count{ color:var(--wood-600); }
+  .toc-col.is-collapsed .toc-rail-toggle::after{ transform:rotate(-90deg); }
+  .toc-col.is-collapsed .toc-rail-toggle{ border-bottom:0; }
+  .toc-col.is-collapsed .toc-rail-body{ display:none; }
+  .toc-rail-body{ max-height:45vh; }
 }
 
 @media (max-width:560px){
