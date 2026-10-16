@@ -125,17 +125,12 @@
     });
   }
 
-  /* ---------- 1. 返回农场 ----------
-     菜园子页面没有 .hud-home，这里是空操作；保留给将来可能的子页面 */
-  var home = document.querySelector('.hud-home');
-  if (home) {
-    home.addEventListener('click', function (e) {
-      if (window.history && window.history.length > 1) {
-        e.preventDefault();
-        history.back();
-      }
-    });
-  }
+  /* ---------- 1. 「返回农场」不再由脚本接管 ----------
+     原来这里和 _layouts/default.html 各有一份 history.back() 拦截，两处都已删掉：
+     history.back() 退的是「上一次导航」，文章页里点过篇目录锚点之后，它只会撤销那条
+     锚点条目、人还留在同一篇文章里（线上实测：点一次不生效，要点两次）。
+     现在「返回农场」是普通链接，落点写死在 default.html 的 hud-home href 上
+     （{{ '/' | relative_url }} = 站点根 = 菜园子默认视图）。 */
 
   /* ---------- 2 & 3. 菜园子（入口）+ 列表分页 ----------
      田块完全由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。

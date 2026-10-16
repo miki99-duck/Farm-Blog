@@ -703,7 +703,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   {%- endcomment -%}
 
   <header class="hud">
-    <a class="hud-chip hud-home" href="./" data-url="{{ page.url }}">◂ 返回农场</a>
+    <a class="hud-chip hud-home" href="{{ '/' | relative_url }}">◂ 返回农场</a>
     {%- comment -%}
       面包屑：有系列落地页就链落地页（真实 URL，能被单独收录），
       没有（农场日记、技术/README.md）才退回首页的 #crop=<主标签> 深链。
@@ -790,18 +790,19 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 (function () {
   'use strict';
 
-  /* ---------- 「返回农场」：返回上一页（浏览器历史） ----------
-     从文档列表点「阅读全文」进来，返回农场应该回到列表，不是直接跳站点根。
-     没有上一页可回时（直接打开文档）退化为 ./（站点根）。 */
-  var home = document.querySelector('.hud-home');
-  if (home) {
-    home.addEventListener('click', function (e) {
-      if (window.history && window.history.length > 1) {
-        e.preventDefault();
-        history.back();
-      }
-    });
-  }
+  /* ---------- 「返回农场」：不做 JS 拦截，交给普通跳转 ----------
+     按钮标记是 <a class="hud-chip hud-home" href=…>，href 用 relative_url 过滤器指向
+     站点根 = 菜园子默认视图（不带 #crop 深链），一次点击必然离开文章。
+     为什么不再用 history.back()（线上实测的坑）：
+       history.back() 退的是「上一次导航」，而文章页里到处都是导航 ——
+       · 点过篇目录的锚点 → 历史里有 article.html#某节；点「返回农场」只是把这条锚点
+         条目撤销，人还留在同一篇文章里（实测：第一次点击不生效，第二次才离开）；
+       · 浏览器还会恢复列表的滚动位置，看着像被丢回「刚才那篇文章」旁边，而不是农场。
+     为什么 href 不写 "./"：文章页 URL 是 技术/java/xx.html，"./" 解析出来是
+     技术/java/（同目录的系列落地页），不是站点根 —— 那是另一个页面，不是农场。
+     想回「刚才那个列表」用面包屑里的系列 chip（/#crop=xxx），它一直是普通链接。 */
+
+
 
   var doc = document.getElementById('doc');
   if (!doc) return;
