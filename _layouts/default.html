@@ -496,20 +496,23 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   word-break:break-word;
 }
 
-/* 代码块：深色木底（正文里最重的一块面，保留深底以形成节奏对比） */
+/* 代码块：纯黑底（正文里最重的一块面，保留深底以形成节奏对比）
+   原来用的是深木底 #2b1a0d，纸面旁边整体偏红、代码里的黄/橙语法色也被染浑；
+   换纯黑之后是干净的黑白对比，也和章节里那几张深色底 SVG 架构图（#0d1117/#161b22）同一族。
+   边框/投影同步改成中性黑，避免残留棕色描边。 */
 .prose pre{
   position:relative;
   margin:16px 0 20px; padding:15px 17px;
   overflow-x:auto;
-  background:#2b1a0d;
-  border:var(--bd); border-radius:var(--r-2);
-  box-shadow:var(--sh-1);
+  background:#000;
+  border:var(--bd-w) solid #000; border-radius:var(--r-2);
+  box-shadow:0 2px 0 rgba(0,0,0,.8);
   font-size:13px; line-height:1.72;
   -webkit-overflow-scrolling:touch;
 }
 .prose pre code{
   padding:0; background:none; border:0; border-radius:0;
-  color:#f2e6cd; font-size:13px; white-space:pre;
+  color:#e6edf3; font-size:13px; white-space:pre;
 }
 .highlight{ background:none; }
 .highlight pre{ margin:16px 0 20px; }
@@ -527,7 +530,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   padding:4px 10px;
   font-family:var(--read); font-size:12px; line-height:1.6;
   color:#ffe9b8;
-  background:rgba(0,0,0,.45);
+  background:rgba(255,255,255,.07);   /* 纯黑底上要提亮才看得见（原 rgba(0,0,0,.45) 是给木底压暗用的） */
   border:var(--bd-w) solid rgba(255,220,160,.35); border-radius:var(--r-1);
   cursor:pointer;
   opacity:.5;
@@ -535,7 +538,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 }
 .prose pre:hover .copy-code,
 .copy-code:focus-visible{ opacity:1; }
-.copy-code:hover{ background:rgba(0,0,0,.7); }
+.copy-code:hover{ background:rgba(255,255,255,.16); }
 .copy-code:focus-visible{
   outline-color:var(--focus-on-dark);
   outline-offset:0;
@@ -551,8 +554,8 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   .copy-code{ opacity:1; }
 }
 
-/* Rouge 语法着色（配深木底） */
-.highlight .c,.highlight .c1,.highlight .cm,.highlight .cs{ color:#a18f6d; font-style:italic; }
+/* Rouge 语法着色（配纯黑底：注释/标点改成中性灰，其余暖色保留以维持站点色感） */
+.highlight .c,.highlight .c1,.highlight .cm,.highlight .cs{ color:#8b949e; font-style:italic; }
 .highlight .k,.highlight .kd,.highlight .kn,.highlight .kc,.highlight .kr{ color:#ffd23f; }
 .highlight .s,.highlight .s1,.highlight .s2,.highlight .sb,.highlight .se,.highlight .sx{ color:#9bd14a; }
 .highlight .mi,.highlight .mf,.highlight .m,.highlight .mh{ color:#ff9d5c; }
@@ -560,7 +563,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 .highlight .na,.highlight .nv,.highlight .nx{ color:#ffe0a3; }
 .highlight .nt{ color:#7ec8ff; }
 .highlight .nc,.highlight .nn{ color:#ffb3e6; }
-.highlight .o,.highlight .ow,.highlight .p{ color:#e6d6b8; }
+.highlight .o,.highlight .ow,.highlight .p{ color:#c9d1d9; }
 .highlight .err{ color:#ff8b7a; }
 
 /* 表格 */

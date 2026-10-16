@@ -25,7 +25,7 @@
   <rect x="30" y="258" width="860" height="120" rx="8" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
   <text x="40" y="280.5" fill="#e6edf3" font-size="12.5" font-weight="bold">本机实测（JDK 17.0.14 / Windows x64）：栈有多大，能递归多深</text>
   <text x="40" y="294.75" fill="#8b949e" font-size="10.5">· -XX:+PrintFlagsFinal 显示 ThreadStackSize = 0（表示用平台默认；Linux/x64 的默认是 1MB）</text>
-  <text x="40" y="310.25" fill="#8b949e" font-size="10.5">· 递归到 StackOverflowError：默认 → 35508 层；-Xss256k → 3989 层；-Xss4m → 227087 层</text>
-  <text x="40" y="325.75" fill="#8b949e" font-size="10.5">· 所以「开 1 万个线程」不是免费：1 万 × 1MB 地址空间，且每个线程都有独立的栈、PC、TLAB</text>
-  <text x="40" y="341.25" fill="#8b949e" font-size="10.5">· 单核上多线程没有并行收益，只有切换成本；上下文切换就是把 PC / 寄存器 换掉（微秒级）</text>
+  <text x="40" y="310.25" fill="#8b949e" font-size="10.5">· 同一个程序跑 6 次（默认栈）：23575 / 23609 / 23571 / 23441 / 23488 / 28933 —— 自己就差 23%</text>
+  <text x="40" y="325.75" fill="#8b949e" font-size="10.5">· -Xss256k 三次：3606 / 3711 / 3107；-Xss4m 三次：222631 / 223185 / 226143（栈 ×16，深度 ×64，不成正比）</text>
+  <text x="40" y="341.25" fill="#8b949e" font-size="10.5">· 所以「多少层会炸」不能当常数：波动来自解释器帧与 JIT 编译帧的大小差异（见正文 1.2）</text>
 </svg>

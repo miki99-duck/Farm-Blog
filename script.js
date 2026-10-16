@@ -685,6 +685,26 @@
     });
   }
 
+  /* ---------- 视图切换的滚动一律「瞬移」（不带动画） ----------
+     为什么要专门写两个函数（不能直接用 window.scrollTo(0,0) / scrollIntoView()）：
+     html{scroll-behavior:smooth} 让所有程序化滚动都变成动画，那正是线上这个 bug 的来源 ——
+     点一块田后页面开始把列表头平滑滚到顶，用户在动画没停下时点「◀ 返回菜园子」，
+     按下到抬起这几十毫秒里按钮已经从光标下移走（实测按钮 y 从 167 → 27），
+     浏览器就把 click 派发给「按下元素」与「抬起元素」的共同祖先（实测落到 #crop-banner），
+     这一下完全白点 —— 用户体感就是「点一次不生效，要点两次」。
+     换视图本来也不是「在同一页里滚一段」，瞬移观感更干净，顺手把这个坑填死。
+     注意用 behavior:'instant' 而不是 'auto'：'auto' 会回去读 CSS 的 scroll-behavior（=smooth），
+     等于又要动画。旧引擎不认 'instant' 时退回两参数/无参写法。 */
+  function instantScrollTo(top) {
+    try { window.scrollTo({ top: top, left: 0, behavior: 'instant' }); }
+    catch (e) { window.scrollTo(0, top); }
+  }
+  function instantScrollIntoView(el) {
+    if (!el) { return; }
+    try { el.scrollIntoView({ behavior: 'instant', block: 'start' }); }
+    catch (e) { el.scrollIntoView(); }
+  }
+
   /* ---------- 视图切换 ---------- */
   function showGarden() {
     active = null;
@@ -698,7 +718,7 @@
     if (sideCol) { sideCol.hidden = false; }
     if (fullpage) { fullpage.classList.remove('no-sidebar'); }
     if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
-    window.scrollTo(0, 0);
+    instantScrollTo(0);
     syncRail();
   }
 
@@ -733,7 +753,7 @@
     if (fullpage) { fullpage.classList.add('no-sidebar'); }
     var hash = key === KEY_ALL ? '#all' : (key === KEY_NONE ? '#untagged' : '#crop=' + encodeURIComponent(key));
     if (location.hash !== hash) { history.replaceState(null, '', hash); }
-    if (listHead) { listHead.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    if (listHead) { instantScrollIntoView(listHead); }
     syncRail();
   }
 
@@ -766,6 +786,24 @@
     if (searchStatus) { searchStatus.textContent = ''; }
   }
 
+  /* ---------- 点击前先「钉住」正在进行的平滑滚动 ----------
+     背景：html{scroll-behavior:smooth} 让本页所有程序化滚动都是动画（点目录跳转、
+     回到顶部……）。而「动画中的元素会在按下→抬起这几十毫秒里从光标下移走」，
+     浏览器就把 click 派发给按下点与抬起点的共同祖先（实测落到了 #crop-banner），
+     这一下完全白点 —— 用户体感就是「点一次不生效，要点两次」。
+     视图切换与分页已经改成瞬移（见上面的 instantScroll* 和分页那段），
+     这里再给剩下的平滑滚动兜一层底：pointerdown 比 click 早，先把滚动按当前位置钉住，
+     目标站住不动，click 就一定能派到它身上。
+     用 behavior:'instant' 而不是 'auto'：'auto' 会去读 CSS 的 scroll-behavior（=smooth），
+     等于又要起一段动画。旧引擎不认 'instant' 时退回两参数写法。 */
+  document.addEventListener('pointerdown', function () {
+    try {
+      window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'instant' });
+    } catch (e) {
+      window.scrollTo(window.scrollX, window.scrollY);
+    }
+  }, true);
+
   /* ---------- 事件 ---------- */
   function onPlotActivate(e) {
     var d = e.target && e.target.closest ? e.target.closest('.plot') : null;
@@ -795,7 +833,9 @@
       else if (v === 'next') { page += 1; }
       else { page = parseInt(v, 10) || 1; }
       render();
-      list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      /* 翻页也是「换内容」，和视图切换同理用瞬移：翻完页的平滑滚动期间，
+         再点一次「下一页」会因为按钮已经移走而丢事件（实测连点两次只前进一步）。 */
+      instantScrollIntoView(list);
     });
   }
 
