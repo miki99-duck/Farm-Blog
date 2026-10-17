@@ -53,6 +53,22 @@
 {%- assign hub_in_crumb = false -%}
 {%- if by_dir and hub_url != '' and hub_url != page.url -%}{%- assign hub_in_crumb = true -%}{%- endif -%}
 {%- comment -%}
+  「◂ 返回农场」的落点 = 结构上的「上一级」，不是站点根：
+    有系列落地页（技术/<系列>/index.md）→ 去落地页；
+    没有落地页但有主标签     → 回首页按主标签筛出的那块田（#crop=<主标签>）；
+    两者都没有               → 才回首页。
+  这是**静态落点**（禁用 JS、中键新开、键盘回车都走它）。
+  开着 JS 时若浏览器给了同站「容器页」的 referrer（首页 / 系列落地页），
+  会用 referrer 覆盖成「你进来的那一层」——见 body 末尾脚本里的说明。
+{%- endcomment -%}
+{%- if hub_in_crumb -%}
+  {%- assign up_url = hub_url | relative_url -%}
+{%- elsif series_tag != '' -%}
+  {%- assign up_url = '/' | relative_url | append: '#crop=' | append: series_tag -%}
+{%- else -%}
+  {%- assign up_url = '/' | relative_url -%}
+{%- endif -%}
+{%- comment -%}
   SEO 三件套：
   ① canonical / og:url 用同一个变量，避免两处拼错不一致；
   ② 每页唯一的 description —— 优先 front matter，其次正文前 150 字
@@ -82,6 +98,9 @@
 <meta name="keywords" content="{% if page.tags %}{% for tag in page.tags %}{{ tag }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endif %}, 星露谷农场日志, 技术笔记, 博客">
 <meta name="author" content="{{ site.author }}">
 <meta name="robots" content="index, follow">
+<!-- 本站根路径（含 baseurl，例：/Farm-Blog/）。body 末尾的脚本用它校验 referrer
+     是不是"本站的容器页"，避免跨站 referrer 只有 origin 时把人送到 GitHub Pages 根。 -->
+<meta name="x-site-root" content="{{ '/' | relative_url }}">
 <meta name="theme-color" content="#668b5a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="星露谷农场日志">
@@ -703,7 +722,7 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
   {%- endcomment -%}
 
   <header class="hud">
-    <a class="hud-chip hud-home" href="{{ '/' | relative_url }}">◂ 返回农场</a>
+    <a class="hud-chip hud-home" href="{{ up_url }}">◂ 返回农场</a>
     {%- comment -%}
       面包屑：有系列落地页就链落地页（真实 URL，能被单独收录），
       没有（农场日记、技术/README.md）才退回首页的 #crop=<主标签> 深链。
@@ -790,17 +809,58 @@ a.hud-chip:hover{ background:rgba(0,0,0,.4); color:var(--gold); }
 (function () {
   'use strict';
 
-  /* ---------- 「返回农场」：不做 JS 拦截，交给普通跳转 ----------
-     按钮标记是 <a class="hud-chip hud-home" href=…>，href 用 relative_url 过滤器指向
-     站点根 = 菜园子默认视图（不带 #crop 深链），一次点击必然离开文章。
-     为什么不再用 history.back()（线上实测的坑）：
-       history.back() 退的是「上一次导航」，而文章页里到处都是导航 ——
-       · 点过篇目录的锚点 → 历史里有 article.html#某节；点「返回农场」只是把这条锚点
-         条目撤销，人还留在同一篇文章里（实测：第一次点击不生效，第二次才离开）；
-       · 浏览器还会恢复列表的滚动位置，看着像被丢回「刚才那篇文章」旁边，而不是农场。
-     为什么 href 不写 "./"：文章页 URL 是 技术/java/xx.html，"./" 解析出来是
-     技术/java/（同目录的系列落地页），不是站点根 —— 那是另一个页面，不是农场。
-     想回「刚才那个列表」用面包屑里的系列 chip（/#crop=xxx），它一直是普通链接。 */
+  /* ---------- 「◂ 返回农场」：回到「上一级」（不是顶级、也不是"上一次导航"） ----------
+     href 是静态落点（head 里的 up_url）：有系列落地页 → 落地页；没有落地页但主标签有田
+     → 首页那块田（#crop=）；都没有 → 首页。禁用 JS / 中键新开 / 键盘回车走的就是它。
+     开了 JS 时按这个顺序找更准的"上一级"：
+       ① referrer 是本站容器页（路径以 / 结尾：首页、系列落地页）→ 回到那一层；
+          若 sessionStorage 里记的来路与它同路径，优先用记的那个（它带着 #crop= 片段）；
+       ② 没有 referrer 但有来路记录 → 用它（用完即清，避免下次直接打开文章时被误用）；
+       ③ 都没有 → 走 href 的静态落点。
+     为什么不直接用 referrer：浏览器会把 referrer 的 #片段抹掉 —— 从「java 那块田」点进文章，
+     referrer 只有 /Farm-Blog/，回到的是菜园子默认视图，不是那块田的列表。
+     为什么不用 history.back()：它退的是"上一次导航"。点过篇目录锚点后，第一次点只把那条
+     锚点条目撤销，人还在同一篇文章里（线上实测：点一次不生效，要点两次），
+     而且浏览器还会恢复列表滚动位置，看着像被丢回"刚才那篇文章"旁边。 */
+  var home = document.querySelector('.hud-home');
+  if (home) {
+    home.addEventListener('click', function (e) {
+      var meta = document.querySelector('meta[name="x-site-root"]');
+      var root = (meta && meta.getAttribute('content')) || '/';
+
+      /* 本站的"容器页"：路径以 / 结尾（首页、系列落地页） */
+      function containerOf(href) {
+        try {
+          var u = new URL(href, location.href);
+          return (u.origin === location.origin && u.pathname.indexOf(root) === 0 &&
+                  /\/$/.test(u.pathname)) ? u : null;
+        } catch (err) { return null; }
+      }
+      /* 首页列表点进文章时，脚本记下的来路（含 #crop= 片段） */
+      function takeRemembered() {
+        var v = null;
+        try {
+          v = sessionStorage.getItem('fb_up');
+          if (v) { sessionStorage.removeItem('fb_up'); }   /* 一次性的，避免陈旧来路被误用 */
+        } catch (err) { }
+        return (v && v.indexOf(root) === 0) ? v : null;
+      }
+
+      var ref = containerOf(document.referrer);
+      var up = takeRemembered();
+      var target = null;
+      if (ref) {
+        target = (up && up.split('#')[0] === ref.pathname) ? up : ref.href;
+      } else if (up) {
+        target = up;
+      }
+      if (target && target !== location.href) {
+        e.preventDefault();
+        location.href = target;
+      }
+      /* target 为空：什么都不做，让它走 href 的静态落点 */
+    });
+  }
 
 
 

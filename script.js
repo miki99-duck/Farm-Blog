@@ -125,12 +125,7 @@
     });
   }
 
-  /* ---------- 1. 「返回农场」不再由脚本接管 ----------
-     原来这里和 _layouts/default.html 各有一份 history.back() 拦截，两处都已删掉：
-     history.back() 退的是「上一次导航」，文章页里点过篇目录锚点之后，它只会撤销那条
-     锚点条目、人还留在同一篇文章里（线上实测：点一次不生效，要点两次）。
-     现在「返回农场」是普通链接，落点写死在 default.html 的 hud-home href 上
-     （{{ '/' | relative_url }} = 站点根 = 菜园子默认视图）。 */
+  /* ---------- 1. 记住"从哪块田点进文章"（挂载点在下面拿到 #doc-list 之后） ---------- */
 
   /* ---------- 2 & 3. 菜园子（入口）+ 列表分页 ----------
      田块完全由脚本从已渲染的文档卡片生成，不新增 Jekyll 数据源。
@@ -140,6 +135,21 @@
      深链：#crop=spring / #all / #untagged；Esc 或返回按钮回菜园子。 */
   var list = document.getElementById('doc-list');
   if (!list) { return; }
+
+  /* ---------- 「从哪块田点进文章」记一笔 ----------
+     文章页的「◂ 返回农场」要回到"上一级"（= 你点进来时那块田的列表）。
+     但浏览器会把 referrer 的 #片段抹掉：从 #crop=java 点进文章，文章页只拿到
+     /Farm-Blog/，按 referrer 回去会落到菜园子默认视图，而不是那块田。
+     所以在列表里点链接跳走之前，把当前地址（含 #crop=）记进 sessionStorage；
+     文章页用完即清（一次性的），避免下次直接打开文章时被陈旧来路带偏。
+     隐私模式禁 sessionStorage 时静默跳过：文章页会自动退回 referrer / 静态落点。 */
+  list.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) { return; }
+    try {
+      sessionStorage.setItem('fb_up', location.pathname + location.search + location.hash);
+    } catch (err) { /* 存不了就算了 */ }
+  }, true);
 
   var posts = Array.prototype.slice.call(list.querySelectorAll('article.post'));
   var pager = document.getElementById('pager');

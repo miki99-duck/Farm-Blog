@@ -741,34 +741,17 @@ mark{
   border-radius:2px;
 }
 
-/* ---------- 侧栏技能面板（2026-10 起默认收起） ----------
-   纯装饰：Lv 数字写死，不反映任何真实数据。桌面端 320px 侧栏是黄金位置，
-   展开着白占一屏高度，所以折起来；上面那张名片保留（那是身份）。
-   和「系列目录」一样用 <details>，无 JS 也能开合，状态不持久化。 */
+/* ---------- 侧栏技能面板（2026-10 起常驻展开，不再折叠） ----------
+   纯装饰：Lv 数字写死，不反映任何真实数据。
+   以前是 <details> 默认收起（为了省桌面端 320px 侧栏的高度），但收起后只剩一行标题，
+   看不出里面是技能条，等于白占一个面板位；现在改成普通面板，和上面那张名片一致。
+   标题和技能条各自带内边距，所以面板本身不要 padding。 */
 .skill-box{ padding:0; }
 
-.skill-box > .skill-summary{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:16px 20px;
-  cursor:pointer;
-  list-style:none;
+.skill-box > .panel-title{
+  padding:16px 20px 0;
+  margin:0;
 }
-
-.skill-box > .skill-summary::-webkit-details-marker{ display:none; }
-
-/* 里面的虚线由 .panel-title::after 自己画，这里只让它撑满剩余宽度 */
-.skill-summary > .panel-title{ flex:1; margin:0; }
-
-.skill-box > .skill-summary::after{
-  content:"▾";
-  font-size:var(--fs-xs);
-  color:var(--wood-600);
-  transition:transform .15s ease;
-}
-.skill-box:not([open]) > .skill-summary::after{ transform:rotate(-90deg); }
-.skill-box[open] > .skill-summary{ border-bottom:var(--bd-w) dashed rgba(180,120,74,.45); }
 
 .skill-body{ padding:16px 20px 18px; }
 

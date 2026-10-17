@@ -457,13 +457,11 @@ layout: null
         </p>
       </div>
 
-      <!-- 技能面板：纯装饰（Lv 数字是写死的），默认收起。
-           桌面端 320px 侧栏是黄金位置，展开着白占一屏高度；名片留着（那是身份），
-           技能条折起来。用 <details> 做，无 JS 也能开合；状态不持久化，刷新即收起。 -->
-      <details class="sv-panel skill-box">
-        <summary class="skill-summary">
-          <h3 class="panel-title">⚒️ 技能</h3>
-        </summary>
+      <!-- 技能面板：纯装饰（Lv 数字是写死的）。
+           2026-10 起**常驻展开**：之前是 <details> 默认收起，收起后只剩一行标题，
+           读者根本不知道里面是什么；现在和上面的名片一样是普通面板（不再可折叠）。 -->
+      <section class="sv-panel skill-box">
+        <h3 class="panel-title">⚒️ 技能</h3>
         <div class="skill-body">
 
         <div class="skill">
@@ -492,7 +490,7 @@ layout: null
         </div>
 
         </div>
-      </details>
+      </section>
     </aside>
   </div>
   <!-- ==================== 底部物品栏：农具 ====================
