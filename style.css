@@ -999,6 +999,16 @@ mark{
   transition:transform .14s ease;
 }
 
+/* 田块里若换成内联 SVG 图标（如 AI 的机器人），emoji 走上面的 font-size、SVG 走这里，
+   定死尺寸，避免各图标大小不一。 */
+.plot-crop svg{
+  display:block;
+  margin:0 auto;
+  width:32px;
+  height:32px;
+}
+.plot.tiny .plot-crop svg{ width:24px; height:24px; }
+
 .plot-name{
   font-size:var(--fs-xs);
   color:#ffe9b8;
@@ -1250,6 +1260,12 @@ mark{
 
 .banner-crop{
   font-size:34px;
+}
+
+.banner-crop svg{
+  display:block;
+  width:34px;
+  height:34px;
 }
 
 .banner-name{

@@ -181,6 +181,14 @@ LangChain AI 应用开发实战教程（智谱 GLM 版），全部基于 2025-10
 
 ## 更新记录
 
+- 2026-10-17：**首页 AI 田块图标从 emoji 🤖 换成矢量机器人图标**
+  原来的 🤖 是全彩 emoji，和整站像素/木纹风不搭（中间试过一版 16×16 神经网络像素图，
+  最后按用户提供的 1024×1024 机器人 SVG 定稿：青蓝 #54C6D5/#6ED8E6/#7BFFFB 主体 +
+  白脸 + 黑眼睛 + 紫描边 #524F75 + 天线气泡）。
+  实现：`script.js` 的 `TAG_META` 支持可选 `icon` 字段（HTML 字符串），
+  `makePlot / makeSpecial / 作物横幅` 用 `cropIcon()` 取 icon 优先、emoji 兜底；
+  纯文本语境（面包屑）仍用 emoji。图标放进 `.plot-crop svg`（32px）与
+  `.banner-crop svg`（34px）；注入时去掉了原 SVG 的固定 width/height/p-id，保留 viewBox。
 - 2026-10-16：**侧栏「技能」面板改为常驻展开**（推翻 2026-10-05 的第 ③ 条）
   收起后只剩一行「⚒️ 技能」标题，看不出里面是五条技能条，等于白占一个面板位；
   现在跟上面那张名片一样是普通面板（`<section class="sv-panel skill-box">`），
